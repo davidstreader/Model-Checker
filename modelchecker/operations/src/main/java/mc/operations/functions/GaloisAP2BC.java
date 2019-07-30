@@ -2,15 +2,9 @@ package mc.operations.functions;
 
 import com.google.common.collect.Multiset;
 import com.microsoft.z3.Context;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import mc.Constant;
-import mc.TraceType;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
-import mc.operations.QuiescentRefinement;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MappingNdMarking;
 import mc.processmodels.MultiProcessModel;
@@ -23,7 +17,9 @@ import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
-import mc.processmodels.petrinet.components.PetriNetTransition;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GaloisAP2BC implements IProcessFunction {
   /**

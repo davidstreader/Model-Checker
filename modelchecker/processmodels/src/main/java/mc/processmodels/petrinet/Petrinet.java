@@ -5,11 +5,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import lombok.*;
+import lombok.SneakyThrows;
 import mc.Constant;
 import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.RelabelElementNode;
@@ -22,6 +18,9 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.util.Location;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 //@Data
 public class Petrinet extends ProcessModelObject implements ProcessModel {
   public static final String DEFAULT_OWNER = "_default";
@@ -33,19 +32,11 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
    */
   public Map<String, String> nameMap = new HashMap<>();
 
-  @Getter
-  @Setter
   private Map<String, PetriNetPlace> places = new HashMap<>();
-  @Getter
-  @Setter
   private Map<String, PetriNetTransition> transitions = new HashMap<>();
   //Map from alphabet to transition with that label USED in parallel composition
-  @Getter
-  @Setter
   private Multimap<String, PetriNetTransition> alphabet = ArrayListMultimap.create();
 
-  @Getter
-  @Setter
   private List<Set<String>> roots = new ArrayList<>();
 
   public void clearRoots() {
@@ -55,37 +46,18 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   /*
   Symbolic data
    */
-  @Getter
-  @Setter
   private Map<String, String> rootEvaluation = new TreeMap<>();
-  @Getter
-  @Setter
   private List<Set<String>> ends = new ArrayList<>();
   //private List<Set<String>> rootNames = new ArrayList<>();
   //private Set<PetriNetPlace> root ;
-  @Getter
-  @Setter
   private Map<String, PetriNetEdge> edges = new HashMap<>();
-  @Getter
-  @Setter
   private Set<RelabelElementNode> relabels = new HashSet<>();
-  @Getter
-  @Setter
   private Multimap<String, String> combinationsTable = ArrayListMultimap.create(); // Glue function owners map
-  @Getter
-  @Setter
   private HidingNode hiding;
-  @Getter
-  @Setter
   private Set<String> hiddenVariables = new HashSet<>();
-  @Getter
-  @Setter
   private Location hiddenVariablesLocation;  //Location in code
-  @Getter
-  @Setter
   private Set<String> owners = new HashSet<>();  // for nd nets should be List<Set<String>>
 
-  @Setter
   private boolean sequential = false;
 
   public boolean isSequential() { return sequential;}
@@ -94,33 +66,18 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   Needed when gluingPlaces
      must be set in GlueOwners  (think event Refinement)
    */
-  @Getter
-  @Setter
   private Map<String, String> variable2Owner = new TreeMap<>();
-  @Getter
-  @Setter
   private Location location;
-  @Getter
-  @Setter
   private String id;
-  @Getter
-  @Setter
   private int placeId = 0;
 
   /*
      Symbolic variables
    */
-  @Getter
-  @Setter
   private int transitionId = 0;
-  @Getter
-  @Setter
   private int edgeId = 0;
-  @Getter
-  @Setter
   private int ownersId = 0;
   //Side effect for gluePlaces
-  @Getter
   private Multimap<PetriNetPlace, PetriNetPlace> allProducts = ArrayListMultimap.create();
 
   public Petrinet(String id) {
@@ -2151,5 +2108,173 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   @Override
   public Petrinet copy() throws CompilationException {
     return (Petrinet) super.copy();
+  }
+
+  public Map<String, PetriNetPlace> getPlaces() {
+    return this.places;
+  }
+
+  public Map<String, PetriNetTransition> getTransitions() {
+    return this.transitions;
+  }
+
+  public Multimap<String, PetriNetTransition> getAlphabet() {
+    return this.alphabet;
+  }
+
+  public List<Set<String>> getRoots() {
+    return this.roots;
+  }
+
+  public Map<String, String> getRootEvaluation() {
+    return this.rootEvaluation;
+  }
+
+  public List<Set<String>> getEnds() {
+    return this.ends;
+  }
+
+  public Map<String, PetriNetEdge> getEdges() {
+    return this.edges;
+  }
+
+  public Set<RelabelElementNode> getRelabels() {
+    return this.relabels;
+  }
+
+  public Multimap<String, String> getCombinationsTable() {
+    return this.combinationsTable;
+  }
+
+  public HidingNode getHiding() {
+    return this.hiding;
+  }
+
+  public Set<String> getHiddenVariables() {
+    return this.hiddenVariables;
+  }
+
+  public Location getHiddenVariablesLocation() {
+    return this.hiddenVariablesLocation;
+  }
+
+  public Set<String> getOwners() {
+    return this.owners;
+  }
+
+  public Map<String, String> getVariable2Owner() {
+    return this.variable2Owner;
+  }
+
+  public Location getLocation() {
+    return this.location;
+  }
+
+  public String getId() {
+    return this.id;
+  }
+
+  public int getPlaceId() {
+    return this.placeId;
+  }
+
+  public int getTransitionId() {
+    return this.transitionId;
+  }
+
+  public int getEdgeId() {
+    return this.edgeId;
+  }
+
+  public int getOwnersId() {
+    return this.ownersId;
+  }
+
+  public Multimap<PetriNetPlace, PetriNetPlace> getAllProducts() {
+    return this.allProducts;
+  }
+
+  public void setPlaces(Map<String, PetriNetPlace> places) {
+    this.places = places;
+  }
+
+  public void setTransitions(Map<String, PetriNetTransition> transitions) {
+    this.transitions = transitions;
+  }
+
+  public void setAlphabet(Multimap<String, PetriNetTransition> alphabet) {
+    this.alphabet = alphabet;
+  }
+
+  public void setRoots(List<Set<String>> roots) {
+    this.roots = roots;
+  }
+
+  public void setRootEvaluation(Map<String, String> rootEvaluation) {
+    this.rootEvaluation = rootEvaluation;
+  }
+
+  public void setEnds(List<Set<String>> ends) {
+    this.ends = ends;
+  }
+
+  public void setEdges(Map<String, PetriNetEdge> edges) {
+    this.edges = edges;
+  }
+
+  public void setRelabels(Set<RelabelElementNode> relabels) {
+    this.relabels = relabels;
+  }
+
+  public void setCombinationsTable(Multimap<String, String> combinationsTable) {
+    this.combinationsTable = combinationsTable;
+  }
+
+  public void setHiding(HidingNode hiding) {
+    this.hiding = hiding;
+  }
+
+  public void setHiddenVariables(Set<String> hiddenVariables) {
+    this.hiddenVariables = hiddenVariables;
+  }
+
+  public void setHiddenVariablesLocation(Location hiddenVariablesLocation) {
+    this.hiddenVariablesLocation = hiddenVariablesLocation;
+  }
+
+  public void setOwners(Set<String> owners) {
+    this.owners = owners;
+  }
+
+  public void setSequential(boolean sequential) {
+    this.sequential = sequential;
+  }
+
+  public void setVariable2Owner(Map<String, String> variable2Owner) {
+    this.variable2Owner = variable2Owner;
+  }
+
+  public void setLocation(Location location) {
+    this.location = location;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public void setPlaceId(int placeId) {
+    this.placeId = placeId;
+  }
+
+  public void setTransitionId(int transitionId) {
+    this.transitionId = transitionId;
+  }
+
+  public void setEdgeId(int edgeId) {
+    this.edgeId = edgeId;
+  }
+
+  public void setOwnersId(int ownersId) {
+    this.ownersId = ownersId;
   }
 }

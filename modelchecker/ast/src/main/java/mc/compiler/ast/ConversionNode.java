@@ -1,16 +1,10 @@
 package mc.compiler.ast;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import lombok.Getter;
-import lombok.ToString;
 import mc.util.Location;
 
-@ToString
+import java.util.*;
+
 public class ConversionNode extends ASTNode {
 
   public static final Set validConversions = ImmutableSet.of("automata","petrinet");
@@ -24,7 +18,6 @@ public class ConversionNode extends ASTNode {
   public final String from;
   public final String to;
 
-  @Getter
   private ASTNode process;
 
   /**
@@ -38,5 +31,13 @@ public class ConversionNode extends ASTNode {
     this.from = from;
     this.to = to;
     this.process = process;
+  }
+
+  public String toString() {
+    return "ConversionNode(from=" + this.from + ", to=" + this.to + ", process=" + this.process + ")";
+  }
+
+  public ASTNode getProcess() {
+    return this.process;
   }
 }

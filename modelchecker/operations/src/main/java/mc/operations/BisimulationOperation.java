@@ -1,8 +1,5 @@
 package mc.operations;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.Constant;
@@ -11,6 +8,9 @@ import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.utils.PetriColouring;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class BisimulationOperation implements IOperationInfixFunction {
 

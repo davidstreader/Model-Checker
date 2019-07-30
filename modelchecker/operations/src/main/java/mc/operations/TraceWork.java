@@ -1,11 +1,9 @@
 package mc.operations;
 
 import com.microsoft.z3.Context;
-import lombok.Getter;
 import mc.Constant;
 import mc.TraceType;
 import mc.exceptions.CompilationException;
-//import mc.operations.functions.AbstractionFunction;
 import mc.operations.functions.AbstractionFunction;
 import mc.operations.functions.Nfa2dfaWorks;
 import mc.processmodels.ProcessModel;
@@ -14,6 +12,8 @@ import mc.processmodels.automata.AutomatonNode;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+//import mc.operations.functions.AbstractionFunction;
 
 public class TraceWork {
   Nd2NextMap a1Next = new Nd2NextMap();
@@ -238,7 +238,6 @@ public class TraceWork {
   }
 
 
-  @Getter
   public static class NodePair {
     AutomatonNode first;
     AutomatonNode second;
@@ -257,9 +256,16 @@ public class TraceWork {
       return np.getFirst().getId().equals(this.getFirst().getId()) &&
         np.getSecond().getId().equals(this.getSecond().getId());
     }
+
+    public AutomatonNode getFirst() {
+      return this.first;
+    }
+
+    public AutomatonNode getSecond() {
+      return this.second;
+    }
   }
 
-  @Getter
   public static class NextComponent implements Comparable<NextComponent> {
     public AutomatonNode to;
     public String action;
@@ -294,6 +300,13 @@ public class TraceWork {
       return action + " " + to.getId();
     }
 
+    public AutomatonNode getTo() {
+      return this.to;
+    }
+
+    public String getAction() {
+      return this.action;
+    }
   }
 
   public static class Nd2NextMap {  //Usefull debugging mystring
@@ -330,7 +343,6 @@ public class TraceWork {
     NextMap maps a label to the Automaton node its leads to
     OR STOP to itself
    */
-  @Getter
   public static class NextMap {
 
     Map<String, AutomatonNode> ncs = new TreeMap<>();
@@ -356,6 +368,10 @@ public class TraceWork {
         else sb.append(key + "->" + ncs.get(key).getId() + ", ");
       }
       return sb.toString();
+    }
+
+    public Map<String, AutomatonNode> getNcs() {
+      return this.ncs;
     }
   }
 

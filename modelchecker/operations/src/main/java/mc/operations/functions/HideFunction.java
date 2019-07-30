@@ -1,16 +1,14 @@
 package mc.operations.functions;
 
 import com.microsoft.z3.Context;
-
-import java.util.*;
-
 import mc.Constant;
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
+
+import java.util.*;
 
 public class HideFunction implements IProcessFunction {
   /**

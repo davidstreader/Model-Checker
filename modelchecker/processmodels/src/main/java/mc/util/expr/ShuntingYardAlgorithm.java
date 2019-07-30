@@ -1,16 +1,10 @@
 package mc.util.expr;
 
 import com.microsoft.z3.*;
-
-import java.util.Arrays;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
+
+import java.util.*;
 
 public class ShuntingYardAlgorithm {
 

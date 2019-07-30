@@ -1,7 +1,5 @@
 package mc.processmodels.automata.operations;
 
-import java.util.*;
-import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import mc.Constant;
 import mc.exceptions.CompilationException;
@@ -11,6 +9,9 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
 import mc.util.expr.MyAssert;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PetrinetParallelFunction  {
 
@@ -32,7 +33,8 @@ public class PetrinetParallelFunction  {
     MyAssert.validate(p1,"|| precondition Failure");
     MyAssert.validate(p2,"|| precondition Failure");
     System.out.println("     PETRINET PARALLELFUNCTION"+" "+p1.getId()+" ||"+flags+" "+p2.getId());
-
+      //System.out.println("PARAllel in "+p1.myString());
+      //System.out.println("PARAllel in "+p2.myString());
    //builds synchronisedActions set
     setupActions(p1, p2,flags);
     //System.out.println("  synchronisedActions "+synchronisedActions);
@@ -57,7 +59,9 @@ public class PetrinetParallelFunction  {
     //System.out.println("AfterSYNC END " +composition.myString());
 
 
+    /*  This is buggy and should be redundent as tokenRule -> Owners Rule does this
     composition = PetrinetReachability.removeUnreachableStates(composition, false);
+     */
     //System.out.println("  synced  \n "+ composition.myString("edges"));
     // One end of a pair removed
      composition.reId("");
@@ -150,7 +154,7 @@ public class PetrinetParallelFunction  {
       Set<PetriNetTransition> p1P = new TreeSet<>();
       Set<PetriNetTransition> p2P = new TreeSet<>();
       List<PetriNetTransition> toGo = new ArrayList<>();
-      //System.out.println("  action = "+action+ "");
+      //System.out.println("      action = "+action+ "");
       if (action.endsWith(Constant.BROADCASTSoutput)) {
         String sync = action.substring(0, action.length() - 1)+Constant.BROADCASTSinput;
         //System.out.println("Bcast sync = "+sync);
@@ -177,6 +181,7 @@ public class PetrinetParallelFunction  {
           .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
         p2P = p2.getAlphabet().get(sync).stream()
           .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
+   //System.out.println("  alpa1 "+p1P+ "\n  alpa2 "+p2P);
         toGo.addAll(p2P.stream().collect(Collectors.toSet()));
         toGo.addAll(p1P.stream().collect(Collectors.toSet()));
         replaceActions(p1P, p2P, comp, action, true);  //active in p1P
@@ -187,6 +192,7 @@ public class PetrinetParallelFunction  {
         toGo.addAll(p2P.stream().collect(Collectors.toSet()));
         toGo.addAll(p1P.stream().collect(Collectors.toSet()));
         replaceActions(p2P, p1P, comp, action, true);  //active in p2P
+          //System.out.println("Sync replace END " +comp.myString());
       } else {
         //do nothing
       }

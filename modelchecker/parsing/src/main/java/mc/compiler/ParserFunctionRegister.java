@@ -1,12 +1,10 @@
 package mc.compiler;
 
-import static mc.util.Utils.instantiateClass;
-
-import java.util.logging.Logger;
-import mc.compiler.interpreters.InterpreterFunctionRegister;
 import mc.plugins.IOperationInfixFunction;
 import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
+
+import static mc.util.Utils.instantiateClass;
 
 public class ParserFunctionRegister {
 

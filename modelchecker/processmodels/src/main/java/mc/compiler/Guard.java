@@ -1,25 +1,10 @@
 package mc.compiler;
 
-import static mc.util.expr.Expression.equate;
-import static mc.util.expr.Expression.getContextFrom;
-import static mc.util.expr.Expression.isSolvable;
-import static mc.util.expr.Expression.substitute;
-
 import com.google.common.base.Objects;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.rits.cloning.Cloner;
-import java.io.Serializable;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.AutomatonNode;
 import mc.util.Location;
@@ -27,37 +12,48 @@ import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
 
-@Setter  // build all setters?
-@AllArgsConstructor
-@ToString
-@NoArgsConstructor
+import java.io.Serializable;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static mc.util.expr.Expression.*;
+
+// build all setters?
 public class Guard implements Serializable {
 
   // this is the boolean guard for input to Z3
-  @Getter
   BoolExpr guard;
 
   /**
    * the field variables is actually an evaluation, a variable 2 literal mapping
    * used for variables that are not symbolic (root evaluation held on Petrinet)
    */
-  @Getter
   Map<String, Integer> variables = new HashMap<>();
 
   // next Assignment "i:=2"  Only needed for symbolic variables
-  @Getter
   List<String> next = new ArrayList<>();
 
   // nextMap Assignment $v5 -> $i-1,  $v6 -> $j+1 Only needed for hidden variables"
-  @Getter
   Map<String, String> nextMap = new HashMap<>();
 
-  @Getter
   private boolean shouldDisplay = false;
   private Set<String> symbolicVariables = new HashSet<>();
-  @Setter
-  @Getter
   private Map<String, Expr> globalVariableMap = new HashMap<>();
+
+  public Guard(BoolExpr guard, Map<String, Integer> variables, List<String> next, Map<String, String> nextMap, boolean shouldDisplay, Set<String> symbolicVariables, Map<String, Expr> globalVariableMap) {
+    this.guard = guard;
+    this.variables = variables;
+    this.next = next;
+    this.nextMap = nextMap;
+    this.shouldDisplay = shouldDisplay;
+    this.symbolicVariables = symbolicVariables;
+    this.globalVariableMap = globalVariableMap;
+  }
+
+  public Guard() {
+  }
+
   /**
    * Get the guard as a string, used for serialization.
    *
@@ -327,5 +323,61 @@ System.out.print("parseNext "+ myString()+"\n"); */
   @Override
   public int hashCode() {
     return Objects.hashCode(variables, next, nextMap, shouldDisplay, symbolicVariables);
+  }
+
+  public void setGuard(BoolExpr guard) {
+    this.guard = guard;
+  }
+
+  public void setVariables(Map<String, Integer> variables) {
+    this.variables = variables;
+  }
+
+  public void setNext(List<String> next) {
+    this.next = next;
+  }
+
+  public void setNextMap(Map<String, String> nextMap) {
+    this.nextMap = nextMap;
+  }
+
+  public void setShouldDisplay(boolean shouldDisplay) {
+    this.shouldDisplay = shouldDisplay;
+  }
+
+  public void setSymbolicVariables(Set<String> symbolicVariables) {
+    this.symbolicVariables = symbolicVariables;
+  }
+
+  public String toString() {
+    return "Guard(guard=" + this.guard + ", variables=" + this.variables + ", next=" + this.next + ", nextMap=" + this.nextMap + ", shouldDisplay=" + this.shouldDisplay + ", symbolicVariables=" + this.symbolicVariables + ", globalVariableMap=" + this.globalVariableMap + ")";
+  }
+
+  public BoolExpr getGuard() {
+    return this.guard;
+  }
+
+  public Map<String, Integer> getVariables() {
+    return this.variables;
+  }
+
+  public List<String> getNext() {
+    return this.next;
+  }
+
+  public Map<String, String> getNextMap() {
+    return this.nextMap;
+  }
+
+  public boolean isShouldDisplay() {
+    return this.shouldDisplay;
+  }
+
+  public Map<String, Expr> getGlobalVariableMap() {
+    return this.globalVariableMap;
+  }
+
+  public void setGlobalVariableMap(Map<String, Expr> globalVariableMap) {
+    this.globalVariableMap = globalVariableMap;
   }
 }

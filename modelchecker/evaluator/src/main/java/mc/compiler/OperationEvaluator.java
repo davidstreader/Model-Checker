@@ -1,14 +1,6 @@
 package mc.compiler;
 
-import static mc.util.Utils.instantiateClass;
-
 import com.microsoft.z3.Context;
-
-import java.lang.reflect.Array;
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.stream.Collectors;
-
 import mc.Constant;
 import mc.compiler.ast.*;
 import mc.compiler.interpreters.AutomatonInterpreter;
@@ -16,14 +8,15 @@ import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
-
-import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.conversion.TokenRule;
-import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.petrinet.Petrinet;
-import mc.Constant;
 import mc.util.LogMessage;
+
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+
+import static mc.util.Utils.instantiateClass;
 
 /**
  * Created by sheriddavi on 27/01/17.

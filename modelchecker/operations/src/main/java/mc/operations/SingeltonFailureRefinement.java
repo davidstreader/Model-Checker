@@ -1,18 +1,19 @@
 package mc.operations;
 
-  import java.util.*;
-  import java.util.stream.Collectors;
+import com.google.common.collect.ImmutableSet;
+import com.microsoft.z3.Context;
+import mc.Constant;
+import mc.TraceType;
+import mc.exceptions.CompilationException;
+import mc.operations.TraceWork.Nd2NextMap;
+import mc.plugins.IOperationInfixFunction;
+import mc.processmodels.ProcessModel;
+import mc.processmodels.automata.AutomatonNode;
 
-  import com.google.common.collect.ImmutableSet;
-  import com.microsoft.z3.Context;
+import java.util.*;
+import java.util.stream.Collectors;
+
 //import mc.BuildAcceptanceGraphs;
-  import mc.Constant;
-  import mc.TraceType;
-  import mc.exceptions.CompilationException;
-  import mc.plugins.IOperationInfixFunction;
-  import mc.processmodels.ProcessModel;
-  import mc.processmodels.automata.AutomatonNode;
-  import mc.operations.TraceWork.Nd2NextMap;
 
 /**
  * Failure refinement differs from failure equality only in the initial coloring used

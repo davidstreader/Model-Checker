@@ -1,11 +1,7 @@
 package mc.compiler.token;
 
-  import lombok.Data;
-  import lombok.EqualsAndHashCode;
-  import mc.util.Location;
+import mc.util.Location;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class AlphabetToken extends Token {
 
   public AlphabetToken(Location location){
@@ -15,5 +11,23 @@ public class AlphabetToken extends Token {
   @Override
   public String toString(){
     return "alphabet";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof AlphabetToken)) return false;
+    final AlphabetToken other = (AlphabetToken) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof AlphabetToken;
+  }
+
+  public int hashCode() {
+    int result = super.hashCode();
+    return result;
   }
 }

@@ -1,7 +1,5 @@
 package mc.compiler.ast;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 /**
@@ -15,8 +13,6 @@ import mc.util.Location;
  * @see ASTNode
  * @see RangesNode
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class IndexExpNode extends ASTNode {
 
   /**
@@ -58,5 +54,67 @@ public class IndexExpNode extends ASTNode {
     if (range!=null) sb.append( range.toString());  // not sure what type this ASTNode is?
      sb.append("end of IEN");
     return sb.toString();
+  }
+
+  public String getVariable() {
+    return this.variable;
+  }
+
+  public ASTNode getRange() {
+    return this.range;
+  }
+
+  public ASTNode getProcess() {
+    return this.process;
+  }
+
+  public void setVariable(String variable) {
+    this.variable = variable;
+  }
+
+  public void setRange(ASTNode range) {
+    this.range = range;
+  }
+
+  public void setProcess(ASTNode process) {
+    this.process = process;
+  }
+
+  public String toString() {
+    return "IndexExpNode(variable=" + this.getVariable() + ", range=" + this.getRange() + ", process=" + this.getProcess() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof IndexExpNode)) return false;
+    final IndexExpNode other = (IndexExpNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$variable = this.getVariable();
+    final Object other$variable = other.getVariable();
+    if (this$variable == null ? other$variable != null : !this$variable.equals(other$variable)) return false;
+    final Object this$range = this.getRange();
+    final Object other$range = other.getRange();
+    if (this$range == null ? other$range != null : !this$range.equals(other$range)) return false;
+    final Object this$process = this.getProcess();
+    final Object other$process = other.getProcess();
+    if (this$process == null ? other$process != null : !this$process.equals(other$process)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof IndexExpNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $variable = this.getVariable();
+    result = result * PRIME + ($variable == null ? 43 : $variable.hashCode());
+    final Object $range = this.getRange();
+    result = result * PRIME + ($range == null ? 43 : $range.hashCode());
+    final Object $process = this.getProcess();
+    result = result * PRIME + ($process == null ? 43 : $process.hashCode());
+    return result;
   }
 }

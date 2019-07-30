@@ -3,13 +3,6 @@ package mc.compiler;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
-
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
 import mc.compiler.iterator.RangeIterator;
@@ -19,6 +12,12 @@ import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
+
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Expander {
 
@@ -157,7 +156,7 @@ public class Expander {
     forAllLocalProcesses.clear();
 
 
-    System.out.println("Ending Expand " + process.myString());
+    //System.out.println("Ending Expand " + process.myString());
     return process;
   }
 
@@ -173,7 +172,7 @@ public class Expander {
     //System.out.println("expand Locals ");
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     for (LocalProcessNode localProcess : localProcesses) {
-      System.out.println(" expandLocalProcesses start "+ localProcess.myString());
+      //System.out.println(" expandLocalProcesses start "+ localProcess.myString());
       if (localProcess.getRanges() == null) {
         ASTNode root = expand(localProcess.getProcess(), variableMap, context);
         localProcess.setProcess(root);
@@ -182,8 +181,9 @@ public class Expander {
         newLocalProcesses.addAll(expandLocalProcesse_5(localProcess, variableMap, localProcess.getRanges().getRanges(), 0, context));
       }
     }
-    System.out.println(" expandLocalProcesses ends ");
-    newLocalProcesses.stream().forEach(x->System.out.println("   "+x.myString()+"\n"));
+    //System.out.println(" expandLocalProcesses ends ");
+     // newLocalProcesses.stream().forEach(x->System.out.println(" expLP  "+x.myString()+"\n"));
+
     return newLocalProcesses;
   }
 
@@ -199,7 +199,7 @@ public class Expander {
                                                      List<IndexExpNode> ranges, int index,
                                                      Context context)
     throws CompilationException, InterruptedException {
-    System.out.println("expand Local "+localProcess.myString()+ " index " + index+"\n ranges "+ranges.stream().map(x->x.myString()).collect(Collectors.joining(",   ")));
+    //System.out.println("expand Local "+localProcess.myString()+ " index " + index+"\n ranges "+ranges.stream().map(x->x.myString()).collect(Collectors.joining(",   ")));
 
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     if (index < ranges.size()) {
@@ -208,16 +208,17 @@ public class Expander {
       String variable = range.getVariable();
       if (!symbolicVariables.contains(variable.substring(1))) { // &&
     //      !localProcess.getRanges().getRanges().stream().map(x->x.getVariable()).collect(Collectors.toSet()).contains(variable.substring(1))) {
-        System.out.println("Symbolic");
-        //localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
+        //System.out.println("Symbolic_5 "+ variable);
+        //Works for indexing outside of forall
+        localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
         //this will add the identifier for expansion and remove the Range?
-        localProcess.setIdentifierOnce(variable);
+       // localProcess.setIdentifierOnce(variable);
         while (iterator.hasNext()) {
           variableMap.put(variable, iterator.next()); // variable->Value
           newLocalProcesses.addAll(expandLocalProcesse_5((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1, context));
         }
       } else { // $i is a hidden variable in  C${i}.
-        System.out.println("Not Symbolic");
+        //System.out.println("Not Symbolic_5");
         localProcess.setIdentifierOnce(variable);
         //localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
         newLocalProcesses.addAll(expandLocalProcesse_5((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1, context));
@@ -230,6 +231,7 @@ public class Expander {
       clone.setProcess(root);
       newLocalProcesses.add(clone);
     }
+    //System.out.println("expandLocalProcesse_5 ends with");
     //System.out.println("newLocal "+newLocalProcesses.stream().map(x->x.myString()+" ").collect(Collectors.joining()));
     return newLocalProcesses;
   }
@@ -506,7 +508,7 @@ public class Expander {
   }
 
   private ASTNode expand(ForAllStatementNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
-    System.out.println("EXPANDER Z0 ForAllStatementNode " + forAllId + "\n   " + astNode.myString());
+    //System.out.println("EXPANDER Z0 ForAllStatementNode " + forAllId + "\n   " + astNode.myString());
     CompositeNode out = null;
     IdentifierNode idn = null;
     boolean once = true;
@@ -517,14 +519,14 @@ public class Expander {
 /// the Integer is the value  the variable has been instntiated to
     //String vm = variableMap.keySet().stream().map(n -> n+"->"+variableMap.get(n).toString()).collect(Collectors.joining(", "));
     //System.out.println("ForAll 1  vm = "+vm);
-    System.out.println(" STARTing inner expantion of  "+astNode.getProcess().myString());
+    //System.out.println(" STARTing inner expantion of  "+astNode.getProcess().myString());
 
     //Nested forall recursive call tweak the names!
     Map<Integer, ASTNode> nodes = expand(astNode.getProcess(), variableMap, astNode.getRanges().getRanges(), context);
 
     String vm = variableMap.keySet().stream().map(n -> n+"->"+variableMap.get(n).toString()).collect(Collectors.joining(", "));
     String o = nodes.values().stream().map(n -> n.myString()).collect(Collectors.joining(", "));
-    System.out.println("ForAll expanded nodes = "+o+ "  \n vm = "+vm);
+    //System.out.println("ForAll expanded nodes = "+o+ "  \n vm = "+vm);
 
     // Build local processes and Process that is their Parallel conp
     RangesNode rEmpty = new RangesNode(new ArrayList<>(),astNode.getLocation());
@@ -564,14 +566,14 @@ public class Expander {
             break;
           }
         //if (once) { // Once only expand and process local to ForAllS
-          System.out.println("ONCE");
+          //System.out.println("ONCE");
           //once = false;
           List<LocalProcessNode> localExpanded =
             expandLocalProcesses(astNode.getLocalProcesses(), variableMap, context);
           forAllLocalProcesses.addAll(localExpanded);
           if (forAllLocalProcesses.size() > 0) {
-            System.out.println("Expanded ForAll LOCAL local processes");
-            System.out.println(forAllLocalProcesses.stream().map(x -> "  " + x.myString()).collect(Collectors.joining(" ,")));
+            //System.out.println("Expanded ForAll LOCAL local processes");
+            //System.out.println(forAllLocalProcesses.stream().map(x -> "  " + x.myString()).collect(Collectors.joining(" ,")));
           }
        // }
       }
@@ -590,7 +592,7 @@ public class Expander {
            the global process
        */
      String ls = forAllLocalProcesses.stream().map(x->"  "+x.myString()+"\n").collect(Collectors.joining());
-    System.out.println("EXPANDER ENDs with "+ " " + out.myString()+"\n" + ls );
+    //System.out.println("forAll EXPANDER ENDs with "+ " " + out.myString()+"\n" + ls );
     return out;
   }
 
@@ -603,7 +605,7 @@ public class Expander {
                                        List<IndexExpNode> ranges, Context context) throws CompilationException, InterruptedException {
     Map<Integer, ASTNode> nodes = new TreeMap<>();
     ASTNode ps = process.copy();
-    //System.out.println("EXPAND 4all  process " + process.myString());
+    //System.out.println("EXPAND 4all  process " + ps.myString());
     int ir = 0;
     for (int ix = 0; ix < ranges.size(); ix++) {// more than one range
 
@@ -620,14 +622,14 @@ public class Expander {
         }
         variableMap.put(variable, ir);
         //System.out.println(variableMap.keySet().stream().map(x->x+"->"+variableMap.get(x).toString()).collect(Collectors.joining(", ")));
-
+          //System.out.println("    iterating input " + ps.myString());
         ASTNode psNew = expand(ps.copy(), variableMap, context);
-        //System.out.println(" while ir = " + ir + " expanded into ps " + psNew.myString());
+        //System.out.println( "   iterating output ps " + psNew.myString() +" while ir = " + ir );
         nodes.put(ir, psNew);
         ir++;
       }
     }
-    //String o = nodes.values().stream().map(n -> n.myString()).collect(Collectors.joining(", "));
+    String o = nodes.values().stream().map(n -> n.myString()).collect(Collectors.joining(", "));
     //System.out.println(" EXPAND 4all RETURNS map \n    " + o);
     return nodes;
 

@@ -3,19 +3,21 @@ package mc.compiler;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-@Data
-@NoArgsConstructor
 public class ProcessHierarchy {
 
     private final Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
 
-    /**
+  public ProcessHierarchy() {
+  }
+
+  /**
      * This method finds what processes may be built based on dependencies found during reference replacement
      *
      * @param builtProcesses the processes that have already been built
@@ -50,4 +52,36 @@ public class ProcessHierarchy {
         dependenciesSet.remove(string);
         return dependenciesSet;
     }
+
+  public Multimap<String, String> getDependencies() {
+    return this.dependencies;
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof ProcessHierarchy)) return false;
+    final ProcessHierarchy other = (ProcessHierarchy) o;
+    if (!other.canEqual((Object) this)) return false;
+    final Object this$dependencies = this.getDependencies();
+    final Object other$dependencies = other.getDependencies();
+    if (this$dependencies == null ? other$dependencies != null : !this$dependencies.equals(other$dependencies))
+      return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof ProcessHierarchy;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    final Object $dependencies = this.getDependencies();
+    result = result * PRIME + ($dependencies == null ? 43 : $dependencies.hashCode());
+    return result;
+  }
+
+  public String toString() {
+    return "ProcessHierarchy(dependencies=" + this.getDependencies() + ")";
+  }
 }

@@ -2,10 +2,6 @@ package mc.operations.functions.infix;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
@@ -14,6 +10,11 @@ import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.automata.operations.ChoiceFun;
 import mc.processmodels.petrinet.Petrinet;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ChoiceInfixFunction implements IProcessInfixFunction {
 

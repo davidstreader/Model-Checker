@@ -1,7 +1,5 @@
 package mc.operations;
 
-import java.util.*;
-
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.Constant;
@@ -10,6 +8,8 @@ import mc.operations.functions.AbstractionFunction;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
+
+import java.util.*;
 
 
 /**

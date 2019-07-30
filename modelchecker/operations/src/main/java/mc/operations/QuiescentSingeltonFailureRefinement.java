@@ -1,8 +1,5 @@
 package mc.operations;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.Constant;
@@ -14,6 +11,9 @@ import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunction {
   /**

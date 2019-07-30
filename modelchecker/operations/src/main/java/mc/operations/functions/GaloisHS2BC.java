@@ -2,11 +2,6 @@ package mc.operations.functions;
 
 import com.google.common.collect.Multiset;
 import com.microsoft.z3.Context;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
@@ -17,6 +12,9 @@ import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GaloisHS2BC implements IProcessFunction {
   /**

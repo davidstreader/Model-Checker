@@ -1,20 +1,21 @@
 package mc.operations.functions.infix;
 
-import lombok.Value;
 import mc.exceptions.CompilationException;
 import mc.operations.impl.AutomataParallelFunction;
-import mc.processmodels.automata.operations.PetrinetParallelFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.operations.AutomataReachability;
+import mc.processmodels.automata.operations.PetrinetParallelFunction;
 import mc.processmodels.petrinet.Petrinet;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-@Value
-public class InfixParallelFunction implements IProcessInfixFunction {
+public final class InfixParallelFunction implements IProcessInfixFunction {
+
+  public InfixParallelFunction() {
+  }
 
   /**
    * A method of tracking the function.
@@ -25,7 +26,7 @@ public class InfixParallelFunction implements IProcessInfixFunction {
   public String getFunctionName() {
     return "Parallel";
   }
-  Set<String> valid = Collections.singleton("*");
+  private final Set<String> valid = Collections.singleton("*");
   @Override
   public Collection<String> getValidFlags(){return valid;}
   /**
@@ -71,5 +72,31 @@ public class InfixParallelFunction implements IProcessInfixFunction {
   public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2, Set<String> flags) throws CompilationException {
     //System.out.println("infixparallel "+flags);
     return PetrinetParallelFunction.compose(petrinet1,petrinet2,flags);
+  }
+
+  public Set<String> getValid() {
+    return this.valid;
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof InfixParallelFunction)) return false;
+    final InfixParallelFunction other = (InfixParallelFunction) o;
+    final Object this$valid = this.getValid();
+    final Object other$valid = other.getValid();
+    if (this$valid == null ? other$valid != null : !this$valid.equals(other$valid)) return false;
+    return true;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    final Object $valid = this.getValid();
+    result = result * PRIME + ($valid == null ? 43 : $valid.hashCode());
+    return result;
+  }
+
+  public String toString() {
+    return "InfixParallelFunction(valid=" + this.getValid() + ")";
   }
 }

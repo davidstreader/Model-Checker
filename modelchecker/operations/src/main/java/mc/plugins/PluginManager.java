@@ -1,15 +1,14 @@
 package mc.plugins;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Objects;
-import java.util.logging.Logger;
-
-import lombok.Getter;
 import mc.compiler.EvaluatorFunctionRegister;
 import mc.compiler.ParserFunctionRegister;
 import mc.compiler.interpreters.InterpreterFunctionRegister;
 import mc.util.Utils;
 import org.reflections.Reflections;
+
+import java.util.Objects;
+import java.util.logging.Logger;
 
 
 public class PluginManager {
@@ -17,7 +16,6 @@ public class PluginManager {
   /**
    * Singleton pattern.
    */
-  @Getter
   private static final PluginManager instance = new PluginManager();
 
   /**
@@ -25,6 +23,10 @@ public class PluginManager {
    * {@code mc.operations} package.
    */
   private final Reflections reflection = new Reflections("mc.operations");
+
+  public static PluginManager getInstance() {
+    return PluginManager.instance;
+  }
 
   /**
    * This retrieves an instance of every single valid function within the

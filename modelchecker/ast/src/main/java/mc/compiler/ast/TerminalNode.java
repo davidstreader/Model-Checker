@@ -1,7 +1,5 @@
 package mc.compiler.ast;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 /**
@@ -15,8 +13,6 @@ import mc.util.Location;
  * @author Jordan Smith
  * @see ASTNode
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class TerminalNode extends ASTNode {
 
   /**
@@ -37,5 +33,37 @@ public class TerminalNode extends ASTNode {
   }
   public String myString(){
     return terminal;
+  }
+
+  public String getTerminal() {
+    return this.terminal;
+  }
+
+  public String toString() {
+    return "TerminalNode(terminal=" + this.getTerminal() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof TerminalNode)) return false;
+    final TerminalNode other = (TerminalNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$terminal = this.getTerminal();
+    final Object other$terminal = other.getTerminal();
+    if (this$terminal == null ? other$terminal != null : !this$terminal.equals(other$terminal)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof TerminalNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $terminal = this.getTerminal();
+    result = result * PRIME + ($terminal == null ? 43 : $terminal.hashCode());
+    return result;
   }
 }

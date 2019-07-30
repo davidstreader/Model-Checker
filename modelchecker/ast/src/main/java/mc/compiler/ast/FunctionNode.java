@@ -2,14 +2,12 @@ package mc.compiler.ast;
 
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Expr;
+import mc.util.Location;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import mc.util.Location;
 
 /**
  * This node manages functions used within the users code.
@@ -26,8 +24,6 @@ import mc.util.Location;
  * @author Jacob Beal
  *  @see ASTNode
  */
-@Data
-@EqualsAndHashCode(callSuper = true, exclude = {"processes", "flags", "prune", "replacements"})
 public class FunctionNode extends ASTNode {
 
   /**
@@ -85,5 +81,73 @@ public class FunctionNode extends ASTNode {
   public FunctionNode instantiate(String from , String to) {
     return new FunctionNode(function,processes.stream().
            map(x->x.instantiate(from,to)).collect(Collectors.toList()), getLocation());
+  }
+
+  public String getFunction() {
+    return this.function;
+  }
+
+  public List<ASTNode> getProcesses() {
+    return this.processes;
+  }
+
+  public ImmutableSet<String> getFlags() {
+    return this.flags;
+  }
+
+  public boolean isPrune() {
+    return this.prune;
+  }
+
+  public Map<String, Expr> getReplacements() {
+    return this.replacements;
+  }
+
+  public void setFunction(String function) {
+    this.function = function;
+  }
+
+  public void setProcesses(List<ASTNode> processes) {
+    this.processes = processes;
+  }
+
+  public void setFlags(ImmutableSet<String> flags) {
+    this.flags = flags;
+  }
+
+  public void setPrune(boolean prune) {
+    this.prune = prune;
+  }
+
+  public void setReplacements(Map<String, Expr> replacements) {
+    this.replacements = replacements;
+  }
+
+  public String toString() {
+    return "FunctionNode(function=" + this.getFunction() + ", processes=" + this.getProcesses() + ", flags=" + this.getFlags() + ", prune=" + this.isPrune() + ", replacements=" + this.getReplacements() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof FunctionNode)) return false;
+    final FunctionNode other = (FunctionNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$function = this.getFunction();
+    final Object other$function = other.getFunction();
+    if (this$function == null ? other$function != null : !this$function.equals(other$function)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof FunctionNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $function = this.getFunction();
+    result = result * PRIME + ($function == null ? 43 : $function.hashCode());
+    return result;
   }
 }

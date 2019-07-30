@@ -1,7 +1,5 @@
 package mc.compiler.ast;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 
@@ -18,8 +16,6 @@ import mc.util.Location;
  * @see CompositeNode
  * @see
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class ProcessRootNode extends ASTNode {
 
   /**
@@ -108,5 +104,80 @@ public class ProcessRootNode extends ASTNode {
     if (hiding!=null) sb.append(" h "+hiding.myString() );
     if (relabelSet!=null) sb.append(" r "+relabelSet.myString() );
     return sb.toString();
+  }
+
+  public ASTNode getProcess() {
+    return this.process;
+  }
+
+  public String getLabel() {
+    return this.label;
+  }
+
+  public RelabelNode getRelabelSet() {
+    return this.relabelSet;
+  }
+
+  public HidingNode getHiding() {
+    return this.hiding;
+  }
+
+  public void setProcess(ASTNode process) {
+    this.process = process;
+  }
+
+  public void setLabel(String label) {
+    this.label = label;
+  }
+
+  public void setRelabelSet(RelabelNode relabelSet) {
+    this.relabelSet = relabelSet;
+  }
+
+  public void setHiding(HidingNode hiding) {
+    this.hiding = hiding;
+  }
+
+  public String toString() {
+    return "ProcessRootNode(process=" + this.getProcess() + ", label=" + this.getLabel() + ", relabelSet=" + this.getRelabelSet() + ", hiding=" + this.getHiding() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof ProcessRootNode)) return false;
+    final ProcessRootNode other = (ProcessRootNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$process = this.getProcess();
+    final Object other$process = other.getProcess();
+    if (this$process == null ? other$process != null : !this$process.equals(other$process)) return false;
+    final Object this$label = this.getLabel();
+    final Object other$label = other.getLabel();
+    if (this$label == null ? other$label != null : !this$label.equals(other$label)) return false;
+    final Object this$relabelSet = this.getRelabelSet();
+    final Object other$relabelSet = other.getRelabelSet();
+    if (this$relabelSet == null ? other$relabelSet != null : !this$relabelSet.equals(other$relabelSet)) return false;
+    final Object this$hiding = this.getHiding();
+    final Object other$hiding = other.getHiding();
+    if (this$hiding == null ? other$hiding != null : !this$hiding.equals(other$hiding)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof ProcessRootNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $process = this.getProcess();
+    result = result * PRIME + ($process == null ? 43 : $process.hashCode());
+    final Object $label = this.getLabel();
+    result = result * PRIME + ($label == null ? 43 : $label.hashCode());
+    final Object $relabelSet = this.getRelabelSet();
+    result = result * PRIME + ($relabelSet == null ? 43 : $relabelSet.hashCode());
+    final Object $hiding = this.getHiding();
+    result = result * PRIME + ($hiding == null ? 43 : $hiding.hashCode());
+    return result;
   }
 }

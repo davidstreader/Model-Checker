@@ -1,9 +1,5 @@
 package mc.util;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.Serializable;
 
 /**
@@ -12,12 +8,9 @@ import java.io.Serializable;
  * used as map to source code
  *  helpful with error reporting
  */
-@Getter
-@AllArgsConstructor
 public class Location implements Serializable {
 
 	// fields
- @Getter
  private int lineStart;
 	private int colStart;
 	private int lineEnd;
@@ -33,7 +26,41 @@ public class Location implements Serializable {
         this.startIndex = start.getStartIndex();
         this.endIndex = end.getEndIndex();
     }
-	public String toString(){
+
+  public Location(int lineStart, int colStart, int lineEnd, int colEnd, int startIndex, int endIndex) {
+    this.lineStart = lineStart;
+    this.colStart = colStart;
+    this.lineEnd = lineEnd;
+    this.colEnd = colEnd;
+    this.startIndex = startIndex;
+    this.endIndex = endIndex;
+  }
+
+  public String toString(){
 		return "(" + lineStart + ":" + colStart + "-" + lineEnd + ":" + colEnd +")";
 	}
+
+  public int getColStart() {
+    return this.colStart;
+  }
+
+  public int getLineEnd() {
+    return this.lineEnd;
+  }
+
+  public int getColEnd() {
+    return this.colEnd;
+  }
+
+  public int getStartIndex() {
+    return this.startIndex;
+  }
+
+  public int getEndIndex() {
+    return this.endIndex;
+  }
+
+  public int getLineStart() {
+    return this.lineStart;
+  }
 }

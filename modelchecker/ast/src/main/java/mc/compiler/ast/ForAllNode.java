@@ -1,14 +1,9 @@
 package mc.compiler.ast;
 
 
-import com.google.common.collect.ImmutableSet;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * This represents an the quantifier \forall. Used to compute Galois connectons
@@ -19,8 +14,6 @@ import java.util.Set;
  * @see ASTNode
  *
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class ForAllNode extends OperationNode {
 
   private List<String> vars;
@@ -61,6 +54,55 @@ public class ForAllNode extends OperationNode {
 
   public List<String> getBound(){
     return vars;
+  }
+
+  public List<String> getVars() {
+    return this.vars;
+  }
+
+  public OperationNode getOp() {
+    return this.op;
+  }
+
+  public void setVars(List<String> vars) {
+    this.vars = vars;
+  }
+
+  public void setOp(OperationNode op) {
+    this.op = op;
+  }
+
+  public String toString() {
+    return "ForAllNode(vars=" + this.getVars() + ", op=" + this.getOp() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof ForAllNode)) return false;
+    final ForAllNode other = (ForAllNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$vars = this.getVars();
+    final Object other$vars = other.getVars();
+    if (this$vars == null ? other$vars != null : !this$vars.equals(other$vars)) return false;
+    final Object this$op = this.getOp();
+    final Object other$op = other.getOp();
+    if (this$op == null ? other$op != null : !this$op.equals(other$op)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof ForAllNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $vars = this.getVars();
+    result = result * PRIME + ($vars == null ? 43 : $vars.hashCode());
+    final Object $op = this.getOp();
+    result = result * PRIME + ($op == null ? 43 : $op.hashCode());
+    return result;
   }
 }
 

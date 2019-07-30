@@ -1,12 +1,12 @@
 package mc.plugins;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.Stack;
-
 import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
+
+import java.util.Collection;
+import java.util.Set;
+import java.util.Stack;
 
 /*
         This is for ~, =f, <q, ....

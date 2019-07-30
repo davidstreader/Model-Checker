@@ -3,16 +3,13 @@ package mc.compiler.ast;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
+import com.microsoft.z3.Z3Object;
+import com.rits.cloning.Cloner;
+import mc.compiler.ProcessHierarchy;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.microsoft.z3.Z3Object;
-import com.rits.cloning.Cloner;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import mc.compiler.ProcessHierarchy;
 
 /**
  * AbstractSyntaxTree holds a collection of processes, operations and equations to be later used by
@@ -25,9 +22,6 @@ import mc.compiler.ProcessHierarchy;
  * @see OperationNode
  * @see ProcessHierarchy
  */
-@AllArgsConstructor
-@RequiredArgsConstructor
-@Data
 public class AbstractSyntaxTree {
   /**
    * an AST for whole file not just one process
@@ -70,6 +64,23 @@ public class AbstractSyntaxTree {
    * propagation of process types, and may be used in the future for parallel compilation.
    */
   private ProcessHierarchy processHierarchy = null;
+
+  public AbstractSyntaxTree(List<ProcessNode> processes, List<ActionLabelNode> alphabet, List<OperationNode> operations, List<OperationNode> equations, Map<String, Expr> variableMap) {
+    this.processes = processes;
+    this.alphabet = alphabet;
+    this.operations = operations;
+    this.equations = equations;
+    this.variableMap = variableMap;
+  }
+
+  public AbstractSyntaxTree(List<ProcessNode> processes, List<ActionLabelNode> alphabet, List<OperationNode> operations, List<OperationNode> equations, Map<String, Expr> variableMap, ProcessHierarchy processHierarchy) {
+    this.processes = processes;
+    this.alphabet = alphabet;
+    this.operations = operations;
+    this.equations = equations;
+    this.variableMap = variableMap;
+    this.processHierarchy = processHierarchy;
+  }
 
   public String processesToString() {
     String out = "";
@@ -117,5 +128,87 @@ public class AbstractSyntaxTree {
     cloner.dontClone(Expr.class);
     cloner.dontClone(BoolExpr.class);
     return cloner.deepClone(this);
+  }
+
+  public List<ProcessNode> getProcesses() {
+    return this.processes;
+  }
+
+  public List<ActionLabelNode> getAlphabet() {
+    return this.alphabet;
+  }
+
+  public List<OperationNode> getOperations() {
+    return this.operations;
+  }
+
+  public List<OperationNode> getEquations() {
+    return this.equations;
+  }
+
+  public Map<String, Expr> getVariableMap() {
+    return this.variableMap;
+  }
+
+  public ProcessHierarchy getProcessHierarchy() {
+    return this.processHierarchy;
+  }
+
+  public void setProcessHierarchy(ProcessHierarchy processHierarchy) {
+    this.processHierarchy = processHierarchy;
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof AbstractSyntaxTree)) return false;
+    final AbstractSyntaxTree other = (AbstractSyntaxTree) o;
+    if (!other.canEqual((Object) this)) return false;
+    final Object this$processes = this.getProcesses();
+    final Object other$processes = other.getProcesses();
+    if (this$processes == null ? other$processes != null : !this$processes.equals(other$processes)) return false;
+    final Object this$alphabet = this.getAlphabet();
+    final Object other$alphabet = other.getAlphabet();
+    if (this$alphabet == null ? other$alphabet != null : !this$alphabet.equals(other$alphabet)) return false;
+    final Object this$operations = this.getOperations();
+    final Object other$operations = other.getOperations();
+    if (this$operations == null ? other$operations != null : !this$operations.equals(other$operations)) return false;
+    final Object this$equations = this.getEquations();
+    final Object other$equations = other.getEquations();
+    if (this$equations == null ? other$equations != null : !this$equations.equals(other$equations)) return false;
+    final Object this$variableMap = this.getVariableMap();
+    final Object other$variableMap = other.getVariableMap();
+    if (this$variableMap == null ? other$variableMap != null : !this$variableMap.equals(other$variableMap))
+      return false;
+    final Object this$processHierarchy = this.getProcessHierarchy();
+    final Object other$processHierarchy = other.getProcessHierarchy();
+    if (this$processHierarchy == null ? other$processHierarchy != null : !this$processHierarchy.equals(other$processHierarchy))
+      return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof AbstractSyntaxTree;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    final Object $processes = this.getProcesses();
+    result = result * PRIME + ($processes == null ? 43 : $processes.hashCode());
+    final Object $alphabet = this.getAlphabet();
+    result = result * PRIME + ($alphabet == null ? 43 : $alphabet.hashCode());
+    final Object $operations = this.getOperations();
+    result = result * PRIME + ($operations == null ? 43 : $operations.hashCode());
+    final Object $equations = this.getEquations();
+    result = result * PRIME + ($equations == null ? 43 : $equations.hashCode());
+    final Object $variableMap = this.getVariableMap();
+    result = result * PRIME + ($variableMap == null ? 43 : $variableMap.hashCode());
+    final Object $processHierarchy = this.getProcessHierarchy();
+    result = result * PRIME + ($processHierarchy == null ? 43 : $processHierarchy.hashCode());
+    return result;
+  }
+
+  public String toString() {
+    return "AbstractSyntaxTree(processes=" + this.getProcesses() + ", alphabet=" + this.getAlphabet() + ", operations=" + this.getOperations() + ", equations=" + this.getEquations() + ", variableMap=" + this.getVariableMap() + ", processHierarchy=" + this.getProcessHierarchy() + ")";
   }
 }

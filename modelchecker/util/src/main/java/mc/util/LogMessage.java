@@ -1,14 +1,8 @@
 package mc.util;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import java.io.Serializable;
-
 /**
  * A message to send back to the client
  */
-@AllArgsConstructor
-@Getter
 public class LogMessage {
   private String message;
   /**
@@ -22,7 +16,6 @@ public class LogMessage {
   private Location location = null;
   private int clearAmt = -1;
 
-  @Getter
   private Thread thread;
 
   public LogMessage(String message) {
@@ -40,6 +33,15 @@ public class LogMessage {
     this.clear = true;
   }
 
+  public LogMessage(String message, boolean clear, boolean error, Location location, int clearAmt, Thread thread) {
+    this.message = message;
+    this.clear = clear;
+    this.error = error;
+    this.location = location;
+    this.clearAmt = clearAmt;
+    this.thread = thread;
+  }
+
   protected static String formatLocation(Location location) {
     return "(" + location.getLineStart() + ":" + location.getColStart() + ")";
   }
@@ -51,5 +53,29 @@ public class LogMessage {
 
   public boolean hasExpired() {
     return thread.isInterrupted();
+  }
+
+  public String getMessage() {
+    return this.message;
+  }
+
+  public boolean isClear() {
+    return this.clear;
+  }
+
+  public boolean isError() {
+    return this.error;
+  }
+
+  public Location getLocation() {
+    return this.location;
+  }
+
+  public int getClearAmt() {
+    return this.clearAmt;
+  }
+
+  public Thread getThread() {
+    return this.thread;
   }
 }

@@ -30,7 +30,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
   }
 
   public void mouseMoved(MouseEvent e) {
-
+/*
     GraphNode currentNode;
     currentNode = getVertex(e.getPoint());
     if (currentNode == null ) {
@@ -50,6 +50,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
           currentNode.setNodeColor(NodeStates.STOPSTART5);
         }
 
+*/
   }
 
   public void mouseDragged(MouseEvent e) {

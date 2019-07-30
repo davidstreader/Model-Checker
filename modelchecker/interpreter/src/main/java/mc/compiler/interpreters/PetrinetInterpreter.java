@@ -1,16 +1,10 @@
 package mc.compiler.interpreters;
 
-import static mc.util.Utils.instantiateClass;
-
 import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.microsoft.z3.Expr;
-//import com.sun.tools.hat.internal.model.Root;
 import mc.Constant;
+import mc.compiler.Guard;
 import mc.compiler.Interpreter;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
@@ -30,8 +24,14 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.RefineFun;
 import mc.processmodels.petrinet.utils.PetrinetLabeller;
-import mc.compiler.Guard;
 import mc.util.expr.ExpressionPrinter;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static mc.util.Utils.instantiateClass;
+
+//import com.sun.tools.hat.internal.model.Root;
 
 /**
  * input Atomic AST output Atomic PetriNets

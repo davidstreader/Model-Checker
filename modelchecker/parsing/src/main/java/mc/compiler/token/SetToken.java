@@ -1,11 +1,7 @@
 package mc.compiler.token;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class SetToken extends KeywordToken {
 
 	public SetToken(Location location){
@@ -16,4 +12,22 @@ public class SetToken extends KeywordToken {
 	public String toString(){
 		return "set";
 	}
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof SetToken)) return false;
+    final SetToken other = (SetToken) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof SetToken;
+  }
+
+  public int hashCode() {
+    int result = super.hashCode();
+    return result;
+  }
 }

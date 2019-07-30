@@ -1,10 +1,11 @@
 package mc.processmodels.automata.operations;
 
-import java.util.List;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+
+import java.util.List;
 
 /**
  * Created by sheriddavi on 25/01/17.

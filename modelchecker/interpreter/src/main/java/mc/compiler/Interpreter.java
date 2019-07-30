@@ -2,13 +2,10 @@ package mc.compiler;
 
 import com.google.common.collect.Multiset;
 import com.microsoft.z3.Context;
-
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-
 import mc.Constant;
-import mc.compiler.ast.*;
-
+import mc.compiler.ast.ASTNode;
+import mc.compiler.ast.AbstractSyntaxTree;
+import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
@@ -16,12 +13,14 @@ import mc.processmodels.MappingNdMarking;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
-import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.LogMessage;
+
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Compiler applies Interpreter  to processes {...} and seperatly

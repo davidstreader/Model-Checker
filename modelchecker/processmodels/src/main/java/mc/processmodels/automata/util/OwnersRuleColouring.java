@@ -2,9 +2,10 @@ package mc.processmodels.automata.util;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import mc.processmodels.automata.Automaton;
+
 import java.util.HashMap;
 import java.util.Map;
-import mc.processmodels.automata.Automaton;
 
 public class OwnersRuleColouring {
 

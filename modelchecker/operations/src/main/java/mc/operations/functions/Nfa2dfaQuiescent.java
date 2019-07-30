@@ -1,19 +1,18 @@
 
 package mc.operations.functions;
 
-  import com.microsoft.z3.Context;
+import com.microsoft.z3.Context;
+import mc.TraceType;
+import mc.exceptions.CompilationException;
+import mc.operations.QuiescentRefinement;
+import mc.plugins.IProcessFunction;
+import mc.processmodels.MultiProcessModel;
+import mc.processmodels.automata.Automaton;
+import mc.processmodels.petrinet.Petrinet;
 
-  import java.util.Collection;
-  import java.util.HashSet;
-  import java.util.Set;
-
-  import mc.TraceType;
-  import mc.exceptions.CompilationException;
-  import mc.operations.QuiescentRefinement;
-  import mc.plugins.IProcessFunction;
-  import mc.processmodels.MultiProcessModel;
-  import mc.processmodels.automata.Automaton;
-  import mc.processmodels.petrinet.Petrinet;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Nfa2dfaQuiescent implements IProcessFunction {
   /**

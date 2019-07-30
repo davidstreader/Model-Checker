@@ -59,7 +59,7 @@ public final class PetrinetReachability {
       if (previouslyVisitedMarking.contains(currentMarking)) {
         continue;
       }
-/*if (currentMarking==null) System.out.println("currentMarking == null");
+/*if (currentMarking==null)System.out.println("currentMarking == null");
       else
       System.out.println("MARKING: "+Petrinet.marking2String(currentMarking)); */
       //System.out.println("Post "+Petrinet.trans2String(post(currentMarking)));

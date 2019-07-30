@@ -2,17 +2,13 @@ package mc.compiler;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import mc.Constant;
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
 import mc.processmodels.ProcessType;
 import mc.util.Location;
+
+import java.util.*;
 
 public class Lexer {
 

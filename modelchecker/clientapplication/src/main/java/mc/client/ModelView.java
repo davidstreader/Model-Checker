@@ -64,7 +64,7 @@ public class ModelView implements Observer {
 
   private Bounds windowSize;
 
-  private CanvasMouseListener massSelect;
+  private CanvasMouseListener canvasML;
   private CanvasMouseMotionListener cml;
   private Set<String> processModelsToDisplay;
   private SortedSet<String> visibleModels; // Processes that are in the modelsList combox
@@ -209,7 +209,7 @@ public class ModelView implements Observer {
         .filter(Objects::nonNull)
         .forEach(this::addProcess);
 
-    massSelect.updateProcessModelList(processModels);
+    canvasML.updateProcessModelList(processModels);
 
     if (windowSize == null || !windowSize.equals(s.getBoundsInParent())) {
       windowSize = s.getBoundsInParent();
@@ -326,7 +326,7 @@ public class ModelView implements Observer {
       }
 
 
-      GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination,
+      GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination, NodeStates.NOSTATE,
           NodeType.AUTOMATA_NODE, "" + n.getLabelNumber(), n);
       nodeMap.put(n.getId(), node);
 
@@ -438,7 +438,7 @@ public class ModelView implements Observer {
       }
 
       GraphNode node = new GraphNode(petri.getId(), place.getId(),
-          nodeTermination, NodeType.PETRINET_PLACE, lab, place);
+          nodeTermination, NodeStates.NOSTATE, NodeType.PETRINET_PLACE, lab, place);
       placeId2GraphNode.put(place.getId(), node);
       graph.addVertex(node);
       nodeMap.put(place.getId(), node);
@@ -454,7 +454,7 @@ public class ModelView implements Observer {
         lab = transition.getLabel();
       }
       GraphNode node = new GraphNode(petri.getId(), transition.getId(),
-          NodeStates.NOMINAL, NodeType.PETRINET_TRANSITION, lab, transition);
+          NodeStates.NOMINAL, NodeStates.NOSTATE, NodeType.PETRINET_TRANSITION, lab, transition);
       nodeMap.put(transition.getId(), node);
 
     });
@@ -516,6 +516,7 @@ public class ModelView implements Observer {
 
     processesChanged.add(modelLabel);
     processModelsToDisplay.add(modelLabel);
+   //  canvasML. refreshtransitionColor();
   }
 
   public void clearDisplayed() {
@@ -530,6 +531,7 @@ public class ModelView implements Observer {
     if (visibleModels != null) {
       processModelsToDisplay.addAll(visibleModels);
     }
+    // canvasML. refreshtransitionColor();
   }
 
   /**
@@ -626,10 +628,10 @@ public class ModelView implements Observer {
 
     vv.setGraphMouse(gm);
 
-    massSelect = new CanvasMouseListener(processModels, vv, mappings);
-    cml = new CanvasMouseMotionListener(vv);
-    vv.addMouseListener(massSelect);
-    vv.addMouseMotionListener(cml);
+    canvasML = new CanvasMouseListener(processModels, vv, mappings);
+   // cml = new CanvasMouseMotionListener(vv);
+    vv.addMouseListener(canvasML);
+   // vv.addMouseMotionListener(cml);
     //System.out.println();
 
     //label the nodes

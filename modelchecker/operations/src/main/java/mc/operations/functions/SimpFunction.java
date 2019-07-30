@@ -2,10 +2,6 @@ package mc.operations.functions;
 
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
@@ -17,6 +13,9 @@ import mc.processmodels.automata.util.ColouringUtil;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.operations.PetrinetSimp;
 import mc.util.expr.MyAssert;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SimpFunction implements IProcessFunction {
   private static final int BASE_COLOUR = 1;

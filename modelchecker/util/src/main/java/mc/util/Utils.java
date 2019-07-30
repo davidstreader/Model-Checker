@@ -1,6 +1,7 @@
 package mc.util;
 
 import com.google.common.base.Ascii;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;

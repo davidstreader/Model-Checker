@@ -7,6 +7,7 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultiset;
 import lombok.SneakyThrows;
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
@@ -48,7 +49,7 @@ import mc.util.expr.MyAssert;
  */
 public class TokenRule {
 
-  private static int stateSizeBound = 1000;
+  private static int stateSizeBound = 10000;
 
   public static Automaton tokenRule(Petrinet convertFrom) {
     return tokenRule(convertFrom, new HashMap<>(), new HashMap<>());
@@ -285,7 +286,8 @@ return newMarking;
   public static Set<PetriNetTransition> satisfiedTransitions(Multiset<PetriNetPlace> currentMarking) {
     Set<PetriNetTransition> out = post(currentMarking).stream() //88
       //  .filter(transition -> currentMarking.containsAll(transition.pre()))
-      .filter(transition -> currentMarking.containsAll(transition.preNotOptional())) // drops the optional preplaces
+        .filter(tr -> (!tr.getLabel().equals(Constant.DEADLOCK)))
+        .filter(transition -> currentMarking.containsAll(transition.preNotOptional())) // drops the optional preplaces
       .distinct()
       .collect(Collectors.toSet());
     //System.out.println(out.stream().map(x->x.getId()).reduce("satisfied ",(x,y)->x+y+" "));

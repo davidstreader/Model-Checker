@@ -2,10 +2,7 @@ package mc.processmodels.automata.operations;
 
 import com.google.common.collect.Multimap;
 import com.rits.cloning.Cloner;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
+import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
@@ -15,8 +12,10 @@ import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
-import mc.compiler.Guard;
 import mc.util.expr.MyAssert;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SequentialInfixFun {
 

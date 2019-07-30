@@ -2,19 +2,15 @@ package mc.operations.impl;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import mc.Constant;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AutomataParallelFunction {
 

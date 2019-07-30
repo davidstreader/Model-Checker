@@ -1,25 +1,16 @@
 package mc.processmodels.petrinet.components;
 
 
+import com.google.common.collect.Multiset;
+import mc.Constant;
+import mc.processmodels.ProcessModelObject;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Multiset;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import mc.Constant;
-import mc.processmodels.ProcessModelObject;
-
-@EqualsAndHashCode(callSuper = true, exclude = {"incoming", "outgoing"})
-
 public class PetriNetTransition extends ProcessModelObject {
-  @Getter
-  @Setter
   String label;
-  @Getter
-  @Setter
   Set<PetriNetEdge> incoming = new HashSet<>();
   public Set<PetriNetEdge> copyIncoming() {
     //System.out.println("in size "+incoming.size());
@@ -30,8 +21,6 @@ public class PetriNetTransition extends ProcessModelObject {
     }
     return out;
   }
-  @Getter
-  @Setter
   Set<PetriNetEdge> outgoing = new HashSet<>();
   public Set<PetriNetEdge> copyOutgoing() {
     //System.out.println("out size "+outgoing.size());
@@ -42,8 +31,6 @@ public class PetriNetTransition extends ProcessModelObject {
     }
     return out;
   }
-  @Getter
-  @Setter
   Set<String> owners = new HashSet<>();
 
   public boolean equals(Object tr){
@@ -218,5 +205,37 @@ public class PetriNetTransition extends ProcessModelObject {
     }
     builder.append(", own "+this.getOwners());
      return builder.toString();
+  }
+
+  public String getLabel() {
+    return this.label;
+  }
+
+  public Set<PetriNetEdge> getIncoming() {
+    return this.incoming;
+  }
+
+  public Set<PetriNetEdge> getOutgoing() {
+    return this.outgoing;
+  }
+
+  public Set<String> getOwners() {
+    return this.owners;
+  }
+
+  public void setLabel(String label) {
+    this.label = label;
+  }
+
+  public void setIncoming(Set<PetriNetEdge> incoming) {
+    this.incoming = incoming;
+  }
+
+  public void setOutgoing(Set<PetriNetEdge> outgoing) {
+    this.outgoing = outgoing;
+  }
+
+  public void setOwners(Set<String> owners) {
+    this.owners = owners;
   }
 }

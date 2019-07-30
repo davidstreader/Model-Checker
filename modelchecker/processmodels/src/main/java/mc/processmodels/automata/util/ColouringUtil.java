@@ -1,14 +1,12 @@
 package mc.processmodels.automata.util;
 
 import com.google.common.collect.Multimap;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import lombok.ToString;
 import mc.Constant;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ColouringUtil {
 
@@ -275,7 +273,6 @@ public class ColouringUtil {
 
 
   //ColourComponent for an event is the triple <FromColour, label, ToColour>
-  @ToString
   //@AllArgsConstructor
   public static class ColourComponent implements Comparable<ColourComponent> {
     public int to;
@@ -315,6 +312,10 @@ public class ColouringUtil {
       boolean ok = action.equals(col.action) && to == col.to;
       //System.out.println("colcomp eq "+ ok);
       return ok;
+    }
+
+    public String toString() {
+      return "ColouringUtil.ColourComponent(to=" + this.to + ", action=" + this.action + ")";
     }
   }
 

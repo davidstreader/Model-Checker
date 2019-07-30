@@ -1,15 +1,12 @@
 package mc.compiler;
 
+import com.microsoft.z3.BoolExpr;
+import mc.compiler.ast.*;
+import mc.exceptions.CompilationException;
+
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.regex.Pattern;
-
-import com.microsoft.z3.BoolExpr;
-import mc.compiler.ast.*;
-import mc.compiler.interpreters.PetrinetInterpreter;
-import mc.exceptions.CompilationException;
-import mc.processmodels.petrinet.components.PetriNetPlace;
-import mc.util.LogAST;
 //import sun.tools.tree.IfStatement;
 
 public class ReferenceReplacer {
@@ -53,7 +50,7 @@ public class ReferenceReplacer {
       ast.getProcessHierarchy().getDependencies().
         putAll(process.getIdentifier(), globalRequirements);
     }
-    System.out.println("Ref Rep returns "+ast.myString());
+    //System.out.println("Ref Rep returns "+ast.myString());
     return ast;
   }
 
@@ -172,51 +169,49 @@ public class ReferenceReplacer {
 
   private ASTNode replaceReferences(IdentifierNode astNode, String identifier,
                                     Map<String, LocalProcessNode> localReferences) throws CompilationException, InterruptedException {
-    System.out.println("start RR IdentifierNode "+ astNode.myString()+" identifyier "+ identifier+ " references "+references);
+   //System.out.println("start RR IdentifierNode "+ astNode.myString()+" identifyier "+ identifier+ " references "+references);
       bits =  astNode.getBits();
     String reference = astNode.getIdentifier();
-System.out.println("    RR identifier "+ identifier+ "   reference "+ reference +"  local "+localReferences.keySet());
+//System.out.println("    RR identifier "+ identifier+ "   reference "+ reference +"  local "+localReferences.keySet());
     String localReference = findLocalReference(identifier + "." + reference, localReferences);
     if (localReference == null) {
     localReference = identifier + "." + reference;
     }
-    System.out.println("RR localReference "+localReference);
+    //System.out.println("RR localReference "+localReference);
     // check if the identifier is referencing a local process  (add 's')
   //  if (localReference != null && localReferences.size()>0) {
-System.out.println("Pingo");
+//System.out.println("Pingo");
       // check if this local process has been referenced before
       if (references.contains(localReference)) {
         //this is where identifier is used
         ReferenceNode rn = new ReferenceNode(localReference, astNode.getLocation());
         rn.setSymbolicBits(astNode.getBits());
-        System.out.println("    RR  found local" + rn.myString());
+        //System.out.println("    RR  found local" + rn.myString());
         return rn;
 
       } else if (localReferences.containsKey(localReference)) {
-        System.out.println("localReference "+localReference );
+        //System.out.println("localReference "+localReference );
         // add astNode as a localReference
         ASTNode node = localReferences.get(localReference).getProcess();
         addReference(node, localReference);
-        System.out.println("node "+node.myString());
+        //System.out.println("node "+node.myString());
         if (astNode.hasReferences()) {
           astNode.getReferences().forEach(node::addReference);
         }
         //this is where identifier is defined
         ASTNode rr = replaceReferences(node, identifier, localReferences);
-        System.out.println("    RR not found "+rr.myString());
+        //System.out.println("    RR not found "+rr.myString());
         return rr;
         //return replaceReferences(node, identifier, localReferences);
       }
   //  } // processed Local
-    System.out.println("Sealy");
    /* else dstr*/
-    System.out.println(" XXXXXXXXXXXXXXXXXX ");
-    if (reference.contains("[") &&
+   if (reference.contains("[") &&
              reference.subSequence(0,reference.indexOf("[")).equals(identifier)) {
       astNode.addFromReference(reference);
       ReferenceNode rn = new ReferenceNode(reference, astNode.getLocation());
       rn.setSymbolicBits(astNode.getBits());
-      System.out.println("    RR Indexed referance? "+identifier +" "+rn.myString());
+      //System.out.println("    RR Indexed referance? "+identifier +" "+rn.myString());
       return rn;
     }
     // check if the identifier is referencing itself
@@ -224,14 +219,14 @@ System.out.println("Pingo");
       astNode.addFromReference(identifier);
       ReferenceNode rn = new ReferenceNode(identifier, astNode.getLocation());
       rn.setSymbolicBits(astNode.getBits());
-      System.out.println("    RR Self referance? "+identifier +" "+rn.myString());
+      //System.out.println("    RR Self referance? "+identifier +" "+rn.myString());
       return rn;
     }
     // check if the identifier is referencing a global process
     else if (globalReferences.contains(reference)) {
       //globalRequirements.add(reference);
       astNode.addFromReference(identifier);
-      System.out.println("    RR Identifier "+ identifier+" RR referencing global process "+ astNode.getBits());
+      //System.out.println("    RR Identifier "+ identifier+" RR referencing global process "+ astNode.getBits());
       return astNode;
     }
 

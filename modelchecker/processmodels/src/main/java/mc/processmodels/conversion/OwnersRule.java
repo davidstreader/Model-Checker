@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 
 import lombok.SneakyThrows;
+import mc.Constant;
 import mc.exceptions.CompilationException;
 
 import mc.processmodels.automata.Automaton;
@@ -131,7 +132,10 @@ public class OwnersRule {
           }
         }
 
-        Set<AutomatonNode> next = nd.getIncomingEdges().stream().map(ed -> ed.getFrom()).collect(Collectors.toSet());
+        Set<AutomatonNode> next = nd.getIncomingEdges()
+            .stream()
+            .filter(ed->!(ed.getLabel().equals(Constant.DEADLOCK)))
+            .map(ed -> ed.getFrom()).collect(Collectors.toSet());
         next.addAll(nd.getOutgoingEdges().stream().map(ed -> ed.getTo()).collect(Collectors.toSet()));
         toDo.addAll(next);
         //System.out.println("Next " + next.stream().map(x -> x.getId() + ", ").collect(Collectors.joining()));
@@ -153,6 +157,7 @@ public class OwnersRule {
         for (AutomatonEdge ed : nd.getOutgoingEdges()) {
           //System.out.println("    Start 2 " + ed.myString() + " own " + own);
           // optional send events May not be needed
+          if (ed.getLabel().equals(Constant.DEADLOCK))   continue;
           if (ed.getOptionalEdge()) continue;
           toDo.push(ed.getTo());
           //System.out.println("    Start 2 " + ed.myString() + " own " + own);

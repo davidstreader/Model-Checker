@@ -1,7 +1,5 @@
 package mc.compiler.ast;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 /**
@@ -18,8 +16,6 @@ import mc.util.Location;
  * @see ActionLabelNode
  * @deprecated This feature is unimplemented.
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class InterruptNode extends ASTNode {
 
   /**
@@ -42,5 +38,54 @@ public class InterruptNode extends ASTNode {
     super(location,"Interupt");
     this.action = action;
     this.process = process;
+  }
+
+  public ActionLabelNode getAction() {
+    return this.action;
+  }
+
+  public ASTNode getProcess() {
+    return this.process;
+  }
+
+  public void setAction(ActionLabelNode action) {
+    this.action = action;
+  }
+
+  public void setProcess(ASTNode process) {
+    this.process = process;
+  }
+
+  public String toString() {
+    return "InterruptNode(action=" + this.getAction() + ", process=" + this.getProcess() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof InterruptNode)) return false;
+    final InterruptNode other = (InterruptNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$action = this.getAction();
+    final Object other$action = other.getAction();
+    if (this$action == null ? other$action != null : !this$action.equals(other$action)) return false;
+    final Object this$process = this.getProcess();
+    final Object other$process = other.getProcess();
+    if (this$process == null ? other$process != null : !this$process.equals(other$process)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof InterruptNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $action = this.getAction();
+    result = result * PRIME + ($action == null ? 43 : $action.hashCode());
+    final Object $process = this.getProcess();
+    result = result * PRIME + ($process == null ? 43 : $process.hashCode());
+    return result;
   }
 }

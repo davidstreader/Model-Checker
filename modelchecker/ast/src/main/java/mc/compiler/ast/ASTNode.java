@@ -5,19 +5,17 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Z3Object;
 import com.rits.cloning.Cloner;
+import mc.util.Location;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+
 //import mc.plugins.*;
 //import modelchecker.processmodels.src.main.java.mc.plugins;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 //import mc.compiler.Guard;  // Can not resolve symbol Guard  NO IDEA why
 //import modelchecker.processmodels.src.main.java.mc.compiler.Guard
-import mc.util.Location;
 
 
 
@@ -33,21 +31,12 @@ import mc.util.Location;
  * @see AbstractSyntaxTree
  *
  */
-@EqualsAndHashCode(exclude = {"location", "modelVariables", "guard"})
 public abstract class ASTNode implements Serializable {
-  @Getter
   private String name = "";
-  @Getter
   private Set<String> references;
-  @Getter
   private Set<String> fromReferences;
-  @Getter
   private Location location;
-  @Getter
-  @Setter
   private HashMap<String, Object> modelVariables;  // appears to be $i used in SYMBOLIC processes
-  @Getter
-  @Setter
   private Object guard;  //NASTY fix for "can not resolve symbol" Guard in import
   //private Guard guard;
   // Beware guard Object is a  Guard that contains both a guard and the Assignments
@@ -204,5 +193,71 @@ return sofar;
 
   public String myString() {
     return "define for "+ this.getClass().getName();
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof ASTNode)) return false;
+    final ASTNode other = (ASTNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    final Object this$name = this.name;
+    final Object other$name = other.name;
+    if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
+    final Object this$references = this.references;
+    final Object other$references = other.references;
+    if (this$references == null ? other$references != null : !this$references.equals(other$references)) return false;
+    final Object this$fromReferences = this.fromReferences;
+    final Object other$fromReferences = other.fromReferences;
+    if (this$fromReferences == null ? other$fromReferences != null : !this$fromReferences.equals(other$fromReferences))
+      return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof ASTNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    final Object $name = this.name;
+    result = result * PRIME + ($name == null ? 43 : $name.hashCode());
+    final Object $references = this.references;
+    result = result * PRIME + ($references == null ? 43 : $references.hashCode());
+    final Object $fromReferences = this.fromReferences;
+    result = result * PRIME + ($fromReferences == null ? 43 : $fromReferences.hashCode());
+    return result;
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  public Set<String> getReferences() {
+    return this.references;
+  }
+
+  public Set<String> getFromReferences() {
+    return this.fromReferences;
+  }
+
+  public Location getLocation() {
+    return this.location;
+  }
+
+  public HashMap<String, Object> getModelVariables() {
+    return this.modelVariables;
+  }
+
+  public Object getGuard() {
+    return this.guard;
+  }
+
+  public void setModelVariables(HashMap<String, Object> modelVariables) {
+    this.modelVariables = modelVariables;
+  }
+
+  public void setGuard(Object guard) {
+    this.guard = guard;
   }
 }

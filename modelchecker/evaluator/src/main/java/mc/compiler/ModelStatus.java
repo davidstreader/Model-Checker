@@ -1,8 +1,5 @@
 package mc.compiler;
 
-import lombok.Data;
-
-@Data
 public class ModelStatus {
   private static int sid = 1;
 
@@ -23,5 +20,98 @@ public class ModelStatus {
   }
   public ModelStatus() {
     id = sid++;
+  }
+
+  public int getPassCount() {
+    return this.passCount;
+  }
+
+  public int getFailCount() {
+    return this.failCount;
+  }
+
+  public int getImpliesConclusionTrue() {
+    return this.impliesConclusionTrue;
+  }
+
+  public int getImpliesAssumptionFalse() {
+    return this.impliesAssumptionFalse;
+  }
+
+  public int getId() {
+    return this.id;
+  }
+
+  public int getDoneCount() {
+    return this.doneCount;
+  }
+
+  public long getTimeStamp() {
+    return this.timeStamp;
+  }
+
+  public void setPassCount(int passCount) {
+    this.passCount = passCount;
+  }
+
+  public void setFailCount(int failCount) {
+    this.failCount = failCount;
+  }
+
+  public void setImpliesConclusionTrue(int impliesConclusionTrue) {
+    this.impliesConclusionTrue = impliesConclusionTrue;
+  }
+
+  public void setImpliesAssumptionFalse(int impliesAssumptionFalse) {
+    this.impliesAssumptionFalse = impliesAssumptionFalse;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public void setDoneCount(int doneCount) {
+    this.doneCount = doneCount;
+  }
+
+  public void setTimeStamp(long timeStamp) {
+    this.timeStamp = timeStamp;
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof ModelStatus)) return false;
+    final ModelStatus other = (ModelStatus) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (this.getPassCount() != other.getPassCount()) return false;
+    if (this.getFailCount() != other.getFailCount()) return false;
+    if (this.getImpliesConclusionTrue() != other.getImpliesConclusionTrue()) return false;
+    if (this.getImpliesAssumptionFalse() != other.getImpliesAssumptionFalse()) return false;
+    if (this.getId() != other.getId()) return false;
+    if (this.getDoneCount() != other.getDoneCount()) return false;
+    if (this.getTimeStamp() != other.getTimeStamp()) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof ModelStatus;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    result = result * PRIME + this.getPassCount();
+    result = result * PRIME + this.getFailCount();
+    result = result * PRIME + this.getImpliesConclusionTrue();
+    result = result * PRIME + this.getImpliesAssumptionFalse();
+    result = result * PRIME + this.getId();
+    result = result * PRIME + this.getDoneCount();
+    final long $timeStamp = this.getTimeStamp();
+    result = result * PRIME + (int) ($timeStamp >>> 32 ^ $timeStamp);
+    return result;
+  }
+
+  public String toString() {
+    return "ModelStatus(passCount=" + this.getPassCount() + ", failCount=" + this.getFailCount() + ", impliesConclusionTrue=" + this.getImpliesConclusionTrue() + ", impliesAssumptionFalse=" + this.getImpliesAssumptionFalse() + ", id=" + this.getId() + ", doneCount=" + this.getDoneCount() + ", timeStamp=" + this.getTimeStamp() + ")";
   }
 }

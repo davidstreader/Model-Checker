@@ -1,11 +1,7 @@
 package mc.compiler.token;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class SubtractionToken extends OperatorToken {
 
 	public SubtractionToken(Location location){
@@ -16,4 +12,22 @@ public class SubtractionToken extends OperatorToken {
 	public String toString(){
 		return "-";
 	}
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof SubtractionToken)) return false;
+    final SubtractionToken other = (SubtractionToken) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof SubtractionToken;
+  }
+
+  public int hashCode() {
+    int result = super.hashCode();
+    return result;
+  }
 }

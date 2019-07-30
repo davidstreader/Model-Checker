@@ -1,9 +1,8 @@
 package mc.compiler;
 
-import static mc.util.Utils.instantiateClass;
-
-import java.util.logging.Logger;
 import mc.plugins.IOperationInfixFunction;
+
+import static mc.util.Utils.instantiateClass;
 
 public class EvaluatorFunctionRegister {
   public static void registerOperation(Class<? extends IOperationInfixFunction> clazz) {

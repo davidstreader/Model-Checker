@@ -1,7 +1,5 @@
 package mc.compiler.ast;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 /**
@@ -15,8 +13,6 @@ import mc.util.Location;
  * @see InterruptNode
  * @see SequenceNode
  */
-@Data
-@EqualsAndHashCode(callSuper = false)
 public class ActionLabelNode extends ASTNode {
 
   private String action;
@@ -33,5 +29,40 @@ public class ActionLabelNode extends ASTNode {
   }
   public String myString() {
     return action;
+  }
+
+  public String getAction() {
+    return this.action;
+  }
+
+  public void setAction(String action) {
+    this.action = action;
+  }
+
+  public String toString() {
+    return "ActionLabelNode(action=" + this.getAction() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof ActionLabelNode)) return false;
+    final ActionLabelNode other = (ActionLabelNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    final Object this$action = this.getAction();
+    final Object other$action = other.getAction();
+    if (this$action == null ? other$action != null : !this$action.equals(other$action)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof ActionLabelNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    final Object $action = this.getAction();
+    result = result * PRIME + ($action == null ? 43 : $action.hashCode());
+    return result;
   }
 }

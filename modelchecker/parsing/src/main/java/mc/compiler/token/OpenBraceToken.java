@@ -1,11 +1,7 @@
 package mc.compiler.token;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class OpenBraceToken extends SymbolToken {
 
 	public OpenBraceToken(Location location){
@@ -16,4 +12,22 @@ public class OpenBraceToken extends SymbolToken {
 	public String toString(){
 		return "{";
 	}
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof OpenBraceToken)) return false;
+    final OpenBraceToken other = (OpenBraceToken) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof OpenBraceToken;
+  }
+
+  public int hashCode() {
+    int result = super.hashCode();
+    return result;
+  }
 }

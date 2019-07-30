@@ -1,17 +1,17 @@
 package mc.operations.functions;
 
 import com.microsoft.z3.Context;
-
-import java.util.*;
-
 import mc.Constant;
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 /*
 Need to add this as a function on  MultiProcessModel if going to reuse the Markings

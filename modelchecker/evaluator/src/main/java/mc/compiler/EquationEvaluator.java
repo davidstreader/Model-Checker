@@ -1,17 +1,10 @@
 package mc.compiler;
 
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.microsoft.z3.Context;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.experimental.var;
-import mc.compiler.ast.*;
-//import mc.compiler.interpreters.PetrinetInterpreter;
+import mc.compiler.ast.AndNode;
+import mc.compiler.ast.ForAllNode;
+import mc.compiler.ast.ImpliesNode;
+import mc.compiler.ast.OperationNode;
 import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
@@ -19,6 +12,13 @@ import mc.processmodels.ProcessModel;
 import mc.processmodels.petrinet.Petrinet;
 import mc.util.LogMessage;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.stream.Collectors;
+
+//import mc.compiler.interpreters.PetrinetInterpreter;
 
 public class EquationEvaluator {
 
@@ -711,12 +711,23 @@ public class EquationEvaluator {
   }
 
 
-  @Getter
-  @AllArgsConstructor
   static class EquationReturn {
     List<OperationResult> results;
     //List<ImpliesResult> impResults;
     Map<String, ProcessModel> toRender;  // Compiler reads to this!
+
+    public EquationReturn(List<OperationResult> results, Map<String, ProcessModel> toRender) {
+      this.results = results;
+      this.toRender = toRender;
+    }
+
+    public List<OperationResult> getResults() {
+      return this.results;
+    }
+
+    public Map<String, ProcessModel> getToRender() {
+      return this.toRender;
+    }
   }
 
   /**

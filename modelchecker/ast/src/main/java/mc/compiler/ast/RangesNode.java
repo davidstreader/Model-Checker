@@ -1,9 +1,8 @@
 package mc.compiler.ast;
 
-import java.util.List;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
+
+import java.util.List;
 
 /**
  * This contains a list of processes with different variables.
@@ -18,8 +17,6 @@ import mc.util.Location;
  * @see SetNode
  * @see ASTNode
  */
-@EqualsAndHashCode(callSuper = true)
-@Data
 public class RangesNode extends ASTNode {
 
   /**
@@ -45,5 +42,41 @@ public class RangesNode extends ASTNode {
       sb.append(ien.myString()+"; ");
       }
     return sb.toString();
+  }
+
+  public List<IndexExpNode> getRanges() {
+    return this.ranges;
+  }
+
+  public void setRanges(List<IndexExpNode> ranges) {
+    this.ranges = ranges;
+  }
+
+  public String toString() {
+    return "RangesNode(ranges=" + this.getRanges() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof RangesNode)) return false;
+    final RangesNode other = (RangesNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$ranges = this.getRanges();
+    final Object other$ranges = other.getRanges();
+    if (this$ranges == null ? other$ranges != null : !this$ranges.equals(other$ranges)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof RangesNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $ranges = this.getRanges();
+    result = result * PRIME + ($ranges == null ? 43 : $ranges.hashCode());
+    return result;
   }
 }

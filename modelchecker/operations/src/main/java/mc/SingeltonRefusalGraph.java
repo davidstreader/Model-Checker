@@ -1,7 +1,5 @@
 package mc;
 
-import lombok.Getter;
-import lombok.Setter;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
@@ -17,11 +15,7 @@ import java.util.stream.Collectors;
  */
 public class SingeltonRefusalGraph {
 
-  @Getter
-  @Setter
   private Automaton a;
-  @Getter
-  @Setter
   private Map<AutomatonNode, Set<String>> node2ReadySet =
     new HashMap<>();
 
@@ -419,5 +413,21 @@ public class SingeltonRefusalGraph {
     return "**Acceptance Graph  \n  " + this.getA().myString() + " " +
       this.node2ac_toString() + "**End Acceptance Graph ";
 
+  }
+
+  public Automaton getA() {
+    return this.a;
+  }
+
+  public Map<AutomatonNode, Set<String>> getNode2ReadySet() {
+    return this.node2ReadySet;
+  }
+
+  public void setA(Automaton a) {
+    this.a = a;
+  }
+
+  public void setNode2ReadySet(Map<AutomatonNode, Set<String>> node2ReadySet) {
+    this.node2ReadySet = node2ReadySet;
   }
 }

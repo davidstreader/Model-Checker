@@ -1,7 +1,5 @@
 package mc.compiler.ast;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 import java.util.ArrayList;
@@ -18,8 +16,6 @@ import java.util.List;
  * @see IdentifierNode
  * @see ASTNode
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class ReferenceNode extends ASTNode {
 
   /**
@@ -45,5 +41,55 @@ public class ReferenceNode extends ASTNode {
     sb.append("Ref_"+reference);
     sb.append(" sbits "+symbolicBits);
     return sb.toString();
+  }
+
+  public String getReference() {
+    return this.reference;
+  }
+
+  public List<String> getSymbolicBits() {
+    return this.symbolicBits;
+  }
+
+  public void setReference(String reference) {
+    this.reference = reference;
+  }
+
+  public void setSymbolicBits(List<String> symbolicBits) {
+    this.symbolicBits = symbolicBits;
+  }
+
+  public String toString() {
+    return "ReferenceNode(reference=" + this.getReference() + ", symbolicBits=" + this.getSymbolicBits() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof ReferenceNode)) return false;
+    final ReferenceNode other = (ReferenceNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$reference = this.getReference();
+    final Object other$reference = other.getReference();
+    if (this$reference == null ? other$reference != null : !this$reference.equals(other$reference)) return false;
+    final Object this$symbolicBits = this.getSymbolicBits();
+    final Object other$symbolicBits = other.getSymbolicBits();
+    if (this$symbolicBits == null ? other$symbolicBits != null : !this$symbolicBits.equals(other$symbolicBits))
+      return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof ReferenceNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $reference = this.getReference();
+    result = result * PRIME + ($reference == null ? 43 : $reference.hashCode());
+    final Object $symbolicBits = this.getSymbolicBits();
+    result = result * PRIME + ($symbolicBits == null ? 43 : $symbolicBits.hashCode());
+    return result;
   }
 }

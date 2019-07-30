@@ -1,20 +1,16 @@
 package mc.operations.functions;
 
 import com.microsoft.z3.Context;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.AutomatonEdge;
-import mc.processmodels.automata.AutomatonNode;
-import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PruneFunction implements IProcessFunction {
   /**

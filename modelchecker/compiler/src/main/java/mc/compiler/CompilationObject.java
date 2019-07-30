@@ -1,14 +1,10 @@
 package mc.compiler;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import mc.processmodels.ProcessModel;
 
 import java.util.List;
 import java.util.Map;
 
-@Getter
-@AllArgsConstructor
 /**
  *  This class is a return type for the calculations regarding diagram creation and operation output.
  *  Used to pass information from the back end to be displayed
@@ -24,5 +20,23 @@ public class CompilationObject {
     private List<OperationResult> operationResults;
 
     private List<OperationResult> equationResults;
-    //private List<ImpliesResult> impliesResults;
+
+  public CompilationObject(Map<String, ProcessModel> processMap, List<OperationResult> operationResults, List<OperationResult> equationResults) {
+    this.processMap = processMap;
+    this.operationResults = operationResults;
+    this.equationResults = equationResults;
+  }
+
+  public Map<String, ProcessModel> getProcessMap() {
+    return this.processMap;
+  }
+
+  public List<OperationResult> getOperationResults() {
+    return this.operationResults;
+  }
+
+  public List<OperationResult> getEquationResults() {
+    return this.equationResults;
+  }
+  //private List<ImpliesResult> impliesResults;
 }

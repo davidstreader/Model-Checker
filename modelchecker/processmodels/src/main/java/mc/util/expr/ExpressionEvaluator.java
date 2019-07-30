@@ -1,11 +1,10 @@
 package mc.util.expr;
 
 import com.microsoft.z3.*;
+import mc.exceptions.CompilationException;
 
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import mc.exceptions.CompilationException;
 
 /**
  * Created by sheriddavi on 19/01/17.

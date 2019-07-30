@@ -5,10 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import mc.Constant;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
@@ -24,6 +20,9 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.util.expr.Expression;
 import mc.util.expr.MyAssert;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class AbstractionFunction implements IProcessFunction {

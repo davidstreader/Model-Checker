@@ -1,26 +1,17 @@
 
 package mc.operations.functions;
 
-  import com.google.common.collect.ImmutableSet;
-  import com.google.common.collect.Iterables;
-  import com.microsoft.z3.Context;
+import com.google.common.collect.ImmutableSet;
+import com.microsoft.z3.Context;
+import mc.Constant;
+import mc.exceptions.CompilationException;
+import mc.plugins.IProcessFunction;
+import mc.processmodels.MultiProcessModel;
+import mc.processmodels.automata.Automaton;
+import mc.processmodels.petrinet.Petrinet;
 
-  import java.util.*;
-  import java.util.stream.Collectors;
-  import mc.Constant;
-  import mc.compiler.Guard;
-  import mc.exceptions.CompilationException;
-  import mc.plugins.IProcessFunction;
-  import mc.processmodels.MultiProcessModel;
-  import mc.processmodels.automata.Automaton;
-  import mc.processmodels.automata.AutomatonEdge;
-  import mc.processmodels.automata.AutomatonNode;
-  import mc.processmodels.conversion.OwnersRule;
-  import mc.processmodels.conversion.TokenRule;
-  import mc.processmodels.petrinet.Petrinet;
-  import mc.processmodels.petrinet.components.PetriNetPlace;
-  import mc.processmodels.petrinet.components.PetriNetTransition;
-  import mc.util.expr.Expression;
+import java.util.Collection;
+import java.util.Set;
 
 
 public class GalAbs implements IProcessFunction {

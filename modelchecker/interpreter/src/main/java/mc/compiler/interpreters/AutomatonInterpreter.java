@@ -1,34 +1,14 @@
 package mc.compiler.interpreters;
 
-import static mc.processmodels.ProcessType.AUTOMATA;
-import static mc.util.Utils.instantiateClass;
-
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.microsoft.z3.Context;
-
-import java.util.*;
-
 import com.microsoft.z3.Expr;
 import com.rits.cloning.Cloner;
 import mc.Constant;
 import mc.compiler.Guard;
 import mc.compiler.Interpreter;
-import mc.compiler.ast.ASTNode;
-import mc.compiler.ast.ChoiceNode;
-import mc.compiler.ast.CompositeNode;
-import mc.compiler.ast.ConversionNode;
-import mc.compiler.ast.FunctionNode;
-import mc.compiler.ast.HidingNode;
-import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.ProcessNode;
-import mc.compiler.ast.ProcessRootNode;
-import mc.compiler.ast.ReferenceNode;
-import mc.compiler.ast.RelabelElementNode;
-import mc.compiler.ast.RelabelNode;
-import mc.compiler.ast.SequenceNode;
-import mc.compiler.ast.TerminalNode;
-import mc.compiler.ast.VariableSetNode;
+import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
@@ -37,6 +17,11 @@ import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataLabeller;
+
+import java.util.*;
+
+import static mc.processmodels.ProcessType.AUTOMATA;
+import static mc.util.Utils.instantiateClass;
 
 //import mc.compiler.LocalCompiler;
 /**

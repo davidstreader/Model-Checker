@@ -1,14 +1,13 @@
 package mc.plugins;
 
 import com.microsoft.z3.Context;
-import java.util.Collection;
-import java.util.Set;
-
-import mc.TraceType;
 import mc.exceptions.CompilationException;
+import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
-import mc.processmodels.MultiProcessModel;
+
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Currently only simple parameteriseation of parser

@@ -1,7 +1,5 @@
 package mc.operations.functions.infix;
 
-import java.util.*;
-
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
@@ -9,6 +7,8 @@ import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.InternalChoiceInfixFun;
 import mc.processmodels.petrinet.Petrinet;
+
+import java.util.*;
 
 /**
  * This covers the "internal choice" function.

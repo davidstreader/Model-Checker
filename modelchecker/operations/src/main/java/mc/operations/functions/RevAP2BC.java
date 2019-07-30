@@ -3,13 +3,8 @@ package mc.operations.functions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.microsoft.z3.Context;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import mc.Constant;
 import mc.exceptions.CompilationException;
-import mc.operations.QuiescentRefinement;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MappingNdMarking;
 import mc.processmodels.MultiProcessModel;
@@ -23,6 +18,12 @@ import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
 Need to add this as a function on  MultiProcessModel if going to reuse the Markings

@@ -1,29 +1,23 @@
 package mc;
 
+import mc.client.ui.UserInterfaceApplication;
+import mc.plugins.PluginManager;
+import mc.util.NativesManager;
+import mc.util.Utils;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import lombok.Getter;
-import lombok.Setter;
-import mc.client.ui.UserInterfaceApplication;
-import mc.plugins.PluginManager;
-import mc.util.Utils;
-import mc.util.NativesManager;
 
 
 public class Main {
 
-  @Getter
   private Process subProcess;
 
-  @Getter
-  @Setter
   private boolean stopped = false;
 
-  @Getter
   private boolean reloaded = false;
   private boolean autoKill = false;
-  @Getter
   private static Main instance;
 /*
    Starting point  Stuff here to allow auto restarting the process if it crashes!
@@ -52,6 +46,10 @@ public class Main {
 
     //Start the wrapped process with all the native libraries added.
     spawnProcess(createWrappedProcess());
+  }
+
+  public static Main getInstance() {
+    return Main.instance;
   }
 
   /**
@@ -129,4 +127,19 @@ public class Main {
     return builder;
   }
 
+  public Process getSubProcess() {
+    return this.subProcess;
+  }
+
+  public boolean isStopped() {
+    return this.stopped;
+  }
+
+  public boolean isReloaded() {
+    return this.reloaded;
+  }
+
+  public void setStopped(boolean stopped) {
+    this.stopped = stopped;
+  }
 }

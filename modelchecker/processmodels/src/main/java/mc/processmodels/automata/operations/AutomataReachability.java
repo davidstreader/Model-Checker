@@ -1,16 +1,11 @@
 package mc.processmodels.automata.operations;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
-
-import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+
+import java.util.*;
 
 /**
  * Created by sheriddavi on 25/01/17.

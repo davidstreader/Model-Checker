@@ -1,9 +1,5 @@
 package mc.compiler;
 
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.stream.Collectors;
-import java.util.function.Supplier;
 import com.google.common.base.Function;
 import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
@@ -12,6 +8,11 @@ import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.util.LogMessage;
+
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class Compiler {
   // fields

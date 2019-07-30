@@ -10,15 +10,16 @@ import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import lombok.AllArgsConstructor;
 
 /**
  * Manage loading dependencies for bower/node and vulcanize.
  */
-@AllArgsConstructor
 public class NativesManager {
 
-    public static Path getNativesDir() {
+  public NativesManager() {
+  }
+
+  public static Path getNativesDir() {
         if (Utils.isMac()) {
             return getMacLibDir();
         } else {

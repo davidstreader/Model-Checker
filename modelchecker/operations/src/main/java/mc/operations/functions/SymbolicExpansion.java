@@ -2,24 +2,19 @@ package mc.operations.functions;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Multisets;
 import com.microsoft.z3.Context;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import mc.Constant;
-import mc.TraceType;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SymbolicExpansion implements IProcessFunction {
   /**

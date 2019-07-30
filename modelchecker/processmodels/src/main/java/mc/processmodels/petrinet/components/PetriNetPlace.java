@@ -1,21 +1,20 @@
 package mc.processmodels.petrinet.components;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Z3Object;
 import com.rits.cloning.Cloner;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModelObject;
 
-@EqualsAndHashCode(callSuper = true, exclude = {"incoming", "outgoing"})
-@Data
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class PetriNetPlace extends ProcessModelObject implements Comparable<PetriNetPlace> {
   private Set<PetriNetEdge> incoming = new HashSet<>();
   private Set<PetriNetEdge> outgoing = new HashSet<>();
@@ -273,5 +272,81 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     cloner.dontClone(Expr.class);
     cloner.dontClone(BoolExpr.class);
     return cloner.deepClone(this);
+  }
+
+  public Set<PetriNetEdge> getIncoming() {
+    return this.incoming;
+  }
+
+  public Set<PetriNetEdge> getOutgoing() {
+    return this.outgoing;
+  }
+
+  public boolean isStart() {
+    return this.start;
+  }
+
+  public int getColour() {
+    return this.colour;
+  }
+
+  public Set<Integer> getStartNos() {
+    return this.startNos;
+  }
+
+  public Set<Integer> getEndNos() {
+    return this.endNos;
+  }
+
+  public Set<String> getReferences() {
+    return this.references;
+  }
+
+  public Set<String> getLeafRef() {
+    return this.leafRef;
+  }
+
+  public Set<String> getOwners() {
+    return this.owners;
+  }
+
+  public void setIncoming(Set<PetriNetEdge> incoming) {
+    this.incoming = incoming;
+  }
+
+  public void setOutgoing(Set<PetriNetEdge> outgoing) {
+    this.outgoing = outgoing;
+  }
+
+  public void setStart(boolean start) {
+    this.start = start;
+  }
+
+  public void setColour(int colour) {
+    this.colour = colour;
+  }
+
+  public void setStartNos(Set<Integer> startNos) {
+    this.startNos = startNos;
+  }
+
+  public void setTerminal(String terminal) {
+    this.terminal = terminal;
+  }
+
+  public void setEndNos(Set<Integer> endNos) {
+    this.endNos = endNos;
+  }
+
+  public void setReferences(Set<String> references) {
+    this.references = references;
+  }
+
+  public void setLeafRef(Set<String> leafRef) {
+    this.leafRef = leafRef;
+  }
+
+  public void setOwners(Set<String> owners) {
+    this.owners = owners;
   }
 }

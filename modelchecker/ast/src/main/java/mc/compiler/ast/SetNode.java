@@ -1,11 +1,10 @@
 package mc.compiler.ast;
 
+import mc.util.Location;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import mc.util.Location;
 
 /**
  * SetNode contains a set of transitions, or ranges.
@@ -20,8 +19,6 @@ import mc.util.Location;
  * @see FunctionNode
  * @see ASTNode
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class SetNode extends ASTNode {
 
   /**
@@ -64,5 +61,54 @@ public class SetNode extends ASTNode {
     sb.append("Set "+ set);
     rangeMap.forEach((k,v)->sb.append(k+"->"+v.myString()+", "));
     return sb.toString();
+  }
+
+  public List<String> getSet() {
+    return this.set;
+  }
+
+  public Map<Integer, RangesNode> getRangeMap() {
+    return this.rangeMap;
+  }
+
+  public void setSet(List<String> set) {
+    this.set = set;
+  }
+
+  public void setRangeMap(Map<Integer, RangesNode> rangeMap) {
+    this.rangeMap = rangeMap;
+  }
+
+  public String toString() {
+    return "SetNode(set=" + this.getSet() + ", rangeMap=" + this.getRangeMap() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof SetNode)) return false;
+    final SetNode other = (SetNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$set = this.getSet();
+    final Object other$set = other.getSet();
+    if (this$set == null ? other$set != null : !this$set.equals(other$set)) return false;
+    final Object this$rangeMap = this.getRangeMap();
+    final Object other$rangeMap = other.getRangeMap();
+    if (this$rangeMap == null ? other$rangeMap != null : !this$rangeMap.equals(other$rangeMap)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof SetNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $set = this.getSet();
+    result = result * PRIME + ($set == null ? 43 : $set.hashCode());
+    final Object $rangeMap = this.getRangeMap();
+    result = result * PRIME + ($rangeMap == null ? 43 : $rangeMap.hashCode());
+    return result;
   }
 }

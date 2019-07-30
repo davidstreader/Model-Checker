@@ -4,19 +4,20 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.microsoft.z3.*;
-
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.SneakyThrows;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
+
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A class that is able to simplify expressions using Z3
@@ -35,42 +36,382 @@ public class Expression {
       Input  expresion "expr" + evaluation "variables"
       Will need to have typed variables  and Substitute to call the appropriate Z3 substitution
      */
-    @Data
-    @AllArgsConstructor
     private static class Substitute {
         Context ctx;
         Map<String,Integer> variables;
         Expr expr;
+
+      public Substitute(Context ctx, Map<String, Integer> variables, Expr expr) {
+        this.ctx = ctx;
+        this.variables = variables;
+        this.expr = expr;
+      }
+
+      public Context getCtx() {
+        return this.ctx;
+      }
+
+      public Map<String, Integer> getVariables() {
+        return this.variables;
+      }
+
+      public Expr getExpr() {
+        return this.expr;
+      }
+
+      public void setCtx(Context ctx) {
+        this.ctx = ctx;
+      }
+
+      public void setVariables(Map<String, Integer> variables) {
+        this.variables = variables;
+      }
+
+      public void setExpr(Expr expr) {
+        this.expr = expr;
+      }
+
+      public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof Substitute)) return false;
+        final Substitute other = (Substitute) o;
+        if (!other.canEqual((Object) this)) return false;
+        final Object this$ctx = this.getCtx();
+        final Object other$ctx = other.getCtx();
+        if (this$ctx == null ? other$ctx != null : !this$ctx.equals(other$ctx)) return false;
+        final Object this$variables = this.getVariables();
+        final Object other$variables = other.getVariables();
+        if (this$variables == null ? other$variables != null : !this$variables.equals(other$variables)) return false;
+        final Object this$expr = this.getExpr();
+        final Object other$expr = other.getExpr();
+        if (this$expr == null ? other$expr != null : !this$expr.equals(other$expr)) return false;
+        return true;
+      }
+
+      protected boolean canEqual(final Object other) {
+        return other instanceof Substitute;
+      }
+
+      public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final Object $ctx = this.getCtx();
+        result = result * PRIME + ($ctx == null ? 43 : $ctx.hashCode());
+        final Object $variables = this.getVariables();
+        result = result * PRIME + ($variables == null ? 43 : $variables.hashCode());
+        final Object $expr = this.getExpr();
+        result = result * PRIME + ($expr == null ? 43 : $expr.hashCode());
+        return result;
+      }
+
+      public String toString() {
+        return "Expression.Substitute(ctx=" + this.getCtx() + ", variables=" + this.getVariables() + ", expr=" + this.getExpr() + ")";
+      }
     }
-    @Data
-    @AllArgsConstructor
     private static class SubstituteReals {
         Context ctx;
         Map<String,Double> variables;
         Expr expr;
+
+      public SubstituteReals(Context ctx, Map<String, Double> variables, Expr expr) {
+        this.ctx = ctx;
+        this.variables = variables;
+        this.expr = expr;
+      }
+
+      public Context getCtx() {
+        return this.ctx;
+      }
+
+      public Map<String, Double> getVariables() {
+        return this.variables;
+      }
+
+      public Expr getExpr() {
+        return this.expr;
+      }
+
+      public void setCtx(Context ctx) {
+        this.ctx = ctx;
+      }
+
+      public void setVariables(Map<String, Double> variables) {
+        this.variables = variables;
+      }
+
+      public void setExpr(Expr expr) {
+        this.expr = expr;
+      }
+
+      public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof SubstituteReals)) return false;
+        final SubstituteReals other = (SubstituteReals) o;
+        if (!other.canEqual((Object) this)) return false;
+        final Object this$ctx = this.getCtx();
+        final Object other$ctx = other.getCtx();
+        if (this$ctx == null ? other$ctx != null : !this$ctx.equals(other$ctx)) return false;
+        final Object this$variables = this.getVariables();
+        final Object other$variables = other.getVariables();
+        if (this$variables == null ? other$variables != null : !this$variables.equals(other$variables)) return false;
+        final Object this$expr = this.getExpr();
+        final Object other$expr = other.getExpr();
+        if (this$expr == null ? other$expr != null : !this$expr.equals(other$expr)) return false;
+        return true;
+      }
+
+      protected boolean canEqual(final Object other) {
+        return other instanceof SubstituteReals;
+      }
+
+      public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final Object $ctx = this.getCtx();
+        result = result * PRIME + ($ctx == null ? 43 : $ctx.hashCode());
+        final Object $variables = this.getVariables();
+        result = result * PRIME + ($variables == null ? 43 : $variables.hashCode());
+        final Object $expr = this.getExpr();
+        result = result * PRIME + ($expr == null ? 43 : $expr.hashCode());
+        return result;
+      }
+
+      public String toString() {
+        return "Expression.SubstituteReals(ctx=" + this.getCtx() + ", variables=" + this.getVariables() + ", expr=" + this.getExpr() + ")";
+      }
     }
-    @Data
-    @AllArgsConstructor
     private static class And {
         Context ctx;
         Expr expr1;
         Map<String,Integer> variables1;
         Expr expr2;
         Map<String,Integer> variables2;
+
+      public And(Context ctx, Expr expr1, Map<String, Integer> variables1, Expr expr2, Map<String, Integer> variables2) {
+        this.ctx = ctx;
+        this.expr1 = expr1;
+        this.variables1 = variables1;
+        this.expr2 = expr2;
+        this.variables2 = variables2;
+      }
+
+      public Context getCtx() {
+        return this.ctx;
+      }
+
+      public Expr getExpr1() {
+        return this.expr1;
+      }
+
+      public Map<String, Integer> getVariables1() {
+        return this.variables1;
+      }
+
+      public Expr getExpr2() {
+        return this.expr2;
+      }
+
+      public Map<String, Integer> getVariables2() {
+        return this.variables2;
+      }
+
+      public void setCtx(Context ctx) {
+        this.ctx = ctx;
+      }
+
+      public void setExpr1(Expr expr1) {
+        this.expr1 = expr1;
+      }
+
+      public void setVariables1(Map<String, Integer> variables1) {
+        this.variables1 = variables1;
+      }
+
+      public void setExpr2(Expr expr2) {
+        this.expr2 = expr2;
+      }
+
+      public void setVariables2(Map<String, Integer> variables2) {
+        this.variables2 = variables2;
+      }
+
+      public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof And)) return false;
+        final And other = (And) o;
+        if (!other.canEqual((Object) this)) return false;
+        final Object this$ctx = this.getCtx();
+        final Object other$ctx = other.getCtx();
+        if (this$ctx == null ? other$ctx != null : !this$ctx.equals(other$ctx)) return false;
+        final Object this$expr1 = this.getExpr1();
+        final Object other$expr1 = other.getExpr1();
+        if (this$expr1 == null ? other$expr1 != null : !this$expr1.equals(other$expr1)) return false;
+        final Object this$variables1 = this.getVariables1();
+        final Object other$variables1 = other.getVariables1();
+        if (this$variables1 == null ? other$variables1 != null : !this$variables1.equals(other$variables1))
+          return false;
+        final Object this$expr2 = this.getExpr2();
+        final Object other$expr2 = other.getExpr2();
+        if (this$expr2 == null ? other$expr2 != null : !this$expr2.equals(other$expr2)) return false;
+        final Object this$variables2 = this.getVariables2();
+        final Object other$variables2 = other.getVariables2();
+        if (this$variables2 == null ? other$variables2 != null : !this$variables2.equals(other$variables2))
+          return false;
+        return true;
+      }
+
+      protected boolean canEqual(final Object other) {
+        return other instanceof And;
+      }
+
+      public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final Object $ctx = this.getCtx();
+        result = result * PRIME + ($ctx == null ? 43 : $ctx.hashCode());
+        final Object $expr1 = this.getExpr1();
+        result = result * PRIME + ($expr1 == null ? 43 : $expr1.hashCode());
+        final Object $variables1 = this.getVariables1();
+        result = result * PRIME + ($variables1 == null ? 43 : $variables1.hashCode());
+        final Object $expr2 = this.getExpr2();
+        result = result * PRIME + ($expr2 == null ? 43 : $expr2.hashCode());
+        final Object $variables2 = this.getVariables2();
+        result = result * PRIME + ($variables2 == null ? 43 : $variables2.hashCode());
+        return result;
+      }
+
+      public String toString() {
+        return "Expression.And(ctx=" + this.getCtx() + ", expr1=" + this.getExpr1() + ", variables1=" + this.getVariables1() + ", expr2=" + this.getExpr2() + ", variables2=" + this.getVariables2() + ")";
+      }
     }
-    @Data
-    @AllArgsConstructor
     private static class myExp {
         Context ctx;
         Expr expr;
         Map<String,Integer> variables;
 
+      public myExp(Context ctx, Expr expr, Map<String, Integer> variables) {
+        this.ctx = ctx;
+        this.expr = expr;
+        this.variables = variables;
+      }
+
+      public Context getCtx() {
+        return this.ctx;
+      }
+
+      public Expr getExpr() {
+        return this.expr;
+      }
+
+      public Map<String, Integer> getVariables() {
+        return this.variables;
+      }
+
+      public void setCtx(Context ctx) {
+        this.ctx = ctx;
+      }
+
+      public void setExpr(Expr expr) {
+        this.expr = expr;
+      }
+
+      public void setVariables(Map<String, Integer> variables) {
+        this.variables = variables;
+      }
+
+      public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof myExp)) return false;
+        final myExp other = (myExp) o;
+        if (!other.canEqual((Object) this)) return false;
+        final Object this$ctx = this.getCtx();
+        final Object other$ctx = other.getCtx();
+        if (this$ctx == null ? other$ctx != null : !this$ctx.equals(other$ctx)) return false;
+        final Object this$expr = this.getExpr();
+        final Object other$expr = other.getExpr();
+        if (this$expr == null ? other$expr != null : !this$expr.equals(other$expr)) return false;
+        final Object this$variables = this.getVariables();
+        final Object other$variables = other.getVariables();
+        if (this$variables == null ? other$variables != null : !this$variables.equals(other$variables)) return false;
+        return true;
+      }
+
+      protected boolean canEqual(final Object other) {
+        return other instanceof myExp;
+      }
+
+      public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final Object $ctx = this.getCtx();
+        result = result * PRIME + ($ctx == null ? 43 : $ctx.hashCode());
+        final Object $expr = this.getExpr();
+        result = result * PRIME + ($expr == null ? 43 : $expr.hashCode());
+        final Object $variables = this.getVariables();
+        result = result * PRIME + ($variables == null ? 43 : $variables.hashCode());
+        return result;
+      }
+
+      public String toString() {
+        return "Expression.myExp(ctx=" + this.getCtx() + ", expr=" + this.getExpr() + ", variables=" + this.getVariables() + ")";
+      }
     }
-    @Data
-    @AllArgsConstructor
     private static class AndAll {
         Context ctx;
         List<myExp> andall;
+
+      public AndAll(Context ctx, List<myExp> andall) {
+        this.ctx = ctx;
+        this.andall = andall;
+      }
+
+      public Context getCtx() {
+        return this.ctx;
+      }
+
+      public List<myExp> getAndall() {
+        return this.andall;
+      }
+
+      public void setCtx(Context ctx) {
+        this.ctx = ctx;
+      }
+
+      public void setAndall(List<myExp> andall) {
+        this.andall = andall;
+      }
+
+      public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof AndAll)) return false;
+        final AndAll other = (AndAll) o;
+        if (!other.canEqual((Object) this)) return false;
+        final Object this$ctx = this.getCtx();
+        final Object other$ctx = other.getCtx();
+        if (this$ctx == null ? other$ctx != null : !this$ctx.equals(other$ctx)) return false;
+        final Object this$andall = this.getAndall();
+        final Object other$andall = other.getAndall();
+        if (this$andall == null ? other$andall != null : !this$andall.equals(other$andall)) return false;
+        return true;
+      }
+
+      protected boolean canEqual(final Object other) {
+        return other instanceof AndAll;
+      }
+
+      public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final Object $ctx = this.getCtx();
+        result = result * PRIME + ($ctx == null ? 43 : $ctx.hashCode());
+        final Object $andall = this.getAndall();
+        result = result * PRIME + ($andall == null ? 43 : $andall.hashCode());
+        return result;
+      }
+
+      public String toString() {
+        return "Expression.AndAll(ctx=" + this.getCtx() + ", andall=" + this.getAndall() + ")";
+      }
     }
     /*
     LoadingCache

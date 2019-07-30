@@ -1,9 +1,8 @@
 package mc.compiler.ast;
 
-import java.util.List;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
+
+import java.util.List;
 
 /**
  * This contains the relabel for a given root process.
@@ -20,8 +19,6 @@ import mc.util.Location;
  * @see ProcessRootNode
  * @see RelabelElementNode
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class RelabelNode extends ASTNode {
 
   /**
@@ -38,5 +35,41 @@ public class RelabelNode extends ASTNode {
   public RelabelNode(List<RelabelElementNode> relabels, Location location) {
     super(location,"RelabelNode");
     this.relabels = relabels;
+  }
+
+  public List<RelabelElementNode> getRelabels() {
+    return this.relabels;
+  }
+
+  public void setRelabels(List<RelabelElementNode> relabels) {
+    this.relabels = relabels;
+  }
+
+  public String toString() {
+    return "RelabelNode(relabels=" + this.getRelabels() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof RelabelNode)) return false;
+    final RelabelNode other = (RelabelNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$relabels = this.getRelabels();
+    final Object other$relabels = other.getRelabels();
+    if (this$relabels == null ? other$relabels != null : !this$relabels.equals(other$relabels)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof RelabelNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $relabels = this.getRelabels();
+    result = result * PRIME + ($relabels == null ? 43 : $relabels.hashCode());
+    return result;
   }
 }

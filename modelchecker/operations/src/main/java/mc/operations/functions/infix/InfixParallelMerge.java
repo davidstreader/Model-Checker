@@ -1,6 +1,5 @@
 package mc.operations.functions.infix;
 
-import lombok.Value;
 import mc.exceptions.CompilationException;
 import mc.operations.impl.AutomataParallelMerge;
 import mc.plugins.IProcessInfixFunction;
@@ -13,8 +12,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-@Value
-public class InfixParallelMerge implements IProcessInfixFunction {
+public final class InfixParallelMerge implements IProcessInfixFunction {
+
+  public InfixParallelMerge() {
+  }
 
   /**
    * A method of tracking the function.
@@ -68,5 +69,21 @@ public class InfixParallelMerge implements IProcessInfixFunction {
   @Override
   public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2, Set<String> flags) throws CompilationException {
     return PetrinetParallelMergeFunction.compose(petrinet1,petrinet2);
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof InfixParallelMerge)) return false;
+    final InfixParallelMerge other = (InfixParallelMerge) o;
+    return true;
+  }
+
+  public int hashCode() {
+    int result = 1;
+    return result;
+  }
+
+  public String toString() {
+    return "InfixParallelMerge()";
   }
 }

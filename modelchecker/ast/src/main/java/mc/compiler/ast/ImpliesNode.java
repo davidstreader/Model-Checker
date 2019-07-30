@@ -1,7 +1,5 @@
 package mc.compiler.ast;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 
@@ -12,8 +10,6 @@ import mc.util.Location;
  * @see ASTNode
  *
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class ImpliesNode extends OperationNode {
 
   /**
@@ -62,6 +58,49 @@ public class ImpliesNode extends OperationNode {
   @Override
   public ImpliesNode instantiate(String from , String to) {
     return new ImpliesNode(firstOperation.instantiate(from,to),secondOperation.instantiate(from,to), getLocation());
+  }
+
+  public void setFirstOperation(ASTNode firstOperation) {
+    this.firstOperation = firstOperation;
+  }
+
+  public void setSecondOperation(ASTNode secondOperation) {
+    this.secondOperation = secondOperation;
+  }
+
+  public String toString() {
+    return "ImpliesNode(firstOperation=" + this.getFirstOperation() + ", secondOperation=" + this.getSecondOperation() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof ImpliesNode)) return false;
+    final ImpliesNode other = (ImpliesNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$firstOperation = this.getFirstOperation();
+    final Object other$firstOperation = other.getFirstOperation();
+    if (this$firstOperation == null ? other$firstOperation != null : !this$firstOperation.equals(other$firstOperation))
+      return false;
+    final Object this$secondOperation = this.getSecondOperation();
+    final Object other$secondOperation = other.getSecondOperation();
+    if (this$secondOperation == null ? other$secondOperation != null : !this$secondOperation.equals(other$secondOperation))
+      return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof ImpliesNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $firstOperation = this.getFirstOperation();
+    result = result * PRIME + ($firstOperation == null ? 43 : $firstOperation.hashCode());
+    final Object $secondOperation = this.getSecondOperation();
+    result = result * PRIME + ($secondOperation == null ? 43 : $secondOperation.hashCode());
+    return result;
   }
 }
 

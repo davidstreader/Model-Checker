@@ -1,19 +1,14 @@
 package mc.operations.functions.infix;
 
-import java.util.*;
-
-import com.microsoft.z3.Expr;
-import mc.compiler.ast.ChoiceNode;
-import mc.compiler.ast.CompositeNode;
-import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.ProcessNode;
-import mc.compiler.ast.TerminalNode;
+import mc.compiler.ast.*;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
+
+import java.util.*;
 
 /**
  * The sliding infix function is a "decaying choice" or "sliding choice" operation.

@@ -9,7 +9,10 @@ import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.SequentialInfixFun;
 import mc.processmodels.petrinet.Petrinet;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SequentialInfixFunction implements IProcessInfixFunction {

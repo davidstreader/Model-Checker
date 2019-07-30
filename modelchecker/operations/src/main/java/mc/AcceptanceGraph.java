@@ -1,7 +1,5 @@
 package mc;
 
-import lombok.Getter;
-import lombok.Setter;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
@@ -17,13 +15,9 @@ import java.util.stream.Collectors;
  */
 public class AcceptanceGraph {
 
-  @Getter
-  @Setter
   private Automaton a;  // A dfa
 
   //Data built by nfa2dfa  and used in node sub - comparision
-  @Getter
-  @Setter
   private Map<AutomatonNode, List<Set<String>>> node2AcceptanceSets;
 
 
@@ -473,5 +467,21 @@ public class AcceptanceGraph {
     return "**Acceptance Graph  \n  " + this.getA().myString() + " " +
       this.node2ac_toString() + "**End Acceptance Graph ";
 
+  }
+
+  public Automaton getA() {
+    return this.a;
+  }
+
+  public Map<AutomatonNode, List<Set<String>>> getNode2AcceptanceSets() {
+    return this.node2AcceptanceSets;
+  }
+
+  public void setA(Automaton a) {
+    this.a = a;
+  }
+
+  public void setNode2AcceptanceSets(Map<AutomatonNode, List<Set<String>>> node2AcceptanceSets) {
+    this.node2AcceptanceSets = node2AcceptanceSets;
   }
 }

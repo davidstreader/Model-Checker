@@ -1,13 +1,10 @@
 package mc.compiler;
 
-import java.util.ArrayList;
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.OperationNode;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
+
+import java.util.List;
 
 /**
  * For holding the output of operations in the operation block. Eg
@@ -16,7 +13,6 @@ import mc.util.Location;
  * P3 # P4.
  * }
  */
-@Getter
 public class OperationResult extends Result {
 
   private OperationNode op;
@@ -45,11 +41,42 @@ public class OperationResult extends Result {
 
   }
 
-  @AllArgsConstructor
-  @Getter
+  public OperationNode getOp() {
+    return this.op;
+  }
+
+  public String getResult() {
+    return this.result;
+  }
+
+  public boolean isRes() {
+    return this.res;
+  }
+
+  public String getExtra() {
+    return this.extra;
+  }
+
+  public List<String> getFailures() {
+    return this.failures;
+  }
+
   public static class OperationProcess {
     private String ident;
     private Location location;
+
+    public OperationProcess(String ident, Location location) {
+      this.ident = ident;
+      this.location = location;
+    }
+
+    public String getIdent() {
+      return this.ident;
+    }
+
+    public Location getLocation() {
+      return this.location;
+    }
   }
 
   public String myString() {

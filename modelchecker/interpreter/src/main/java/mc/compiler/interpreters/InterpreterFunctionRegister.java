@@ -1,10 +1,9 @@
 package mc.compiler.interpreters;
 
-import static mc.util.Utils.instantiateClass;
-
-import java.util.logging.Logger;
 import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
+
+import static mc.util.Utils.instantiateClass;
 
 public final class InterpreterFunctionRegister {
 

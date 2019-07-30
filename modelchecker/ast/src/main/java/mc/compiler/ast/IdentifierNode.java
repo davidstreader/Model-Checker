@@ -1,12 +1,9 @@
 package mc.compiler.ast;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 
 /**
@@ -18,8 +15,6 @@ import java.util.regex.Pattern;
  * @author Sanjay Govind
  * @see ReferenceNode
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class IdentifierNode extends ASTNode {
 
   /**
@@ -96,5 +91,54 @@ public class IdentifierNode extends ASTNode {
     //System.out.println("3 "+out.size()+"  "+out);
 
     return out;
+  }
+
+  public String getIdentifier() {
+    return this.identifier;
+  }
+
+  public String getDomain() {
+    return this.domain;
+  }
+
+  public void setIdentifier(String identifier) {
+    this.identifier = identifier;
+  }
+
+  public void setDomain(String domain) {
+    this.domain = domain;
+  }
+
+  public String toString() {
+    return "IdentifierNode(identifier=" + this.getIdentifier() + ", domain=" + this.getDomain() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof IdentifierNode)) return false;
+    final IdentifierNode other = (IdentifierNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    final Object this$identifier = this.getIdentifier();
+    final Object other$identifier = other.getIdentifier();
+    if (this$identifier == null ? other$identifier != null : !this$identifier.equals(other$identifier)) return false;
+    final Object this$domain = this.getDomain();
+    final Object other$domain = other.getDomain();
+    if (this$domain == null ? other$domain != null : !this$domain.equals(other$domain)) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof IdentifierNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    final Object $identifier = this.getIdentifier();
+    result = result * PRIME + ($identifier == null ? 43 : $identifier.hashCode());
+    final Object $domain = this.getDomain();
+    result = result * PRIME + ($domain == null ? 43 : $domain.hashCode());
+    return result;
   }
 }

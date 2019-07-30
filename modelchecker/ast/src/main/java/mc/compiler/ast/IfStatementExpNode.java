@@ -2,11 +2,9 @@ package mc.compiler.ast;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import java.util.Objects;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 import mc.util.Location;
+
+import java.util.Objects;
 
 /**
  *
@@ -24,16 +22,9 @@ import mc.util.Location;
  * @author Jacob Beal
  * @see ASTNode
  */
-@ToString
 public class IfStatementExpNode extends ASTNode {
-  @Setter
-  @Getter
   private BoolExpr condition;
-  @Setter
-  @Getter
   private ASTNode trueBranch;
-  @Setter
-  @Getter
   private ASTNode falseBranch;
   private Context z3Context;
 
@@ -134,5 +125,33 @@ public class IfStatementExpNode extends ASTNode {
       sb.append(falseBranch.myString());
 
     return sb.toString();
+  }
+
+  public String toString() {
+    return "IfStatementExpNode(condition=" + this.condition + ", trueBranch=" + this.trueBranch + ", falseBranch=" + this.falseBranch + ", z3Context=" + this.z3Context + ")";
+  }
+
+  public BoolExpr getCondition() {
+    return this.condition;
+  }
+
+  public ASTNode getTrueBranch() {
+    return this.trueBranch;
+  }
+
+  public ASTNode getFalseBranch() {
+    return this.falseBranch;
+  }
+
+  public void setCondition(BoolExpr condition) {
+    this.condition = condition;
+  }
+
+  public void setTrueBranch(ASTNode trueBranch) {
+    this.trueBranch = trueBranch;
+  }
+
+  public void setFalseBranch(ASTNode falseBranch) {
+    this.falseBranch = falseBranch;
   }
 }

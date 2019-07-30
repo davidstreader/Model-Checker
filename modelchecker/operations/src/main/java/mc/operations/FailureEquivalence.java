@@ -1,14 +1,9 @@
 package mc.operations;
 
-import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
-
-import java.util.*;
-
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.AcceptanceGraph;
 import mc.Constant;
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -16,6 +11,10 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.util.ColouringUtil;
+
+import java.util.*;
+
+import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
 
 /**
  * Failure equality is II-bisimulation of acceptance graphs

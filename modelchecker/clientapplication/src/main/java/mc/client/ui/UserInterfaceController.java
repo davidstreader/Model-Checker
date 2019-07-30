@@ -1,7 +1,6 @@
 package mc.client.ui;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import com.google.common.io.Files;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -12,34 +11,33 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.Alert;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
-
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import lombok.Getter;
-import mc.Constant;
 import mc.client.ModelView;
-import mc.compiler.*;
+import mc.compiler.CompilationObject;
+import mc.compiler.CompilationObservable;
 import mc.compiler.Compiler;
+import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
-import mc.util.LogAST;
 import mc.util.LogMessage;
 import mc.util.expr.Expression;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
-import mc.client.graph.GraphView;
 
 import javax.swing.*;
 import java.io.*;
 import java.net.URL;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
 
 import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
@@ -81,7 +79,6 @@ public class UserInterfaceController implements Initializable {
 
   private Thread buildThread = new Thread();
 
-  @Getter
   private ArrayDeque<String> recentFilePaths = new ArrayDeque<>();
 
 
@@ -563,6 +560,7 @@ public class UserInterfaceController implements Initializable {
   private void handleAddallModels(ActionEvent event) {
     ModelView.getInstance().addAllModels();
     SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
+      // refreshtransitionColor();
   }
 
   @FXML
@@ -810,4 +808,7 @@ public class UserInterfaceController implements Initializable {
   }
 
 
+  public ArrayDeque<String> getRecentFilePaths() {
+    return this.recentFilePaths;
+  }
 }

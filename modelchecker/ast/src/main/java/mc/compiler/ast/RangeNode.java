@@ -1,7 +1,5 @@
 package mc.compiler.ast;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 /**
@@ -15,8 +13,6 @@ import mc.util.Location;
  * @see ASTNode
  * @see RangesNode
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class RangeNode extends ASTNode {
 
   /**
@@ -39,5 +35,48 @@ public class RangeNode extends ASTNode {
     super(location,"Range");
     this.start = start;
     this.end = end;
+  }
+
+  public int getStart() {
+    return this.start;
+  }
+
+  public int getEnd() {
+    return this.end;
+  }
+
+  public void setStart(int start) {
+    this.start = start;
+  }
+
+  public void setEnd(int end) {
+    this.end = end;
+  }
+
+  public String toString() {
+    return "RangeNode(start=" + this.getStart() + ", end=" + this.getEnd() + ")";
+  }
+
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof RangeNode)) return false;
+    final RangeNode other = (RangeNode) o;
+    if (!other.canEqual((Object) this)) return false;
+    if (!super.equals(o)) return false;
+    if (this.getStart() != other.getStart()) return false;
+    if (this.getEnd() != other.getEnd()) return false;
+    return true;
+  }
+
+  protected boolean canEqual(final Object other) {
+    return other instanceof RangeNode;
+  }
+
+  public int hashCode() {
+    final int PRIME = 59;
+    int result = super.hashCode();
+    result = result * PRIME + this.getStart();
+    result = result * PRIME + this.getEnd();
+    return result;
   }
 }
