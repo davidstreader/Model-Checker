@@ -10,7 +10,18 @@ import java.util.stream.Collectors;
 
 public class CurrentMarkingsSeen {
   public static Map<String, Multiset<PetriNetPlace>> currentMarkingsSeen = new TreeMap<>();
-
+  private static Map<String, Multiset<PetriNetPlace>> rootMarkings = new TreeMap<>();
+  public static void addRootMarking(String pid,Multiset<PetriNetPlace> root) {
+      rootMarkings.put(pid,root);
+  }
+  public static void setCurrentMarkingsSeen(Map<String, Multiset<PetriNetPlace>> markToSee){
+      currentMarkingsSeen = new TreeMap<>();
+      currentMarkingsSeen.putAll(markToSee);
+      //System.out.println("sett cMS "+currentMarkingsSeen.keySet());
+  }
+  public static Map<String, Multiset<PetriNetPlace>> getRootMarkings() {
+      return rootMarkings;
+  }
   public static String myString() {
     StringBuilder sb = new StringBuilder();
     return currentMarkingsSeen.keySet().stream()

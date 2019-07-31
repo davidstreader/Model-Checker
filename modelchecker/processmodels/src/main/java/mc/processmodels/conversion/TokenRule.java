@@ -73,7 +73,6 @@ public class TokenRule {
     Petrinet convertFrom = cFrom.copy();
     Automaton outputAutomaton = new Automaton(convertFrom.getId(), false);
     //System.out.println("TOKEN RULE  STARTING \n    " + convertFrom.myString());
-    //MyAssert.myAssert(convertFrom.validatePNet("Token Rule input "+convertFrom.getId()+ " VALID ="), "Token Rule precondition");
     MyAssert.validate(convertFrom,"Token Rule precondition ");
     //assert convertFrom.validatePNet("GOT YOU"): "Token Rule precondition";
 

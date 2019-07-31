@@ -190,8 +190,10 @@ public class CanvasMouseListener implements MouseListener {
                 }
                 // Reset the previous to unselected Place
                 currentlyColored.clear();
+                CurrentMarkingsSeen.setCurrentMarkingsSeen(CurrentMarkingsSeen.getRootMarkings());
                 refreshtransitionColor();
                 removeColorOwenedNodes("");
+
             }
             // needs to be here for Transitions
             //System.out.println("DoubleClickHandler  mappings");
@@ -215,6 +217,7 @@ public class CanvasMouseListener implements MouseListener {
                 }
             }
         }
+
     }
 /*
    This marks a "track"  all places with same ownership" and stores the old colors when needed

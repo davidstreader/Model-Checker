@@ -901,7 +901,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     selfRef = false;
     Automaton a = getLocalAutomaton(context, alpha, func);
     //.out.println("interpretFunction "+a.myString());
-    //processMap.put("DEBUGing", a);
+
+    Automaton debug = a.copy(); debug.setId("debug");
+    processMap.put(debug.getId(),debug);
     selfRef = true;
     //System.out.println("function "+func.myString()+ " -> "+a.myString());
     processed = OwnersRule.ownersRule(a);

@@ -22,6 +22,7 @@ public class Constant {
     public static final String UNFAIR = "unfair";
     public static final String OWNED = "owned";
     public static final String SEQUENTIAL = "sequential";
+    public static final String CONCURRENT = "concurrent";
     public static final String FORCED = "forced";
 
     public static final String AUTOMATA = "automata";

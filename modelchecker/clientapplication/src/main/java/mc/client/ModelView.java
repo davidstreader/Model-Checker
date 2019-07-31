@@ -445,6 +445,7 @@ public class ModelView implements Observer {
     });
     CurrentMarkingsSeen.
     currentMarkingsSeen.put(petri.getId(),rts);
+    CurrentMarkingsSeen.addRootMarking(petri.getId(),rts);
 
     petri.getTransitions().values().forEach(transition -> {
       String lab=transition.getLabel()+".";

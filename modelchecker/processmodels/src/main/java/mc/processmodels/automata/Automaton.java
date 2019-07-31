@@ -1228,7 +1228,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   }
 
   public Automaton reId(String tag) throws CompilationException {
-    //System.out.println("Start reId "+this.myString());
+    System.out.println("Start reId "+this.myString());
     Automaton reIded = new Automaton(getId() + tag, !CONSTRUCT_ROOT);
     int newLabelNumber = 0;
     setId(getId() + tag);
@@ -1301,7 +1301,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     //System.out.println("2 "+ reIded.myString());
 
     reIded.copyProperties(this);
-    //System.out.println("       reId Ends \n" + reIded.myString());
+    System.out.println("       reId Ends \n" + reIded.myString());
     return reIded;
   }
 
