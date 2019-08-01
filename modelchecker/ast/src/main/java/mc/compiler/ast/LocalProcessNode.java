@@ -26,7 +26,7 @@ public class LocalProcessNode extends ASTNode {
     private String identifier;
 
     public void setIdentifierOnce(String var) {
-        System.out.println("setIdentifierOnce var " + var);
+        //System.out.println("setIdentifierOnce var " + var);
         if (identifier.contains(var)) return;
         else {
             if (identifier.contains("[")) {

@@ -69,7 +69,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
     //vv.getRenderContext().getBasicTransformer().inverseViewTransform(point);
     GraphElementAccessor<GraphNode, DirectedEdge> pickSupport = vv.getPickSupport();
     Layout<GraphNode, DirectedEdge> layout = vv.getGraphLayout();
-    GraphNode v = null;
+    GraphNode v = GraphNode.dummy();
     if (pickSupport != null) {
       v = pickSupport.getVertex(layout, point.getX(), point.getY());
     }

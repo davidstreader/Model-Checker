@@ -85,7 +85,9 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable {
             //Color fillColor = Color.decode("#808080");
             Color fillColor = NodeStates.CONCURRENT.getColorNodes(); // CONCURRENT;
             if (i.hasNext()) {
-                pmo = compiledResult.getProcessMap().get(i.next().getProcessModelId());
+                GraphNode gn = i.next();
+                //System.out.println("gn "+gn.toString());
+                pmo = compiledResult.getProcessMap().get(gn.getProcessModelId());
                if (pmo.isSequential()) {
                    fillColor = NodeStates.SEQUENTIAL.getColorNodes();
                 }

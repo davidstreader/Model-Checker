@@ -743,7 +743,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   private Petrinet interpretIdentifier(IdentifierNode identifier)
     throws CompilationException, InterruptedException {
 
-    // System.out.println("interp IdNode "+ identifier.myString());
+    //System.out.println("interp IdNode "+ identifier.myString());
     //System.out.println("processMap "+processMap.keySet());
 
     String id = identifier.getIdentifier();
@@ -901,9 +901,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     selfRef = false;
     Automaton a = getLocalAutomaton(context, alpha, func);
     //.out.println("interpretFunction "+a.myString());
-
+    /* used to look at output of abstraction prior to a2p2a */
     Automaton debug = a.copy(); debug.setId("debug");
     processMap.put(debug.getId(),debug);
+
     selfRef = true;
     //System.out.println("function "+func.myString()+ " -> "+a.myString());
     processed = OwnersRule.ownersRule(a);
@@ -1071,25 +1072,26 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
                                 Set<String> alpha,
                                 ASTNode ast) throws CompilationException, InterruptedException {
     //System.out.println("getAutomaton "+ ast.getName());
-    Automaton a;
+    Automaton NewAutomata;
     if (ast instanceof FunctionNode) {  //first time NOT allways true
       FunctionNode func = (FunctionNode) ast;
       //System.out.println("getA Fun "+func.myString());
+        /* Recurive  application of Automata -> Automata functions */
       Automaton ain = getAutomaton(processMap, interpreter, context, alpha, ((FunctionNode) ast).getProcesses().get(0));
       // Automaton ain =  getAutomaton(processMap,interpreter,context,alpha,);
       Set<String> alphaFlags = new TreeSet<>();
       alphaFlags.addAll(alpha);  // add the listening events for revAP2BC
       alphaFlags.addAll(func.getFlags());
-      a = instantiateClass(functions.get(func.getFunction()))
+      NewAutomata = instantiateClass(functions.get(func.getFunction()))
         .compose(ain.getId() + ".fn", alphaFlags, context, ain);
-       // System.out.println("getA Fun RETURNS \n"+a.myString());
+       //System.out.println("getA Fun RETURNS \n"+a.myString());
     } else if (ast instanceof IdentifierNode) { //may be true first time
       String id = ((IdentifierNode) ast).getIdentifier();
       //System.out.println("getA Ident STARTS " + id);
       if (processMap.containsKey(id)) {
-        a = ((Automaton) ((MultiProcessModel) processMap.get(id)).getProcess(ProcessType.AUTOMATA)).copy();
+        NewAutomata = ((Automaton) ((MultiProcessModel) processMap.get(id)).getProcess(ProcessType.AUTOMATA)).copy();
       } else {
-        a = (Automaton) interpreter.interpret(Constant.AUTOMATA,
+        NewAutomata = (Automaton) interpreter.interpret(Constant.AUTOMATA,
           ast, ast.myString(), processMap, context, alpha);
       }
       // a = interpretAutIdentifier(((IdentifierNode) ast), "ping");
@@ -1098,10 +1100,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       //System.out.println("getA  else STARTS");
       Petrinet petri = (Petrinet) interpreter.interpret(Constant.PETRINET,
         ast, "temp", processMap, context, alpha);
-      a = TokenRule.tokenRule(petri);
+      NewAutomata = TokenRule.tokenRule(petri);
       //System.out.println("getA Else RETURNS \n"+a.myString());
     }
-    return a;
+    return NewAutomata;
   }
 
   /*  Called LOCALLY

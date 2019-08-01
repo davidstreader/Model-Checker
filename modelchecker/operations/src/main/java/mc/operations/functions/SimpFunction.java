@@ -111,7 +111,7 @@ public class SimpFunction implements IProcessFunction {
     automaton.setRootFromNodes();
     //MyAssert.myAssert(automaton.validateAutomaton("Simp output "+automaton.getId()+" vlaid = "), "Simp input Failure");
     MyAssert.validate(automaton, "Simp output ");
-    System.out.println("Simp out " + automaton.myString() + "\n");
+    //System.out.println("Simp out " + automaton.myString() + "\n");
     return automaton;
   }
 
@@ -204,10 +204,10 @@ public class SimpFunction implements IProcessFunction {
           continue;
         } else {
           try {
-            System.out.println("Merging " + selectedNode.getId() + " " + automatonNode.getId());
+            //System.out.println("Merging " + selectedNode.getId() + " " + automatonNode.getId());
             //combineNodes will remove mergedNode and return  new merged node
             ain.mergeAutNodes(selectedNode, automatonNode, context);
-            System.out.println("   Merged result " + ain.myString());
+            //System.out.println("   Merged result " + ain.myString());
           } catch (InterruptedException ignored) {
             throw new CompilationException(getClass(), "INTERRUPTED EXCEPTION");
           }

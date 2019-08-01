@@ -17,11 +17,21 @@ public class GraphNode {
   private final String label;
   private final ProcessModelObject representedFeature; // The automaton node, or petrinet place that this represents.
   public String toString() {
-    return type+" "+ processModelId+" "+ nodeId+" "+ label;
+      return type+" "+ processModelId+" "+ nodeId+" "+ label;
   }
 
   public GraphNode copy(){
     return new GraphNode(processModelId,nodeId, nodeColor,oldColor,type, label, representedFeature );
+  }
+  private GraphNode(String pid , String nid) {
+      processModelId = pid;
+      nodeId = nid;
+      label = "dummy";
+      type = null;
+      representedFeature = null;
+  }
+  public static GraphNode dummy(){
+      return new GraphNode("Dummy", "Dummy");
   }
 }
 

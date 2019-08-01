@@ -59,7 +59,7 @@ public class Compiler {
       messageQueue.add(new LogMessage(Runtime.class.getPackage().getImplementationVersion()+ " XXXXXXXXX "));
       messageQueue.add(new LogMessage("Compile  starting  symbolic "+symb.get()));
       System.out.println(Runtime.class.getPackage().getImplementationVersion());
-    System.out.println("Compiler just called parse anf output " + ast.myString());
+    //System.out.println("Compiler called parse that output " + ast.myString());
     return compile(ast, code,  z3Context, messageQueue,symb);
   }
 

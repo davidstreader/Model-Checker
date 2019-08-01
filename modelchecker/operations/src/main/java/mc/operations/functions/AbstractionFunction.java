@@ -110,13 +110,13 @@ public class AbstractionFunction implements IProcessFunction {
         Automaton startA = automata[0].reId("a"); // does the copy
 //int nodeLable
         boolean concurrent = flags.contains(Constant.CONCURRENT);
-     //   System.out.println("***ABSTRACTION flags " + flags + "\n" + startA.myString());
+     //System.out.println("***ABSTRACTION flags " + flags + "\n" + startA.myString());
         MyAssert.validate(startA, "Abstraction input ");
 
         //reduce the state space and remove all loops - Tarjen
         Automaton abstraction = absMerge(flags, context, startA);
 
-       // System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString());
+       //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString());
         if (!concurrent) {
             observationalSemantics(flags, abstraction, context);
             abstraction.setSequential(true);
@@ -124,7 +124,7 @@ public class AbstractionFunction implements IProcessFunction {
         //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString());
         //abstraction =  AutomataReachability.removeUnreachableNodes(abstraction);
         MyAssert.validate(abstraction, "Abstraction output ");
-        System.out.println("\n*****Abs final \n*****Abs final\n" + abstraction.myString() + "\n");
+        //System.out.println("\n*****Abs final \n*****Abs final\n" + abstraction.myString() + "\n");
         return abstraction;
     }
 
@@ -273,7 +273,7 @@ public class AbstractionFunction implements IProcessFunction {
         //merge all strongly tau connected components
         sf.mergeNodes(startA, components, context);
         //startA.validateAutomaton("");
-      //  System.out.println("ABS MERGED " + startA.myString());
+      //System.out.println("ABS MERGED " + startA.myString());
         startA.removeDuplicateEdges();
         // 1  loops may have been added AND must be removed before pruning
         // May be redundent  now Tarjan working
@@ -282,7 +282,7 @@ public class AbstractionFunction implements IProcessFunction {
 
         //pruning is well defined on failure semantics not bisimulation
         Automaton abstraction = pruneHiddenNodes(context, startA, cong);
-        System.out.println("ABS PRUNED " + abstraction.myString());
+        //System.out.println("ABS PRUNED " + abstraction.myString());
         abstraction.removeDuplicateEdges();
         abstraction.setEndFromNodes();
         abstraction.setRootFromNodes();
@@ -493,12 +493,12 @@ public class AbstractionFunction implements IProcessFunction {
     private Automaton pruneHiddenNodes(Context context, Automaton autoIN, boolean cong)
         throws CompilationException {
         Automaton abstraction = autoIN; //.copy();
-        System.out.println("PRUNE start " + abstraction.myString());
+        //System.out.println("PRUNE start " + abstraction.myString());
         List<AutomatonNode> nodes = abstraction.getNodes(); // New List
 
         for (AutomatonNode n : nodes) {
             if (n.isEND() || n.isStartNode()) continue;
-            System.out.println("  testing "+n.myString());
+            //System.out.println("  testing "+n.myString());
             List<AutomatonEdge> inoutEdges =
                 new ArrayList<>(n.getIncomingEdges());
             inoutEdges.addAll(n.getOutgoingEdges());
@@ -509,19 +509,19 @@ public class AbstractionFunction implements IProcessFunction {
             for (AutomatonEdge ed:inoutEdges) {
                 if (!ed.isHidden()) {
                     del = false;
-                    System.out.println("  del false "+ed.myString());
+                    //System.out.println("  del false "+ed.myString());
                     break;
                 }
             }
             if (!del) continue;
 
-          //  System.out.println("pruneHidden " + n.getId() + "obs cnt " + observableEdges.size() + " tau Own " + tauOwners);
-          //  observableEdges.stream().forEach(x -> System.out.println(" " + x.myString()));
+          //System.out.println("pruneHidden " + n.getId() + "obs cnt " + observableEdges.size() + " tau Own " + tauOwners);
+          //  observableEdges.stream().forEach(x ->System.out.println(" " + x.myString()));
 
 
             // Now do the pruning
 
-            System.out.println("  PRUNING " + n.myString());
+            //System.out.println("  PRUNING " + n.myString());
             try {
                 for (AutomatonEdge second : n.getOutgoingEdges()) {
                     for (AutomatonEdge first : n.getIncomingEdges()) {
@@ -532,11 +532,11 @@ public class AbstractionFunction implements IProcessFunction {
 
                         ne.setEdgeOwners(first.getEdgeOwners());
                         ne.addEdgeOwners(second.getEdgeOwners());
-                        System.out.println("Prune adds " + ne.myString());
+                        //System.out.println("Prune adds " + ne.myString());
                     }
                 }
 
-                System.out.println("Pruned del " + n.myString());
+                //System.out.println("Pruned del " + n.myString());
                 abstraction.removeNode(n);  // tidies up all the edges
             } catch (InterruptedException ignored) {
                 throw new CompilationException(this.getClass(), null);
@@ -607,7 +607,7 @@ public class AbstractionFunction implements IProcessFunction {
                             if (first.getFrom().equals(second.getTo())) continue; //do not add 1-loop
                             AutomatonEdge ne = abstraction.addEdge(Constant.HIDDEN, first.getFrom(), second.getTo(),
                                 cbGuards(first, second, context), false, first.getOptionalEdge());
-                            System.out.println("Prune adds " + ne.myString());
+                            //System.out.println("Prune adds " + ne.myString());
                         }
                     }
                     //System.out.println("Prune del " + n.myString());

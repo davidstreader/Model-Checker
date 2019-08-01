@@ -32,7 +32,7 @@ public class PetrinetParallelFunction  {
     //MyAssert.myAssert(p2.validatePNet("Parallel || input "+p2.getId()+ " valid ="), "|| precondition Failure");
     MyAssert.validate(p1,"|| precondition Failure");
     MyAssert.validate(p2,"|| precondition Failure");
-    System.out.println("     PETRINET PARALLELFUNCTION"+" "+p1.getId()+" ||"+flags+" "+p2.getId());
+   //System.out.println("     PETRINET PARALLELFUNCTION"+"\n    "+p1.myString()+"\n    ||"+flags+"\n    "+p2.myString());
       //System.out.println("PARAllel in "+p1.myString());
       //System.out.println("PARAllel in "+p2.myString());
    //builds synchronisedActions set
@@ -68,7 +68,7 @@ public class PetrinetParallelFunction  {
     //MyAssert.myAssert(composition.validatePNet("Parallel || output "+composition.getId()+ " valid ="), "||  Failure");
     MyAssert.validate(composition,"|| output Failure");
 
-    //System.out.println("\n   PAR end "+composition.myString());
+   //System.out.println("\n   PAR end "+composition.myString());
     return composition;
   }
 
