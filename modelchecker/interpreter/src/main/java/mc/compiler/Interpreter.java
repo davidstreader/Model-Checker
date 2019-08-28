@@ -113,7 +113,7 @@ public class Interpreter {
             }
         } catch (CompilationException e){
             pmf.setIsFull(false);
-            sb.append("failed on "+ process.getIdentifier()+ " see stack trace" );
+            sb.append("failed on "+ process.getIdentifier()+"  "+ e.getMessage() );
             e.printStackTrace();
              break;  // stop building
 

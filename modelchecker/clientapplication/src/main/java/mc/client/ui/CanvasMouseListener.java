@@ -213,8 +213,9 @@ public class CanvasMouseListener implements MouseListener {
                 if (aid != null) {
                     //System.out.println("aid = "+aid);
                     for (GraphNode autG : processModelVertexes.get(aid)) {
+
                         //System.out.println(autG.getNodeId());
-                        autG.setNodeColor(NodeStates.NOMINAL);
+                        autG.setNodeColor(autG.getOriginalColor());
                     }
                 }
                 // Reset the previous to unselected Place
