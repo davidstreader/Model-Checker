@@ -19,6 +19,7 @@ import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static mc.util.Utils.instantiateClass;
 
@@ -699,7 +700,6 @@ public class Parser {
     int start = index;
     IdentifierNode identifier = parseIdentifier();
     //System.out.println("parseLocalProcessDef4All identifier " + identifier);
-    //System.out.println("parseLocalProcessDef4All identifier " + identifier);
     //System.out.println("localIdentifiers" + localIdentifiers);
     // index should be added to identifier
     String idx;
@@ -852,6 +852,7 @@ public class Parser {
       ASTNode process = parseComposit();
       if (!(nextToken() instanceof CloseParenToken)) {
         Token error = tokens.get(index - 1);
+          System.out.println("parseComposit()");
         throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
       }
       return process;
@@ -880,6 +881,7 @@ public class Parser {
 
   /*
     this returns a whole process AST
+     process + relabel + hide
    */
 
   private ASTNode parseComposite() throws CompilationException, InterruptedException {
@@ -949,8 +951,10 @@ public class Parser {
     if (peekToken() instanceof OpenParenToken) {
       nextToken();
       ASTNode process = parseComposite();
+
       if (!(nextToken() instanceof CloseParenToken)) {
         Token error = tokens.get(index - 1);
+          System.out.println("parseLocalProcess()");
         throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
       }
       return process;
@@ -1017,8 +1021,8 @@ public class Parser {
       return parseFunction();
     } else if (peekToken() instanceof CastToken) {
       return parseCasting();
-    } else if (peekToken() instanceof IfToken) { // Else token is parsed within the IfStatement block
-      return parseIfStatement();
+  //  } else if (peekToken() instanceof IfToken) { // Else token is parsed within the IfStatement block
+  //    return parseIfStatement();
     } else if (peekToken() instanceof WhenToken) {
       return parseWhenStatement();
     } else if (peekToken() instanceof ForAllToken) {
@@ -1030,6 +1034,7 @@ public class Parser {
       // ensure that the next token is a ')' token
       if (!(nextToken() instanceof CloseParenToken)) {
         Token error = tokens.get(index - 1);
+          System.out.println("parseBaseLocalProcess()");
         throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
       }
       //System.out.println("parseBaseLocalProcess() returns " + process.myString());
@@ -1064,6 +1069,7 @@ public class Parser {
     // ensure that the next token is a '(' token
     if (!(nextToken() instanceof OpenParenToken)) {
       Token error = tokens.get(index - 1);
+        System.out.println("parseFunction()");
       throw constructException("expecting to parse \"(\" but received \"" + error.toString() + "\"", error.getLocation());
     }
 
@@ -1083,6 +1089,7 @@ public class Parser {
     // ensure that the next token is a ')' token
     if (!(nextToken() instanceof CloseParenToken)) {
       Token error = tokens.get(index - 1);
+        System.out.println("parseFunction()");
       throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
     }
 
@@ -1211,6 +1218,7 @@ public class Parser {
     // ensure the next token is a ')' token
     if (!(nextToken() instanceof CloseParenToken)) {
       Token error = tokens.get(index - 1);
+        System.out.println("parseCasting()");
       throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
     }
 
@@ -1305,14 +1313,18 @@ public class Parser {
 // dstr
     Set<String> localIdentifiers = new HashSet<>();
     List<LocalProcessNode> localProcesses = new ArrayList<>();
-    if (peekToken() instanceof CommaToken) {
+    while (peekToken() instanceof CommaToken) {
+        //System.out.println("comma");
       nextToken();
       localProcesses.add(parseLocalProcessDef4All(localIdentifiers));  // add  indexed
     }
-    if (!(nextToken() instanceof CloseParenToken)) {
+      //System.out.println("comma Over\n  "+ localProcesses.stream().map(x->x.myString()).collect(Collectors.joining(",\n  ")));
+  /*  if (!(nextToken() instanceof CloseParenToken)) {
       Token error = tokens.get(index - 1);
+        System.out.println("parseForAllStatement()");
       throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
-    }
+    } */
+    if (peekToken() instanceof CloseParenToken) nextToken();
     //System.out.println("parse ForAll )");
 
     ForAllStatementNode fASN = new ForAllStatementNode(ranges, process, constructLocation(start));
@@ -1742,6 +1754,7 @@ public class Parser {
     } else {
       if (!(peekToken() instanceof CloseParenToken)) {
         Token error = tokens.get(index - 1);
+          System.out.println("parseSingleOperation");
         throw constructException("pSO expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
       }
     }
@@ -1986,6 +1999,7 @@ public class Parser {
 
       token = nextToken();
       if (!(token instanceof CloseParenToken)) {
+          System.out.println("parseBaseExpression()");
         throw constructException("expecting to parse \")\" but received \"" + token.toString() + "\"", token.getLocation());
       }
 
@@ -2320,7 +2334,7 @@ public class Parser {
 
   private void checkNotEOF() throws CompilationException {
     if (index >= tokens.size()) {
-      System.out.println("END OF FILE");
+      //System.out.println("END OF FILE");
       Location last = tokens.get(tokens.size() - 1).getLocation();
       Location eof = new Location(last.getLineStart(), last.getColStart() + 1, last.getLineEnd(), last.getColEnd() + 2, last.getStartIndex() + 1, last.getEndIndex() + 2);
       throw constructException("end of file reached", eof);

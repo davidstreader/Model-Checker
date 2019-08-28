@@ -29,8 +29,9 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
 
       MultiProcessModel mod = new MultiProcessModel(getId() + tag);
       mod.addProcess(((Petrinet) this.processes.get(ProcessType.PETRINET)).reId(tag));
-      mod.addProcess((Automaton) this.processes.get(ProcessType.AUTOMATA));
-      mod.processNodesMapping =  MappingNdMarking.reId(this.processNodesMapping,tag);
+      Automaton a = ((Automaton) this.processes.get(ProcessType.AUTOMATA));
+      mod.addProcess(a);
+      mod.processNodesMapping =  MappingNdMarking.reId(this.processNodesMapping,tag,a.getId());
 
 
       return mod;

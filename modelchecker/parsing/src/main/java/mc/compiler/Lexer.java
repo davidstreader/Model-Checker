@@ -147,14 +147,14 @@ public class Lexer {
       case "set":
         return new SetToken(location);
 
-      case "if":
-        return new IfToken(location);
+   //   case "if":
+   //     return new IfToken(location);
 
       case "then":
         return new ThenToken(location);
 
-      case "else":
-        return new ElseToken(location);
+   //   case "else":
+   //     return new ElseToken(location);
 
       case "when":
         return new WhenToken(location);

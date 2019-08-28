@@ -86,12 +86,17 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable {
             Color fillColor = NodeStates.CONCURRENT.getColorNodes(); // CONCURRENT;
             if (i.hasNext()) {
                 GraphNode gn = i.next();
-                //System.out.println("gn "+gn.toString());
-                pmo = compiledResult.getProcessMap().get(gn.getProcessModelId());
-               if (pmo.isSequential()) {
-                   fillColor = NodeStates.SEQUENTIAL.getColorNodes();
-                }
+                //System.out.println("gn " + gn.toString());
+                if (compiledResult != null &&
+                    compiledResult.getProcessMap() != null &&
+                    compiledResult.getProcessMap().containsKey(gn.getProcessModelId())
+                ) {
+                    pmo = compiledResult.getProcessMap().get(gn.getProcessModelId());
+                    if (pmo.isSequential()) {
+                        fillColor = NodeStates.SEQUENTIAL.getColorNodes();
+                    }
 
+                }
             }
 
             Rectangle2D boundingBox = computeBoundingBox(value, layout, transform);

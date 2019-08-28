@@ -86,10 +86,10 @@ public class ReferenceReplacer {
       throw new InterruptedException();
     }
     // Debugging do not remove
-/*   ReferenceReplacer.indent = ReferenceReplacer.indent.concat("-");
+   ReferenceReplacer.indent = ReferenceReplacer.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
-      System.out.println("RRast "+ ReferenceReplacer.indent + className+
-      " refs "+astNode.getReferences()+" from "+astNode.getLeafRef());
+   /*System.out.println("RRast "+ ReferenceReplacer.indent + className+
+      " refs "+astNode.getReferences()+" from "+astNode.getFromReferences());
 */
     if (astNode instanceof ProcessRootNode) {
       astNode = replaceReferences((ProcessRootNode) astNode, identifier, localReferences);
@@ -115,10 +115,10 @@ public class ReferenceReplacer {
     }
 
     //Debugging do not remove  IndexExpNode
-/*    if (ReferenceReplacer.indent.length()> 1)
+    if (ReferenceReplacer.indent.length()> 1)
       ReferenceReplacer.indent = ReferenceReplacer.indent.substring(1);
-    System.out.println("RRast<"+ ReferenceReplacer.indent + className+" "+astNode.getReferences());
-*/
+ //   //System.out.println("RRast<"+ ReferenceReplacer.indent + className+" "+astNode.getReferences());
+
     return astNode;
   }
 
@@ -230,7 +230,7 @@ public class ReferenceReplacer {
       return astNode;
     }
 
-    System.out.println("    RR fail "+reference);
+    //System.out.println("    RR fail "+reference);
     throw new CompilationException(getClass(), "Unable to find reference for node: " + reference, astNode.getLocation());
   }
 

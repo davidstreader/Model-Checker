@@ -77,7 +77,10 @@ public class SimpFunction implements IProcessFunction {
 
     assert automata.length == 1;
     Automaton automaton = automata[0].copy(); // Deep Clone  as automata changed
-    //System.out.println("\nSIMP start !" + automaton.getId());
+    //System.out.println("Simp     start " + automaton.getId() + " edges "+automaton.getEdgeCount()+ " nodes "+automaton.getNodeCount());
+
+
+      //System.out.println("\nSIMP start !" + automaton.getId());
     //MyAssert.myAssert(automaton.validateAutomaton("Simp input "+automaton.getId()+" vlaid = "), "Simp input Failure");
     MyAssert.validate(automaton, "Simp input ");
     if (flags.contains(Constant.OBSEVATIONAL)) {
@@ -111,7 +114,7 @@ public class SimpFunction implements IProcessFunction {
     automaton.setRootFromNodes();
     //MyAssert.myAssert(automaton.validateAutomaton("Simp output "+automaton.getId()+" vlaid = "), "Simp input Failure");
     MyAssert.validate(automaton, "Simp output ");
-    //System.out.println("Simp out " + automaton.myString() + "\n");
+    //System.out.println("Simplification " + automaton.getId() + " edges "+automaton.getEdgeCount()+ " nodes "+automaton.getNodeCount());
     return automaton;
   }
 

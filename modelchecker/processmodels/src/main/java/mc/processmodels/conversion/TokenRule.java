@@ -177,14 +177,25 @@ public class TokenRule {
           //System.out.println(" add "+ Petrinet.marking2String(newMarking)+"->"+newNode.getId());
           markingToNodeMap.put(newMarking, newNode);
           nodeToMarkingMap.put(newNode, newMarking);
-          if (!toDo.contains(newMarking)) {
-            toDo.add(newMarking);
-            //System.out.println("   Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-            if (newMarking.size() > ownCnt) {
-              System.out.println("Token Rule Makring not 1 Safe = "+convertFrom.getOwners()+ " "+cFrom.getId());
-              System.out.println("           newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-            //  throw new CompilationException(convertFrom.getClass(), "Token Rule Makring to large ");
-            } //+ newMarking.toString());
+          boolean isEr = false;
+           for(PetriNetPlace pl: newMarking.elementSet()) {
+               if (pl.isERROR()) {
+                  // isEr = true;
+                   break;
+               }
+           }
+          if (isEr) {
+              toDo.clear();
+          } else {
+              if (!toDo.contains(newMarking)) {
+                  toDo.add(newMarking);
+                  //System.out.println("   Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+                  if (newMarking.size() > ownCnt) {
+                      System.out.println("Token Rule Makring not 1 Safe = " + convertFrom.getOwners() + " " + cFrom.getId());
+                      System.out.println("           newMarking " + newMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
+                      //  throw new CompilationException(convertFrom.getClass(), "Token Rule Makring to large ");
+                  } //+ newMarking.toString());
+              }
           }
         }
 

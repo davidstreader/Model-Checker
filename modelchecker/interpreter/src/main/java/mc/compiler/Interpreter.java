@@ -2,6 +2,7 @@ package mc.compiler;
 
 import com.google.common.collect.Multiset;
 import com.microsoft.z3.Context;
+//import com.sun.tools.javac.resources.compiler;
 import mc.Constant;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.AbstractSyntaxTree;
@@ -13,6 +14,7 @@ import mc.processmodels.MappingNdMarking;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
+import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
@@ -52,10 +54,12 @@ public class Interpreter {
   public PetrinetInterpreter getpetrinetInterpreter(){ return petrinetInterpreter;}
   private Set<String> alpha;
 
-  //TODO  Document
-  // This is called once from the compiler and builds all proesses
-  // RETURNS Map to  models with both PetriNets, Automata + mapping between them!
-  public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast,
+
+  /* This is called once from the compiler and builds all proesses
+   RETURNS Map to  models with both PetriNets, Automata + mapping between them!
+   catch exception and return completed automata
+  */
+  public ProcessMapFull interpret(AbstractSyntaxTree ast,
                                              // LocalCompiler localCompiler,
                                              BlockingQueue<Object> messageQueue,
                                              Context context,
@@ -70,39 +74,50 @@ public class Interpreter {
 // build all  processes including global sub processes
 //    .getType tells us which to build ** .identifier its name  ** .process its definition
     List<ProcessNode> processes = ast.getProcesses();
+      //System.out.println("Interpretor building "+processes.size());
     //Collections.sort(processes,Comparator.comparing(ProcessNode::getDomain));
     //System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
     //  reduce("{",(x,y)->x+" "+y)+"}");
-    for (ProcessNode process : processes) { //BUILD ALL PROCESSES
-      //System.out.println("  Interpreter Building " + process.myString()); // + " ... "+ process.getType().toString());
-      ProcessModel model = null;
-      model = new MultiProcessModel(process.getIdentifier());
-      model.setLocation(process.getLocation());  //location on screen
+      ProcessMapFull pmf = new ProcessMapFull();
+      pmf.setIsFull(true);
+    int i = 0;
+      for (ProcessNode process : processes) { //BUILD ALL PROCESSES
+        try {
+            System.out.println("  Interpreter Building-"+i+" " + process.getIdentifier()); // + " ... "+ process.getType().toString());
+            ProcessModel model = null; i++;
+            model = new MultiProcessModel(process.getIdentifier());
+            model.setLocation(process.getLocation());  //location on screen
 
-      //Either build petri first OR build automata FIRST
-      // Build petrinets (then build automata)
-      String className = process.getProcess().getClass().getSimpleName();
-      //System.out.println("className "+className);
-      ProcessModel modelPetri = null;
-      if (process.getType().contains("petrinet")) { //interpretASTAutNode
-        modelPetri = petrinetInterpreter.interpret(process, processMap,
-                      context, alpha,ast.getVariableMap(),symb);
+            //Either build petri first OR build automata FIRST
+            // Build petrinets (then build automata)
+            String className = process.getProcess().getClass().getSimpleName();
+            //System.out.println("className "+className);
+            ProcessModel modelPetri = null;
+            if (process.getType().contains("petrinet")) { //interpretASTAutNode
+                modelPetri = petrinetInterpreter.interpret(process, processMap,
+                    context, alpha, ast.getVariableMap(), symb);
+                //System.out.println("++++++Interpreter Built Petri "+ modelPetri.getId());
+                ((Petrinet) modelPetri).reown("");
+                model = buildmpmFromPetri((Petrinet) modelPetri);
+                //System.out.println(((MultiProcessModel) model).getProcessNodesMapping());
+            } else if (process.getType().contains("automata")) { //interpretASTAutNode
+                System.out.println("\n\nWARNING INTERPRETING AUTOMATA (should not occur)\n");
+            }
+            //messageQueue.add(new LogAST("Built:", process));
 
-        //System.out.println("++++++Interpreter Built Petri "+ modelPetri.getId());
-        ((Petrinet) modelPetri).reown("");
-        model = buildmpmFromPetri((Petrinet) modelPetri);
-        //System.out.println(((MultiProcessModel) model).getProcessNodesMapping());
-      } else if (process.getType().contains("automata")) { //interpretASTAutNode
-        System.out.println("\n\nWARNING INTERPRETING AUTOMATA (should not occur)\n");
-      }
-      //messageQueue.add(new LogAST("Built:", process));
+            int autSize = ((Automaton) ((MultiProcessModel) model).getProcess(ProcessType.AUTOMATA)).getNodeCount();
+            sb.append(i+"- "+process.getIdentifier() + "("+autSize+"), ");
+            processMap.put(process.getIdentifier() + ":" + process.getDomain(), model); //SAVE MultiProcess in processMap
+            if (!process.getDomain().equals("*")) {
+                processMap.put(process.getIdentifier() + ":*", model);  //used in display and unique name
+            }
+        } catch (CompilationException e){
+            pmf.setIsFull(false);
+            sb.append("failed on "+ process.getIdentifier()+ " see stack trace" );
+            e.printStackTrace();
+             break;  // stop building
 
-      sb.append(process.getIdentifier()+", ");
-      processMap.put(process.getIdentifier()+":"+process.getDomain(), model); //SAVE MultiProcess in processMap
-      if (!process.getDomain().equals("*")) {
-        processMap.put(process.getIdentifier()+":*", model);  //used in display and unique name
-      }
-
+        }
     }
     //System.out.println("*** Interp " + this.alpha);
     //System.out.println("End of inteterpret  "+ processMap.keySet());
@@ -111,8 +126,11 @@ public class Interpreter {
       null,
       -1,
       Thread.currentThread()));
-    //System.out.println("Interpreter 111 "+ PetrinetInterpreter.asString(processMap));
-    return processMap;
+    System.out.println("Interpreter returning "+ processMap.size());
+
+      pmf.setProcessMap(processMap);
+      //Optional<Map<String, ProcessModel>> pM = Optional.of(processMap);
+    return pmf;
 
   }
 
@@ -120,7 +138,7 @@ public class Interpreter {
   public MultiProcessModel buildmpmFromPetri(Petrinet pet) {
 
     MultiProcessModel model = new MultiProcessModel(pet.getId());
-    //System.out.println("Interpreter buildmpmFromPetri "+ pet.myString());
+  //System.out.println("Interpreter buildmpmFromPetri "+ pet.myString());
     model.addProcess(pet);
     HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
     HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
@@ -129,7 +147,8 @@ public class Interpreter {
       (Petrinet) model.getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
     //System.out.println("Interpreter buildmpmFromPetri "+ ((Automaton) modelAut).myString());
     model.addProcess(modelAut);
-    model.addProcessesMapping(new MappingNdMarking(nodeToMarking, markingToNode));
+      //System.out.println("Interpreter buildmpmFromPetri "+((Automaton) modelAut).myString());
+    model.addProcessesMapping(new MappingNdMarking(nodeToMarking, markingToNode, pet.getId(), modelAut.getId()));
     return model;
   }
 
@@ -143,11 +162,11 @@ public class Interpreter {
    */
 
 
-  public ProcessModel interpret(String processModelType,
-                                ASTNode astNode,
-                                String identifer,
-                                Map<String, ProcessModel> processMap,
-                                Context context, Set<String> alpha)
+  public ProcessModel interpretForOperations(String processModelType,
+                                             ASTNode astNode,
+                                             String identifer,
+                                             Map<String, ProcessModel> processMap,
+                                             Context context, Set<String> alpha)
     throws CompilationException, InterruptedException {
 
     //System.out.println(" ****CALLing interpret X  " + processModelType + " " + astNode.toString() + " " + alpha);
@@ -190,4 +209,16 @@ public class Interpreter {
   return a;
   } */
 
+
+  public  class ProcessMapFull {
+      private  Map<String, ProcessModel> pMap = new TreeMap<>();
+      private  boolean isFull;
+      public ProcessMapFull(){};
+      public  void setProcessMap(Map<String, ProcessModel> p) {
+          pMap = p;
+      }
+      public  Map<String, ProcessModel> getProcessMap(){return pMap;}
+      public  void setIsFull(boolean b) { isFull = b;}
+      public  boolean getIsFull() {return isFull;}
+    }
 }

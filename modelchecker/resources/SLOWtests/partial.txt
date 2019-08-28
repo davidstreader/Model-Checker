@@ -1,0 +1,16 @@
+processes {
+A = a-> STOP. 
+ M1 =  C[0],
+  C[i:0..3] = (when (i < 2) ml2is[i] -> C[i+1]). 
+
+ CRASHME= c -> STOP.
+ B = b -> STOP. 
+}
+ operation {
+A~B.
+}
+
+
+
+
+

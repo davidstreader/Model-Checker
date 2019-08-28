@@ -68,7 +68,7 @@ public class PetrinetParallelFunction  {
     //MyAssert.myAssert(composition.validatePNet("Parallel || output "+composition.getId()+ " valid ="), "||  Failure");
     MyAssert.validate(composition,"|| output Failure");
 
-   //System.out.println("\n   PAR end "+composition.myString());
+   //System.out.println("Parallel composition "+ composition.getId()+ " transitions "+composition.getTransitions().size() + " places "+ composition.getPlaces().size());
     return composition;
   }
 

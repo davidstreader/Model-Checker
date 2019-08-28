@@ -1,67 +1,40 @@
-processes {
-
-
-One1 = a->One1.
-One2 = a->STOP.
-One3 = a->ERROR.
-One4 = b->One4.
-One5 = b->STOP.
-One6 = b->ERROR.
-/*
-Two1 = a->b->STOP.
-Two2 = a->Two2|a->STOP.
-Two3 = a->Two3|b->STOP.
-Two4 = a->b->Two4.
-Two5 = a->STOP|b->STOP.
-Two6 = a->ERROR| a->STOP.
-Two7 = a->ERROR|b->STOP.
-Two8 = a->X|b->X, X = STOP.
-Two9 = (a->STOP + b->STOP).
-
-//Bug 1 choice or Sequential with STOP  All look good
-A =  One2|STOP.
-B = One2.
-C= STOP=>One2.
-
-//Failure not bisim  Two1=>(One3+One2) ~(Two1=>One3)+ (Two1=>One2).
-
-// Bug 2 (One2|One2)=>Two1 ~ (One2=>Two1) | (One2=>Two1)
-// Both look the same
-D = (One2|One2)=>Two1.
-E = (One2=>Two1).
+/*     Reworking Abrials Cars on a bridge in process algebra
+Establishes liveness properties for a finite state approximation.
 */
+const Max = 2.
+const Cnum = 3.
+processes {
+/*
+   model that clearly satisfies the  Max number of cars
+   Assumes System sees how many cars are one the island
+*/
+M1 =  C[0],
+  C[i:0..Max] = (when (i < Max) ml2is -> C[i+1]
+                | when (i > 0) is2ml -> C[i-1]).
+
+/*
+   New model that satisfies one way bridge
+   Assumes System sees: 1. how many cars are one the island
+            2. when a car is on the bridge
+*/
+M2 = C[0][0][0],
+ C[mlis:0..Max][is:0..Max][isml:0..Max] =
+  (when((isml == 0) && ((mlis + is) < Max))    ml2br->C[mlis+1][is][isml]
+  |when((mlis>0)  && (is<Max))                 br2is->C[mlis-1][is+1][isml]
+  |when((mlis == 0) && (is > 0) && (isml<Max)) is2br->C[mlis][is-1][isml+1]
+  | when (isml>0)                              br2ml->C[mlis][is][isml-1]).
+
+
+// note because a global perspective is taken complete trace semantics is used
+ M2to1 = simp (nfa2dfa(obs (M2/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br}))).
+
+// used to show the need for complete trace semantics not failure semantics
+ M2bis1 = simp (obs (M2/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br})).
+}
+operation{
+M1 ~ M2to1.    // M2 is a complete trace refinement of M1
+M1 !~ M2bis1. // NOT a failure refinement
 }
 
-
-operation {
-//One1|STOP ~ One1.
-//STOP=> One1 ~ One1.
-}
-
-equation {
-X[]Y ~ Y|X.
-X[](Y[]Z) ~ (X|Y)|Z.
-//X|STOP ~ X.
-X[]X ~ X.
-
-X+Y ~  Y+X.
-
-(a->STOP)=>X ~ a->X.
-X=>(Y=>Z)  ~ (X=>Y)=>Z.
-//X=>STOP ~ X.
-//STOP=>X ~ X.
-
-(X|Y)=>Z * (X=>Z) | (Y=>Z).
-//(X+Y)=>Z * (X=>Z) + (Y=>Z).
-
-//  X=>(Y+W) ~(X=>Y)+ (X=>W).  Failure equality not bisim
-//(X=>Y)+ (X=>W) ~ (X=>Y)| (X=>W).
-
-X|| Y ~ Y||X.
-//X||STOP ~ X.
-X||X ~ X.
-
-
-}
 
 

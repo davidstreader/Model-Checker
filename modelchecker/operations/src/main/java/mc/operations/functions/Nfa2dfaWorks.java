@@ -105,7 +105,7 @@ public class Nfa2dfaWorks {
         nfa.addEdge(Constant.EPSILON, ndn, nfa.deadNode(), null, true, false);
       } */
     }
-    System.out.println("ANOTATED nfa  " + nfa.myString());
+    //System.out.println("ANOTATED nfa  " + nfa.myString());
 
     Automaton dfa = new Automaton(id + "_dfa", !Automaton.CONSTRUCT_ROOT);
 
@@ -197,7 +197,7 @@ public class Nfa2dfaWorks {
   /*  dfa.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().isEmpty())
         .forEach(node -> node.setTerminal(Constant.STOP)); */
-    System.out.println("\n built dfa " + dfa.myString() + "\n");
+    //System.out.println("\n built dfa " + dfa.myString() + "\n");
     return dfa;
   }
 

@@ -54,14 +54,27 @@ public class PetriNetEdge extends ProcessModelObject implements Comparable {
     this.to = to;
   }
 
+  public boolean isNotBlocked() {
+      if (from instanceof PetriNetTransition) {
+          return !((PetriNetTransition) from).isBlocked();
+      } else if (to instanceof PetriNetTransition) {
+          return !((PetriNetTransition) to).isBlocked();
+      } else {
+          System.out.println("DATA ERROR "+this.myString());
+          return false;
+      }
 
+  }
 
 
   public String toString() {
-    return "edge{\n"
+      String fr, t;
+      if (from.equals(null))  fr = "null"; else fr = from.getId();
+      if (to.equals(null))  t = "null"; else t = to.getId();
+      return "edge{\n"
         + "\tid:" + getId() + "\n"
-        + "\tfrom:" + from.getId() + "\n"
-        + "\tto:" + to.getId() + "\n"
+        + "\tfrom:" + fr + "\n"
+        + "\tto:" + t + "\n"
         + "}";
 
   }

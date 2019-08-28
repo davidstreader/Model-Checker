@@ -18,7 +18,7 @@ public class PetrinetSimp {
     Petrinet petri = p.copy();
     PetriColouring pc = new PetriColouring();
     Map<String, Integer> ic = pc.initColour(p);
-    System.out.println("petri doSimp START "+petri.getId());
+    //System.out.println("petri doSimp START "+petri.getId());
     pc.doColour(petri, ic);
     Multimap<Integer,PetriNetPlace> col2Place = ArrayListMultimap.create();
     //Set<PetriNetPlace> pls = new HashSet<>(petri.getPlaces().values());

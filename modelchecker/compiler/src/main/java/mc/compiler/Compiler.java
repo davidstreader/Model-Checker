@@ -79,67 +79,72 @@ public class Compiler {
                                     BlockingQueue<Object> messageQueue,
                                     Supplier< Boolean> symb)
     throws CompilationException, InterruptedException {
-    HashMap<String, ProcessNode> processNodeMap = new HashMap<>();
-  //  HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
+      HashMap<String, ProcessNode> processNodeMap = new HashMap<>();
+      //  HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
 
-    //System.out.println("\nCOMPILER "+ast.myString()+" symb "+symb.get()+"\n");
-    for (ProcessNode node : ast.getProcesses()) {
-      //messageQueue.add(new LogMessage("Compile  starting "+node.getIdentifier()+" s "+symb.get()));
-      //System.out.println("**COMPILER** Compiler Start node = "+ node.myString());
-      processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
-   //   dependencyMap.put(node.getIdentifier(), node);
-    }
+      //System.out.println("\nCOMPILER "+ast.myString()+" symb "+symb.get()+"\n");
+      for (ProcessNode node : ast.getProcesses()) {
+          //messageQueue.add(new LogMessage("Compile  starting "+node.getIdentifier()+" s "+symb.get()));
+          //System.out.println("**COMPILER** Compiler Start node = "+ node.myString());
+          processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
+          //   dependencyMap.put(node.getIdentifier(), node);
+      }
 
-    AbstractSyntaxTree  symbAST = ast.copy();  // to be used to build symbolic models
-    //??????
+      AbstractSyntaxTree symbAST = ast.copy();  // to be used to build symbolic models
+      //??????
 
-    //System.out.println("symb "+symb.get());
-    if (!symb.get()) {
-      ast = processAtomicAST(ast, z3Context, messageQueue);
-    } else {
-      //expander.expand(ast, messageQueue, z3Context); // use for error detection
-      ast = symbAST;
-      //ast = expander.expand(ast, messageQueue, z3Context);
-      //System.out.println(" COMPILER Before ReferenceReplacer "+ast.processes2String());
-      //ast = replacer.replaceReferences(ast, messageQueue);
-      // If we replace the references then we lose the assignment information
-      //System.out.println(" COMPILER After ReferenceReplacer "+ast.processes2String());
+      //System.out.println("symb "+symb.get());
+      if (!symb.get()) {
+          ast = processAtomicAST(ast, z3Context, messageQueue);
+      } else {
+          //expander.expand(ast, messageQueue, z3Context); // use for error detection
+          ast = symbAST;
+          //ast = expander.expand(ast, messageQueue, z3Context);
+          //System.out.println(" COMPILER Before ReferenceReplacer "+ast.processes2String());
+          //ast = replacer.replaceReferences(ast, messageQueue);
+          // If we replace the references then we lose the assignment information
+          //System.out.println(" COMPILER After ReferenceReplacer "+ast.processes2String());
 
-    }
-    //
-    //
-    // ??????
-     //store alphabet
-    Set<String> alpha = ast.getAlphabet().stream().map(x->x.getAction()).collect(Collectors.toSet());
-    //System.out.println("Compiler alph = "+alpha);
+      }
+      //
+      //
+      // ??????
+      //store alphabet
+      Set<String> alpha = ast.getAlphabet().stream().map(x -> x.getAction()).collect(Collectors.toSet());
+      //System.out.println("Compiler alph = "+alpha);
 
-    //builds process and processMap
+      //Having built the final AST now build the processes
     /*System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
       ast.getProcesses().stream().map(x->"\n"+x.getIdentifier()+"->"+x.getType())
         .reduce("",(x,y)->x+" "+y)); */
-    Map<String, ProcessModel> processMap = interpreter.interpret(ast,
-        messageQueue, z3Context,alpha,symb.get());
+      Interpreter.ProcessMapFull pmf = interpreter.interpret(ast,
+          messageQueue, z3Context, alpha, symb.get());
+    //  Optional<Map<String, ProcessModel>> processMap = interpreter.interpret(ast,
+    //      messageQueue, z3Context, alpha, symb.get());
 
-    //System.out.println("     **COMPILER** before operation evaluation "+processMap.keySet());
+      //System.out.println("     **COMPILER** before operation evaluation "+processMap.keySet());
+      List<OperationResult> opResults = new ArrayList<>();
+      EquationEvaluator.EquationReturn eqResults = new EquationEvaluator.EquationReturn();
+      if (pmf.getIsFull()) {
 
-    List<OperationResult> opResults = evaluator.evaluateOperations(
-      ast.getOperations(), processMap,
-        interpreter.getpetrinetInterpreter(), code, z3Context, messageQueue, alpha);
-    //System.out.println("     **COMPILER** before equation evaluation "+processMap.keySet());
+          System.out.println("              isPresent "+pmf.getProcessMap().size()+"  "+ast.getProcesses().size());
+         // if (ast.getProcesses().size() <= processMap.get().size()) {
+              System.out.println("equal size"); // not sure why <= and not ==
+              opResults = evaluator.evaluateOperations(
+                  ast.getOperations(), pmf.getProcessMap(),
+                  interpreter.getpetrinetInterpreter(), code, z3Context, messageQueue, alpha);
+              //System.out.println("     **COMPILER** before equation evaluation "+processMap.keySet());
 
-    // still has memory problem with many permutations
-    this.eqEvaluator = new EquationEvaluator(); // need to reset equationEvaluator else !!!!
-    EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(
-        processMap, interpreter.getpetrinetInterpreter(), ast.getEquations(),
-        code, z3Context, messageQueue, alpha);
+              // still has memory problem with many permutations
+              this.eqEvaluator = new EquationEvaluator(); // need to reset equationEvaluator else !!!!
+              eqResults = eqEvaluator.evaluateEquations(
+                  pmf.getProcessMap(), interpreter.getpetrinetInterpreter(), ast.getEquations(),
+                  code, z3Context, messageQueue, alpha);
+          }
 
 
-
-  /*  processesToRemoveFromDisplay.stream()
-        .filter(processMap::containsKey)
-        .forEach(processMap::remove); */
-
-    return new CompilationObject(processMap, opResults, eqResults.getResults());
+      System.out.println("Compiler built pn "+ pmf.getProcessMap().size());
+    return new CompilationObject(pmf.getProcessMap(), opResults, eqResults.getResults());
   }
 
 private AbstractSyntaxTree processAtomicAST(AbstractSyntaxTree ast,
@@ -150,7 +155,7 @@ private AbstractSyntaxTree processAtomicAST(AbstractSyntaxTree ast,
    Expand the non hidden variables (indexes) and return an ast
    NOTE changes the ast in undefined way BUT this is required for the replacer to work
  */
-  //System.out.println("lib "+ System.getProperty("java.library.path"));
+  //System.out.println("lib "+System.getProperty("java.library.path"));
   //System.out.println("class "+System.getProperty("java.class.path"));
 
   //System.out.println(" AtomicCOMPILER Before Expanding "+ast.myString());

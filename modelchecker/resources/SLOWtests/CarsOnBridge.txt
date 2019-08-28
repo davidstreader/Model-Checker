@@ -26,12 +26,11 @@ M2 = C[0][0][0],
 
 
 // note because a global perspective is taken complete trace semantics is used
- M2to1 = simp (nfa2dfa(abs (M2/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br}))).
+ M2to1 = simp (nfa2dfa(obs (M2/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br}))).
 
 // used to show the need for complete trace semantics not failure semantics
- M2bis1 = simp (abs (M2/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br})).
+ M2bis1 = simp (obs (M2/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br})).
 }
-automata M1,M2to1,M2bis1.
 operation{
 M1 ~ M2to1.    // M2 is a complete trace refinement of M1
 M1 !~ M2bis1. // NOT a failure refinement
@@ -42,21 +41,22 @@ processes {
   Introduce trafic lights so car only moves when trafic light is green.
       Similar assumptions as M2
 */
-TLred = (red->TLred | turnGreen->TLgreen),
-   TLgreen = (green-> TLgreen | turnRed -> TLred).
-TLgreen = (green-> TLgreen | turnRed -> TLred),
-    TLred = (red->TLred | turnGreen->TLgreen).
+TLred = (red->TLred | turnGreen->Xgreen),
+   Xgreen = (green-> Xgreen | turnRed -> TLred).
 
-M3 = (ml:TLgreen / {ml2br/ml.green} ||
-          is:TLred   /{is2br/is.green}  ||
-            M2 ) \{is.turnRed,is.turnGreen,is.red,
-                       ml.turnRed,ml.turnGreen,ml.red}.
+TLgreen = (mlgreen-> TLgreen | mlturnRed -> Xred),
+    Xred = (mlred->Xred | mlturnGreen->TLgreen).
 
-M3to1 = simp(nfa2dfa(abs(M3/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br}))).
+M3 = (TLgreen / {ml2br/mlgreen} ||
+          TLred   /{is2br/green}  ||
+            M2 ) \{turnRed,turnGreen,red,
+                       mlturnRed,mlturnGreen,mlred}.
 
-M3to2 = simp(nfa2dfa(abs(M3))).
+M3to1 = simp(nfa2dfa(obs(M3/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br}))).
+
+M3to2 = simp(nfa2dfa(obs(M3))).
 }
-automata M3to1,M3to2.
+
 operation{
 M1 ~ M3to1.   // sanity check - debugging step
 M2 ~ M3to2.  //M3 is a complete trace refinement of M2
@@ -78,14 +78,15 @@ red only needed to control turning the island traffic light green.
 
 TL = ( [j:1..Cnum].red->TL |turnGreen->TLgx),  //  [j:1..Cnum].red->TL |
    TLgx = ([j:1..Cnum].green-> TLgx | turnRed -> TL).
-TLg = ([j:1..Cnum].green-> TLg | turnRed -> TLx),
-  TLx = ( [j:1..Cnum].red->TLx |turnGreen->TLg).    // [j:1..Cnum].red->TLx |
+
+TLg = ([j:1..Cnum].mlgreen-> TLg | mlturnRed -> TLx),
+  TLx = ( [j:1..Cnum].mlred->TLx |mlturnGreen->TLg).    // [j:1..Cnum].red->TLx |
 
 /* To force the car to move quickly of the sensor when it sees the light is green
    we rename the  "off" events.
 */
-TLml = ml:TLg /{ml2br.[i:1..Cnum].off/ml.[i:1..Cnum].green}.
-TLis = istl:TL /{is2br.[i:1..Cnum].off/istl.[i:1..Cnum].green}.
+TLml = TLg /{ml2br.[i:1..Cnum].off/[i:1..Cnum].mlgreen}.
+TLis = TL /{is2br.[i:1..Cnum].off/[i:1..Cnum].green}.
 
 
 /*
@@ -103,15 +104,15 @@ Drivers move as soon as they see a green light!  If the driver waits,
  The use of ranges 0..Max+1 means the controller will allow the system to fail
  if the cars do not obey the trafic lights!
 
- */
+ */ 
  Controller = C[0][0][0][0][0],
 C[mlis:0..Max+1][is:0..Max+1][isml:0..Max+1][mls:0..1][iss:0..1] =
  ( when (mlis +isml+ is == Max) ml.turnRed->C[mlis][is][isml][mls][iss]
 | when((mlis ==0) && (iss == 1))  ml.turnRed->istl.turnGreen->C[mlis][is][isml][mls][iss]
 | when((mlis ==0) && (iss == 1))  ml.[i:1..Cnum].red->istl.turnGreen->C[mlis][is][isml][mls][iss]
 
-| when(isml==0 && (is + isml<Max) && mls==1) istl.turnRed->
-                                            ml.turnGreen->C[mlis][is][isml][mls][iss]
+| when(isml==0 && (is + isml<Max) && mls==1) turnRed->
+                                            mlturnGreen->C[mlis][is][isml][mls][iss]
  | when (mlis > 0 && isml> 0)       crash -> STOP
  | when (mlis < 0 || isml< 0)       imposible -> STOP
  | when (mlis +isml+ is > Max) failMax->STOP
@@ -121,7 +122,7 @@ C[mlis:0..Max+1][is:0..Max+1][isml:0..Max+1][mls:0..1][iss:0..1] =
 // the car only askes to go  off after seeing green and the controller turne the light
 | when (mls==1 &&(mlis +isml+ is < (Max-1))) ml2br.[j:1..Cnum].off->
                                      C[mlis+1][is][isml][0][iss]
-| when (mls==1 &&(mlis +isml+ is == (Max-1))) ml2br.[j:1..Cnum].off->ml.turnRed->
+| when (mls==1 &&(mlis +isml+ is == (Max-1))) ml2br.[j:1..Cnum].off->mlturnRed->
                                      C[mlis+1][is][isml][0][iss]
 
 // only one cart can be on the sensor at a time
@@ -142,6 +143,7 @@ C[mlis:0..Max+1][is:0..Max+1][isml:0..Max+1][mls:0..1][iss:0..1] =
  a Car controlls when the sensors is off and on
  but waether a  Car moves off a sensor is controlled by the trafic lights
  */
+/*
  Clock = [i:1..Cnum].tick->[i].tock->Clock.
 Car =   Loc[0],
   Loc[loc:0..3] =
@@ -179,9 +181,9 @@ M4Test = (M4/{is2br/[i:1..Cnum].is2br,
              istl.[i:1..Cnum].green,  istl.[i:1..Cnum].red,
              istl.turnRed,istl.turnGreen
            }).
-M4X = simp(abs(M4Test)).
+M4X = simp(obs(M4Test)).
 
-M4to2 = simp(nfa2dfa(abs(M4/{is2br/[i:1..Cnum].is2br,
+M4to2 = simp(nfa2dfa(obs(M4/{is2br/[i:1..Cnum].is2br,
                            ml2br/ml2br.[i:1..Cnum].off,
                            br2ml/br2ml.[i:1..Cnum].off,
                            br2is/br2is.[i:1..Cnum].off,
@@ -198,7 +200,7 @@ M4to2 = simp(nfa2dfa(abs(M4/{is2br/[i:1..Cnum].is2br,
 
 //M4to1 = simp(nfa2dfa(abs(M4to2/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br}))).
 
-
+*/
 }
 /*
 ml2br.[i:1..Cnum].on,
@@ -206,10 +208,12 @@ ml2br.[i:1..Cnum].on,
               br2is.[i:1..Cnum].on,
               br2ml.[i:1..Cnum].on,
 */
-//automata Car, Controller.
-automata M4to2, M4 ,M4Test, M4X.
+/*
 operation{
 //M1 ~ M4to1.  // sanity - debugging
 M2 ~ M4to2.  // M4 is a complete trace refinement of M2
 }
+*/
+
+
 

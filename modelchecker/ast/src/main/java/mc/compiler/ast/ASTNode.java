@@ -180,7 +180,7 @@ public abstract class ASTNode implements Serializable {
     } else if (this instanceof SequenceNode) {
       sofar+=(offset+" " + this.getName()+"\n");
      // System.out.println(" SequenceNode");
-      sofar+=(offset+" " + this.getName()+ " "+((SequenceNode) this).getFrom().getAction()+"\n");
+      sofar+=(offset+" " + this.getName()+ " "+((SequenceNode) this).getEventLabel().getAction()+"\n");
       sofar+=((SequenceNode) this).getTo().myString(offset,sofar);
     }  else {
       sofar+=(offset+" " + this.getName()+"\n");

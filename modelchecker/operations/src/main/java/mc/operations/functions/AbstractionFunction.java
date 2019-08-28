@@ -34,7 +34,7 @@ public class AbstractionFunction implements IProcessFunction {
      */
     @Override
     public String getFunctionName() {
-        return "abs";
+        return "obs";
     }
 
     /**
@@ -110,17 +110,20 @@ public class AbstractionFunction implements IProcessFunction {
         Automaton startA = automata[0].reId("a"); // does the copy
 //int nodeLable
         boolean concurrent = flags.contains(Constant.CONCURRENT);
-     //System.out.println("***ABSTRACTION flags " + flags + "\n" + startA.myString());
+ System.out.println("***ABSTRACTION "+startA.getId() + " flags " + flags + " edges " + startA.getEdgeCount()+ " nodes "+startA.getNodeCount());
         MyAssert.validate(startA, "Abstraction input ");
 
         //reduce the state space and remove all loops - Tarjen
         Automaton abstraction = absMerge(flags, context, startA);
+ //System.out.println("***afterTarjen "+startA.getId() + " flags " + flags + " edges " + abstraction.getEdgeCount()+ " nodes "+abstraction.getNodeCount());
 
        //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString());
         if (!concurrent) {
             observationalSemantics(flags, abstraction, context);
             abstraction.setSequential(true);
         }
+ System.out.println("***end        "+startA.getId() + " flags " + flags + " edges " + abstraction.getEdgeCount()+ " nodes "+abstraction.getNodeCount());
+
         //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString());
         //abstraction =  AutomataReachability.removeUnreachableNodes(abstraction);
         MyAssert.validate(abstraction, "Abstraction output ");
@@ -155,7 +158,7 @@ public class AbstractionFunction implements IProcessFunction {
 
 
                 if (cong && hiddenEdge.stateObservable()) {
-                    //System.out.println("SKIP");
+                    System.out.println("SKIP  cong");
                     continue; //Do not remove these taus
                 }
                 List<AutomatonEdge> temp = new ArrayList<AutomatonEdge>();
@@ -163,20 +166,22 @@ public class AbstractionFunction implements IProcessFunction {
                 //FALL through only straight taus and no loops in graph!
                 // //System.out.println(" obs "+abstraction.myString());
                 try {
-                    if (hiddenEdge.getTo().isSTOP()) {
-                        hiddenEdge.getFrom().setStopNode(true);
-                        abstraction.addEnd(hiddenEdge.getFrom().getId());
-                        //System.out.println("setting stop "+hiddenEdge.getFrom().myString());
-                    } // else hiddenEdge.getFrom().setStopNode(false);
-                    if (hiddenEdge.getTo().isERROR()) {
-                        hiddenEdge.getFrom().setErrorNode(true);
-                    }// else hiddenEdge.getFrom().setErrorNode(false);
-                    if (hiddenEdge.getFrom().isStartNode()) {
-                        hiddenEdge.getTo().setStartNode(true);
-                        //System.out.println("hTo "+hiddenEdge.getTo().getId());
-                        //System.out.println("r1 "+abstraction.getRoot().stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-                        abstraction.addRoot(hiddenEdge.getTo());
-                        //System.out.println("r2 " + abstraction.getRoot().stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
+                    if (cong) {
+                        if (hiddenEdge.getTo().isSTOP()) {
+                            hiddenEdge.getFrom().setStopNode(true);
+                            abstraction.addEnd(hiddenEdge.getFrom().getId());
+                            //System.out.println("setting stop "+hiddenEdge.getFrom().myString());
+                        } // else hiddenEdge.getFrom().setStopNode(false);
+                        if (hiddenEdge.getTo().isERROR()) {
+                            hiddenEdge.getFrom().setErrorNode(true);
+                        }// else hiddenEdge.getFrom().setErrorNode(false);
+                        if (hiddenEdge.getFrom().isStartNode()) {
+                            hiddenEdge.getTo().setStartNode(true);
+                            //System.out.println("hTo "+hiddenEdge.getTo().getId());
+                            //System.out.println("r1 "+abstraction.getRoot().stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+                            abstraction.addRoot(hiddenEdge.getTo());
+                            //System.out.println("r2 " + abstraction.getRoot().stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
+                        }
                     }
                     //abstraction is both In and OUT
                     //System.out.println("\n   abs 111 "+abstraction.myString());

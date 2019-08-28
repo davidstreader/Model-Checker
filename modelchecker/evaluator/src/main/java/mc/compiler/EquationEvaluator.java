@@ -712,14 +712,15 @@ public class EquationEvaluator {
 
 
   static class EquationReturn {
-    List<OperationResult> results;
+    List<OperationResult> results = new ArrayList<>();
     //List<ImpliesResult> impResults;
-    Map<String, ProcessModel> toRender;  // Compiler reads to this!
+    Map<String, ProcessModel> toRender = new TreeMap<>();  // Compiler reads to this!
 
     public EquationReturn(List<OperationResult> results, Map<String, ProcessModel> toRender) {
       this.results = results;
       this.toRender = toRender;
     }
+    public EquationReturn() {}
 
     public List<OperationResult> getResults() {
       return this.results;

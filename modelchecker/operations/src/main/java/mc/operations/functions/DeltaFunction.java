@@ -19,7 +19,7 @@ import java.util.*;
          */
         @Override
         public String getFunctionName() {
-            return "delta";
+            return "block";
         }
 
         /**

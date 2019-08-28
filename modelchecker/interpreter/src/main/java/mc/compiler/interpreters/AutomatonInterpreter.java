@@ -271,7 +271,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                                  AutomatonNode currentNode)
     throws CompilationException, InterruptedException {
 
-    String action = sequence.getFrom().getAction();
+    String action = sequence.getEventLabel().getAction();
 //  if (currentNode.getGuard()!=null && sequence.getGuard()!= null && currentNode.getGuard()==sequence.getGuard()){
 //    System.out.println("OPPS!");
 //  }
@@ -421,7 +421,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     ProcessType to = ProcessType.valueOf(conv.to.toUpperCase());
     ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
 
-    ProcessModel pm = new Interpreter().interpret(conv.from,conv.getProcess(),
+    ProcessModel pm = new Interpreter().interpretForOperations(conv.from,conv.getProcess(),
             automaton.getId() + ".pc" + subProcessCount++,processMap,context, new TreeSet<String>());
     addAutomaton(currentNode, automaton, pm.getProcessType().convertTo(to,pm));
   }

@@ -18,7 +18,7 @@ public class SequenceNode extends ASTNode {
   /**
    * The label of the transition.
    */
-  private ActionLabelNode from;
+  private ActionLabelNode eventLabel;
 
   /**
    * The next ASTNode (where this transitions to).
@@ -28,37 +28,37 @@ public class SequenceNode extends ASTNode {
   /**
    * New instance of SequenceNode.
    *
-   * @param from     the label of the action. {@link #from}
+   * @param eventLabel     the label of the action. {@link #eventLabel}
    * @param to       the node where this transitions to. {@link #to}
    * @param location the location this node is within the users code {@link ASTNode#location}
    */
-  public SequenceNode(ActionLabelNode from, ASTNode to, Location location) {
+  public SequenceNode(ActionLabelNode eventLabel, ASTNode to, Location location) {
     super(location,"Sequence");
-    this.from = from;
+    this.eventLabel = eventLabel;
     this.to = to;
   }
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append("("+from.getAction());
+    sb.append("("+ eventLabel.getAction());
     sb.append("->");
     sb.append(to.myString()+")");
     return sb.toString();
   }
   @Override
   public SequenceNode instantiate(String fromI , String toI) {
-    return new SequenceNode(from,to.instantiate(fromI,toI), getLocation());
+    return new SequenceNode(eventLabel,to.instantiate(fromI,toI), getLocation());
   }
 
-  public ActionLabelNode getFrom() {
-    return this.from;
+  public ActionLabelNode getEventLabel() {
+    return this.eventLabel;
   }
 
   public ASTNode getTo() {
     return this.to;
   }
 
-  public void setFrom(ActionLabelNode from) {
-    this.from = from;
+  public void setEventLabel(ActionLabelNode eventLabel) {
+    this.eventLabel = eventLabel;
   }
 
   public void setTo(ASTNode to) {
@@ -66,7 +66,7 @@ public class SequenceNode extends ASTNode {
   }
 
   public String toString() {
-    return "SequenceNode(from=" + this.getFrom() + ", to=" + this.getTo() + ")";
+    return "SequenceNode(from=" + this.getEventLabel() + ", to=" + this.getTo() + ")";
   }
 
   public boolean equals(final Object o) {
@@ -75,8 +75,8 @@ public class SequenceNode extends ASTNode {
     final SequenceNode other = (SequenceNode) o;
     if (!other.canEqual((Object) this)) return false;
     if (!super.equals(o)) return false;
-    final Object this$from = this.getFrom();
-    final Object other$from = other.getFrom();
+    final Object this$from = this.getEventLabel();
+    final Object other$from = other.getEventLabel();
     if (this$from == null ? other$from != null : !this$from.equals(other$from)) return false;
     final Object this$to = this.getTo();
     final Object other$to = other.getTo();
@@ -91,7 +91,7 @@ public class SequenceNode extends ASTNode {
   public int hashCode() {
     final int PRIME = 59;
     int result = super.hashCode();
-    final Object $from = this.getFrom();
+    final Object $from = this.getEventLabel();
     result = result * PRIME + ($from == null ? 43 : $from.hashCode());
     final Object $to = this.getTo();
     result = result * PRIME + ($to == null ? 43 : $to.hashCode());

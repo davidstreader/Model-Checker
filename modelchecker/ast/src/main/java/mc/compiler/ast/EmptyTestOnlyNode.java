@@ -1,7 +1,8 @@
 package mc.compiler.ast;
 
 /**
- * A dummy node, for testing purposes only.
+ * A dummy node - was for testing purposes only.
+ *  now used in Expander and is expanded into a Terminal Node "ERROR"
  *
  * @author David Sheridan
  * @author Sanjay Govind

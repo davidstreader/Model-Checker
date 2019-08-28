@@ -291,7 +291,7 @@ public class RevAP2BC implements IProcessFunction {
       (Petrinet) model.getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
 
     model.addProcess(modelAut);
-    model.addProcessesMapping(new MappingNdMarking(nodeToMarking, markingToNode));
+    model.addProcessesMapping(new MappingNdMarking(nodeToMarking, markingToNode,pet.getId(),modelAut.getId()));
     return model;
   }
 

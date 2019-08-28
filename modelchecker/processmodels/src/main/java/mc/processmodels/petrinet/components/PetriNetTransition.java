@@ -40,10 +40,13 @@ public class PetriNetTransition extends ProcessModelObject {
     return this.getId().equals(((PetriNetTransition)tr).getId());
   }
 
-  public boolean isHidden() {
-    return this.label.equals(Constant.HIDDEN);
-  }
-  public void addOwner(String ownerName) {
+    public boolean isHidden() {
+        return this.label.equals(Constant.HIDDEN);
+    }
+    public boolean isBlocked() {
+        return this.label.equals(Constant.DEADLOCK);
+    }
+    public void addOwner(String ownerName) {
     //System.out.println("addOwner "+ownerName);
     owners.add(ownerName);
     //System.out.println("X");
@@ -114,7 +117,7 @@ public class PetriNetTransition extends ProcessModelObject {
         .distinct()
         .collect(Collectors.toSet()); */
   }
-  
+
   public Set<PetriNetPlace> preNotOptional() {
     return incoming.stream()
             .filter(ed->!ed.getOptional())

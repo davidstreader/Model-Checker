@@ -77,6 +77,7 @@ public class ModelView implements Observer {
   private CompilationObject compiledResult;
   private List<String> processesChanged = new ArrayList<>();
 
+  //map from Id to TokenMapping
   private Map<String, MappingNdMarking> mappings = new HashMap<>();
 
  private VisualizationServer.Paintable boarder;
@@ -438,7 +439,7 @@ public class ModelView implements Observer {
       }
 
       GraphNode node = new GraphNode(petri.getId(), place.getId(),
-          nodeTermination, NodeStates.NOSTATE, NodeType.PETRINET_PLACE, lab, place);
+          nodeTermination,nodeTermination, NodeType.PETRINET_PLACE, lab, place);
       placeId2GraphNode.put(place.getId(), node);
       graph.addVertex(node);
       nodeMap.put(place.getId(), node);
@@ -447,7 +448,8 @@ public class ModelView implements Observer {
     currentMarkingsSeen.put(petri.getId(),rts);
     CurrentMarkingsSeen.addRootMarking(petri.getId(),rts);
 
-    petri.getTransitions().values().forEach(transition -> {
+    petri.getTransitions().values().stream().filter(x->!x.isBlocked())
+        .forEach(transition -> {
       String lab=transition.getLabel()+".";
       if (settings.isShowOwners()) {
         for(String o:transition.getOwners()){lab+=o;}
@@ -460,7 +462,7 @@ public class ModelView implements Observer {
 
     });
     float dash[] = { 10.0f };
-     for (PetriNetEdge edge: petri.getEdges().values()) {
+     for (PetriNetEdge edge: petri.getEdgesNotBlocked().values()) {
        //System.out.println(edge.myString());
       // dstr commented out below 13/7/19
       //   vv.getRenderContext().setEdgeStrokeTransformer(e -> new BasicStroke(2.0f, BasicStroke.CAP_BUTT,

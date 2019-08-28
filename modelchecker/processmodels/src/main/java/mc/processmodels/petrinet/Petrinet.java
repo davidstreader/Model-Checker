@@ -50,8 +50,17 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   private List<Set<String>> ends = new ArrayList<>();
   //private List<Set<String>> rootNames = new ArrayList<>();
   //private Set<PetriNetPlace> root ;
-  private Map<String, PetriNetEdge> edges = new HashMap<>();
-  private Set<RelabelElementNode> relabels = new HashSet<>();
+  private Map<String, PetriNetEdge> edges = new TreeMap<>();
+  public  Map<String, PetriNetEdge> getEdgesNotBlocked() {
+      Map<String, PetriNetEdge> o = new TreeMap<>();
+      for(String e : edges.keySet()){
+          if (edges.get(e).isNotBlocked()){
+              o.put(e,edges.get(e));
+          }
+      }
+      return o;
+  }
+    private Set<RelabelElementNode> relabels = new HashSet<>();
   private Multimap<String, String> combinationsTable = ArrayListMultimap.create(); // Glue function owners map
   private HidingNode hiding;
   private Set<String> hiddenVariables = new HashSet<>();
@@ -583,7 +592,9 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
   public void rebuildAlphabet() {
     Multimap<String, PetriNetTransition> alpha = ArrayListMultimap.create();
-    Set<String> a = this.getTransitions().values().stream().map(x -> x.getLabel()).collect(Collectors.toSet());
+    Set<String> a = this.getTransitions().values().stream().
+           map(x -> x.getLabel()).filter(x->!x.equals(Constant.DEADLOCK)).
+           collect(Collectors.toSet());
 
     for (String s : a) {
       for (PetriNetTransition tr : alphabet.get(s)) {
@@ -1625,10 +1636,12 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
 
     for (PetriNetTransition transition : petriToAdd.getTransitions().values()) {
+     //System.out.println("trying to add "+transition.myString());
+        if (transition.isBlocked()) continue;
       PetriNetTransition newTransition = this.addTransition(transition.getLabel());
       newTransition.setOwners(transition.getOwners());
       transitionMap.put(transition, newTransition);
-      //System.out.println(newTransition.myString());
+      //System.out.println("added "+newTransition.myString());
     }
    /*System.out.println("tranMap "+ transitionMap.keySet().stream().
       map(x->x.getId()+"->"+transitionMap.get(x).getId()).collect(Collectors.joining()));
@@ -1638,16 +1651,20 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       //owners.addAll(postFixed);
       //System.out.println("edge "+edge.myString());
       if (edge.getFrom() instanceof PetriNetPlace) {
-        //System.out.println("edging "+transitionMap.get(edge.getTo())+" "+places.get(edge.getFrom().getId()+tag));
-        PetriNetEdge e =
-          addEdge(transitionMap.get(edge.getTo()), places.get(edge.getFrom().getId() + tag), edge.getOptional());
-        if (edge.getGuard() != null) e.setGuard(edge.getGuard());
+        if (transitionMap.containsKey(edge.getTo())) {
+            //System.out.println("edging " + transitionMap.get(edge.getTo()) + " " + places.get(edge.getFrom().getId() + tag));
+            PetriNetEdge e =
+                addEdge(transitionMap.get(edge.getTo()), places.get(edge.getFrom().getId() + tag), edge.getOptional());
+            if (edge.getGuard() != null) e.setGuard(edge.getGuard());
+        }
       } else {
-        //System.out.println("edgeing "+ places.get(edge.getTo().getId()+tag) +
-        //     "  "+transitionMap.get(edge.getFrom()));
-        PetriNetEdge e =
-          addEdge(places.get(edge.getTo().getId() + tag), transitionMap.get(edge.getFrom()), edge.getOptional());
-        if (edge.getGuard() != null) e.setGuard(edge.getGuard());
+          if (transitionMap.containsKey(edge.getFrom())) {
+              //System.out.println("edgeing " + places.get(edge.getTo().getId() + tag) +
+              //    "  " + transitionMap.get(edge.getFrom()));
+              PetriNetEdge e =
+                  addEdge(places.get(edge.getTo().getId() + tag), transitionMap.get(edge.getFrom()), edge.getOptional());
+              if (edge.getGuard() != null) e.setGuard(edge.getGuard());
+          }
       }
     }
     //System.out.println("add Petri  nameMap "+nameMap);

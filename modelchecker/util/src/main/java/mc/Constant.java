@@ -24,6 +24,7 @@ public class Constant {
     public static final String SEQUENTIAL = "sequential";
     public static final String CONCURRENT = "concurrent";
     public static final String FORCED = "forced";
+    public static final String CRASHME = "CRASHME";
 
     public static final String AUTOMATA = "automata";
     public static final String PETRINET = "petrinet";
