@@ -25,7 +25,7 @@ import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.RefineFun;
 import mc.processmodels.petrinet.utils.PetrinetLabeller;
 import mc.util.expr.ExpressionPrinter;
-
+//import mc.operations.functions.AbstractionFunction;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -1030,7 +1030,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     return petri;
   }
 
-  private void processHiding(Petrinet petri, HidingNode hiding) throws CompilationException {
+  private void processHiding(Petrinet petri, HideNode hiding) throws CompilationException {
     //Includes syntax (\)
     //System.out.println("hidding BUG "+petri.myString()+ " -- "+hiding.myString());
     //Throwable t = new Throwable(); t.printStackTrace();
@@ -1051,6 +1051,11 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       new ArrayList<>(petri.getAlphabet().keySet()).stream()
         .filter(k -> !hiding.getSet().getSet().contains(k))
         .forEach(a -> petri.relabelTransitions(a, Constant.HIDDEN));
+    }
+
+    if (hiding.getObs()) {
+        Automaton a = TokenRule.tokenRule(petri);
+       // AbstractionFunction abf = new AbstractionFunction();
     }
   }
 

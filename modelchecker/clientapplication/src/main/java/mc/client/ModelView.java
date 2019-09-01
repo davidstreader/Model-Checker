@@ -327,7 +327,7 @@ public class ModelView implements Observer {
       }
 
 
-      GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination, NodeStates.NOSTATE,
+      GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination, NodeStates.NOMINAL,
           NodeType.AUTOMATA_NODE, "" + n.getLabelNumber(), n);
       nodeMap.put(n.getId(), node);
 
@@ -457,7 +457,7 @@ public class ModelView implements Observer {
         lab = transition.getLabel();
       }
       GraphNode node = new GraphNode(petri.getId(), transition.getId(),
-          NodeStates.NOMINAL, NodeStates.NOSTATE, NodeType.PETRINET_TRANSITION, lab, transition);
+          NodeStates.NOMINAL, NodeStates.NOMINAL, NodeType.PETRINET_TRANSITION, lab, transition);
       nodeMap.put(transition.getId(), node);
 
     });

@@ -94,7 +94,6 @@ public class AbstractionFunction implements IProcessFunction {
      * abstraction that preserves ownership or CONCURRENT information is research
      * Limit to just pruning states
      *
-     * @param id       the id of the resulting automaton
      * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
      * @param context  the z3 context to access the stuff
      * @param automata a variable number of automata taken in by the function
@@ -117,14 +116,14 @@ public class AbstractionFunction implements IProcessFunction {
         Automaton abstraction = absMerge(flags, context, startA);
  //System.out.println("***afterTarjen "+startA.getId() + " flags " + flags + " edges " + abstraction.getEdgeCount()+ " nodes "+abstraction.getNodeCount());
 
-       //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString());
+       //System.out.println("\n****** After absMerge\n" + abstraction.myString());
         if (!concurrent) {
             observationalSemantics(flags, abstraction, context);
             abstraction.setSequential(true);
         }
- System.out.println("***end        "+startA.getId() + " flags " + flags + " edges " + abstraction.getEdgeCount()+ " nodes "+abstraction.getNodeCount());
+ //System.out.println("***end        "+startA.getId() + " flags " + flags + " edges " + abstraction.getEdgeCount()+ " nodes "+abstraction.getNodeCount());
 
-        //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString());
+        //System.out.println("\n****** ABS at end \n" + abstraction.myString());
         //abstraction =  AutomataReachability.removeUnreachableNodes(abstraction);
         MyAssert.validate(abstraction, "Abstraction output ");
         //System.out.println("\n*****Abs final \n*****Abs final\n" + abstraction.myString() + "\n");
@@ -133,7 +132,7 @@ public class AbstractionFunction implements IProcessFunction {
 
     /*
         Saturates the automata building the obervational semantics for Failures
-        The Preprocessing with Targens algorithm removes tau loops of ALL sizes
+        The Preprocessing with Targens algorithm removes tau loops of sizes > 1
 
         Note this may mess up concurrancy hence set all owners to "{seq}"
      */
@@ -141,11 +140,14 @@ public class AbstractionFunction implements IProcessFunction {
         // retrieve the unobservable edges from the specified automaton
         boolean isFair = flags.contains(Constant.FAIR) || !flags.contains(Constant.UNFAIR);
         boolean cong = flags.contains(Constant.CONGURENT);
-        //System.out.println(" obs "+abstraction.myString());
+        // ONLY 1  loops remain after Targen.
+        divergence(abstraction, isFair);
+
+        //System.out.println(" observationalSemantics  "+abstraction.myString());
         List<AutomatonEdge> hiddenEdges = abstraction.getEdges().stream()
             .filter(ed -> ed.isHidden() && !ed.getFrom().equalId(ed.getTo()))
             .collect(Collectors.toList());
-        //System.out.println("hiddenEdges "+hiddenEdges.size());
+    //System.out.println("observationalSemantics hiddenEdges "+hiddenEdges.size()+ " cong "+cong+" isFair " + isFair);
         //System.out.println("hiddenEdges = "+hiddenEdges.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
         //Construct  edges to replace the unobservable edges
 
@@ -155,10 +157,10 @@ public class AbstractionFunction implements IProcessFunction {
             //for loop adds new taus to newHidden then they are trnasfered to hiddenEdge
             // whild only termintes when nothing is added
             for (AutomatonEdge hiddenEdge : hiddenEdges) {
-
+     //System.out.println("hiddenEdge "+hiddenEdge.myString());
 
                 if (cong && hiddenEdge.stateObservable()) {
-                    System.out.println("SKIP  cong");
+                    //System.out.println("SKIP  cong");
                     continue; //Do not remove these taus
                 }
                 List<AutomatonEdge> temp = new ArrayList<AutomatonEdge>();
@@ -184,7 +186,7 @@ public class AbstractionFunction implements IProcessFunction {
                         }
                     }
                     //abstraction is both In and OUT
-                    //System.out.println("\n   abs 111 "+abstraction.myString());
+           //System.out.println("\n   abs 186 "+abstraction.myString());
                     temp.addAll(
                         constructOutgoingEdges(abstraction, hiddenEdge, context));
                     temp.addAll(
@@ -209,8 +211,6 @@ public class AbstractionFunction implements IProcessFunction {
             newHidden = new ArrayList<>();
         }
         //System.out.println("\n abs 222 "+abstraction.myString());
-        // 1  loops may have been added.
-        divergence(abstraction, isFair);
         //System.out.println("hidden cnt "+processesed.size());
         // abstraction might remove some locations
         Set<String> ow = new TreeSet<>();
@@ -222,7 +222,7 @@ public class AbstractionFunction implements IProcessFunction {
         abstraction.setAllOwnerstoSeq();
         abstraction.cleanNodeLables();
 
-        //System.out.println("abs end "+abstraction.myString());
+        //System.out.println("observationalSemantics end "+abstraction.myString());
         return abstraction;
     }
 
@@ -280,8 +280,7 @@ public class AbstractionFunction implements IProcessFunction {
         //startA.validateAutomaton("");
       //System.out.println("ABS MERGED " + startA.myString());
         startA.removeDuplicateEdges();
-        // 1  loops may have been added AND must be removed before pruning
-        // May be redundent  now Tarjan working
+        // Redundent  now Tarjan working
         // divergence(startA, isFair);
         //startA.validateAutomaton("");
 
@@ -346,7 +345,7 @@ public class AbstractionFunction implements IProcessFunction {
                 }
             } else { // Atomic automaton
                 if (edge.isHidden() && from.getId().equals(to.getId())) {
-                    //System.out.println("ERROR hidden loops should NOT be added!");
+                    System.out.println("ERROR hidden loops should NOT be added!");
                     continue;
                 }
 
@@ -360,9 +359,12 @@ public class AbstractionFunction implements IProcessFunction {
                         break;
                     }
                 }
-                if (skip) continue;
+                if (skip) {
+                    //System.out.println("skiped");
+                    continue;}
 
                 added = abstraction.addEdge(edge.getLabel(), from, to, null, false, edge.getOptionalEdge());
+          //System.out.println("Added "+added.myString());
                 abstraction.addOwnersToEdge(added, hiddenEdge.getEdgeOwners());
                 abstraction.addOwnersToEdge(added, edge.getEdgeOwners());
                 if (added.isHidden()) {
@@ -382,7 +384,7 @@ public class AbstractionFunction implements IProcessFunction {
             //System.out.println("Outgoing add "+added.myString());
         }
 
-        //System.out.println("endof Outgoing "+hiddenAdded.myString());
+        //System.out.println("endof Outgoing "+hiddenAdded.size());
         return hiddenAdded;
     }
 

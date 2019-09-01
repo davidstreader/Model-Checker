@@ -15,6 +15,7 @@ import mc.util.expr.MyAssert;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -22,8 +23,9 @@ import java.util.ResourceBundle;
  */
 public class SettingsController implements Initializable {
   private Integer maxNodes = 40;
-  private Integer delay = 2;
-  private Integer repulse = 25;
+    private Integer delay = 2;
+    private Integer font = 14;
+    private Integer repulse = 25;
   private Integer spring = 50;
   private Integer step = 150;
   private boolean showOwners = false;
@@ -31,6 +33,7 @@ public class SettingsController implements Initializable {
   private boolean Congruance = false;
   private boolean Symbolic = false;
   Collection<String> disp = new ArrayList<>();
+  List<FontListener> fontListeners = new ArrayList<>(2);
 
   @Setter
   private Window window;
@@ -38,8 +41,10 @@ public class SettingsController implements Initializable {
   @FXML
   private Slider maxNodesSlider;
 
-  @FXML
-  private Slider delaySlider;
+    @FXML
+    private Slider delaySlider;
+    @FXML
+    private Slider fontSlider;
 
   @FXML
   private Slider repulseSlider;
@@ -87,13 +92,17 @@ public class SettingsController implements Initializable {
     myReset();
   }
 
+  public void addFontListener(FontListener fl){ // Listener pattern
+      fontListeners.add(fl);
+  }
   public void myReset(){
     maxNodesSlider.setValue(40);
     stepSlider.setValue(150);
     repulseSlider.setValue(25);
     springSlider.setValue(50);
-    delaySlider.setValue(2);
-     //Symb.setSelected(true);
+      delaySlider.setValue(2);
+      fontSlider.setValue(14);
+      //Symb.setSelected(true);
     //displayList.setItems(disp);
     initDispType();
   }
@@ -101,9 +110,12 @@ public class SettingsController implements Initializable {
     return maxNodes;
   }
 
-  public Integer getDelay() {
-    return delay;
-  }
+    public Integer getDelay() {
+        return delay;
+    }
+    public Integer getFont() {
+        return font;
+    }
 
   public Integer getRepulse() {
     return repulse;
@@ -149,17 +161,22 @@ public class SettingsController implements Initializable {
     Symb.setSelected(isSymbolic());
     Col.setSelected(isShowColor());
     maxNodesSlider.setValue(maxNodes);
-    delaySlider.setValue(delay);
+      delaySlider.setValue(delay);
+      fontSlider.setValue(font);
 
-    maxNodesSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+      maxNodesSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
       maxNodes = newVal.intValue();
     });
 
 
-    delaySlider.valueProperty().addListener((arg0, arg1, newVal) -> {
-      delay = newVal.intValue();
-    });
-    repulseSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+      delaySlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+          delay = newVal.intValue();
+      });
+      fontSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+          font = newVal.intValue();
+          fontListeners.get(0).changeFontSize();
+      });
+      repulseSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
       repulse = newVal.intValue();
       //System.out.printf("Rep set to %1.2f \n",repulse);
     });

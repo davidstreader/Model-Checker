@@ -7,7 +7,7 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import lombok.SneakyThrows;
 import mc.Constant;
-import mc.compiler.ast.HidingNode;
+import mc.compiler.ast.HideNode;
 import mc.compiler.ast.RelabelElementNode;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
@@ -62,7 +62,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   }
     private Set<RelabelElementNode> relabels = new HashSet<>();
   private Multimap<String, String> combinationsTable = ArrayListMultimap.create(); // Glue function owners map
-  private HidingNode hiding;
+  private HideNode hiding;
   private Set<String> hiddenVariables = new HashSet<>();
   private Location hiddenVariablesLocation;  //Location in code
   private Set<String> owners = new HashSet<>();  // for nd nets should be List<Set<String>>
@@ -2163,7 +2163,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return this.combinationsTable;
   }
 
-  public HidingNode getHiding() {
+  public HideNode getHiding() {
     return this.hiding;
   }
 
@@ -2247,7 +2247,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     this.combinationsTable = combinationsTable;
   }
 
-  public void setHiding(HidingNode hiding) {
+  public void setHiding(HideNode hiding) {
     this.hiding = hiding;
   }
 

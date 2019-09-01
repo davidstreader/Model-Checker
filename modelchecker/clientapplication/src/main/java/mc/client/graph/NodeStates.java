@@ -37,7 +37,7 @@ public enum NodeStates {
     NOMINAL (Color.LIGHT_GRAY),
     SEQUENTIAL (new Color(50,0 ,0, 100)),
     CONCURRENT (new Color(15,15 ,15, 100)),
-    NOSTATE (new Color(10,10 ,10, 100)),
+  //  NOSTATE (new Color(10,10 ,10, 100)),
     SELECT  (Color.CYAN);
 
     private final Color colorNodes;

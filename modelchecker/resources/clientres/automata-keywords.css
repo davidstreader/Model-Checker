@@ -1,9 +1,15 @@
+/* dstr God knows how this works
+.myAll {
+    font-size: 30px;
+}
+*/
 /**
  * The type blocks
  */
 .process {
     -fx-fill: #fabd2f;
     -fx-font-weight: bold;
+  /*  -fx-font-size: 30px;   dstr WORKS  */
 }
 
 /**

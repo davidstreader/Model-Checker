@@ -11,7 +11,7 @@ public class HidingToken extends SymbolToken {
 
   @Override
   public String toString(){
-    return "hidding";
+    return "hiding";
   }
 
   public boolean equals(final Object o) {

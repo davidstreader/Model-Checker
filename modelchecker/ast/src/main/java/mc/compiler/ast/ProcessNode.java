@@ -56,7 +56,7 @@ public class ProcessNode extends ASTNode {
   /**
    * The hiding information, to be executed on the process.
    */
-  private HidingNode hiding;
+  private HideNode hiding;
 
   /**
    * Process House${x,n}   has symbolicVariables x and n
@@ -96,7 +96,7 @@ public class ProcessNode extends ASTNode {
    *                       {@link ASTNode#location}
    */
   public ProcessNode(String identifier, String domain, ASTNode process, List<LocalProcessNode> localProcesses,
-                     HidingNode hiding, Location location) {
+                     HideNode hiding, Location location) {
     super(location,"Process");
     this.type = new HashSet<>();
     this.identifier = identifier;
@@ -172,7 +172,7 @@ public class ProcessNode extends ASTNode {
     return this.relabels;
   }
 
-  public HidingNode getHiding() {
+  public HideNode getHiding() {
     return this.hiding;
   }
 
@@ -208,7 +208,7 @@ public class ProcessNode extends ASTNode {
     this.relabels = relabels;
   }
 
-  public void setHiding(HidingNode hiding) {
+  public void setHiding(HideNode hiding) {
     this.hiding = hiding;
   }
 

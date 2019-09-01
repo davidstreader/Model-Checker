@@ -37,7 +37,7 @@ public class ProcessRootNode extends ASTNode {
   /**
    * The hiding that happens on this process.
    */
-  private HidingNode hiding;
+  private HideNode hiding;
 
   /**
    * Instantiate a new instance of ProcessRootNode
@@ -51,7 +51,7 @@ public class ProcessRootNode extends ASTNode {
    * @param location where in the users code this node is {@link ASTNode#location}
    */
   public ProcessRootNode(ASTNode process, String label, RelabelNode relabels,
-                         HidingNode hiding, Location location) {
+                         HideNode hiding, Location location) {
     super(location,"ProcessesRoot");
     //System.out.println("ProcessRootNode BUILT");
     //Throwable t = new Throwable();  t.printStackTrace();
@@ -118,7 +118,7 @@ public class ProcessRootNode extends ASTNode {
     return this.relabelSet;
   }
 
-  public HidingNode getHiding() {
+  public HideNode getHiding() {
     return this.hiding;
   }
 
@@ -134,7 +134,7 @@ public class ProcessRootNode extends ASTNode {
     this.relabelSet = relabelSet;
   }
 
-  public void setHiding(HidingNode hiding) {
+  public void setHiding(HideNode hiding) {
     this.hiding = hiding;
   }
 

@@ -42,7 +42,7 @@ import java.util.function.Supplier;
 
 import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
 
-public class UserInterfaceController implements Initializable {
+public class UserInterfaceController implements Initializable, FontListener {
   private boolean holdHighlighting = false; // If there is an compiler issue, highlight the area. Dont keep applying highlighting it wipes it out
   private javafx.stage.Popup autocompleteBox = new javafx.stage.Popup();
   private ExecutorService executor; // Runs the highlighting in separate ctx
@@ -81,8 +81,16 @@ public class UserInterfaceController implements Initializable {
 
   private ArrayDeque<String> recentFilePaths = new ArrayDeque<>();
 
+    @Override
+    public void changeFontSize() {  // Lister Pattern
+        int f = settingsController.getFont();
+        String sfont =  "-fx-font-size: "+f+"px;";
+       //   System.out.println("changeFontSize  "+sfont);
+        userCodeInput.setStyle("-fx-background-color: #151515;"+sfont);
 
-  /**
+    }
+
+    /**
    * Called to initialize a controller after its root element has been
    * completely processed.
    *
@@ -109,7 +117,7 @@ public class UserInterfaceController implements Initializable {
 
     settingsController = new SettingsController();
     settingsController.initialize();
-
+    settingsController.addFontListener(this);
 
     ModelView.getInstance().setSettings(settingsController);
     // Have to initialise it or there is a delay between the graph becoming ready and actually displaying things
@@ -138,7 +146,7 @@ public class UserInterfaceController implements Initializable {
 
     //add style sheets
     //userCodeInput.setStyle("-fx-background-color: #32302f;");
-    userCodeInput.setStyle("-fx-background-color: #32302f;");
+    userCodeInput.setStyle("-fx-background-color: #151515;"+"-fx-font-size: 14px;");
     userCodeInput.getStylesheets().add(getClass().getResource("/clientres/automata-keywords.css").toExternalForm());
 
     ListView<String> popupSelection = new ListView<>();
@@ -649,7 +657,6 @@ public class UserInterfaceController implements Initializable {
   @FXML
   private void handleCompileRequest(ActionEvent event) {
     String userCode = userCodeInput.getText();
-
     if (!userCode.isEmpty()) {
 
       if (buildThread.isAlive()) {

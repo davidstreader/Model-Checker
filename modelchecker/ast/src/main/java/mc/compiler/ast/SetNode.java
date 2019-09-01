@@ -15,7 +15,7 @@ import java.util.Map;
  * @author David Sheridan
  * @author Sanjay Govind
  * @author Jacob Beal
- * @see HidingNode
+ * @see HideNode
  * @see FunctionNode
  * @see ASTNode
  */

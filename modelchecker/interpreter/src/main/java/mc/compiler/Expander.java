@@ -3,7 +3,6 @@ package mc.compiler;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
-import jdk.nashorn.internal.ir.EmptyNode;
 import mc.Constant;
 import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
@@ -351,7 +350,7 @@ public class Expander {
   The HidingNode.getSet may contain ranges that are now expanded
  */
         if (astNode.hasHiding()) {
-            HidingNode hiding = astNode.getHiding();
+            HideNode hiding = astNode.getHiding();
             hiding.setSet(expand(hiding.getSet(), context));
             astNode.setHiding(hiding);
         }

@@ -16,7 +16,7 @@ import mc.util.Location;
  * @see SetNode
  * @see ProcessRootNode
  */
-public class HidingNode extends ASTNode {
+public class HideNode extends ASTNode {
 
   /**
    * The type of hiding, the valid values of this are {@code includes} and {@code excludes}.
@@ -26,22 +26,29 @@ public class HidingNode extends ASTNode {
    * The set of the alphabet being hidden.
    */
   private SetNode set;
-
+  private boolean obs = false;
+  public void setObs(boolean b) {obs = b;}
+  public boolean getObs() {return obs;}
   /**
-   * Instantiates a new instance of HidingNode.
+   * Instantiates a new instance of HideNode.
    *
    * @param type     the mode of hiding used,
    *                 valid inputs are {@code includes} and {@code excludes} {@link #type}
    * @param set      a set node containing the values of the labels to hide {@link #set}
-   * @param location the location within the users code where this node is {@link ASTNode#location}
+   * @param location the location within the users code where
    */
-  public HidingNode(String type, SetNode set, Location location) {
-    super(location,"Hiding");
+  public HideNode(String type, SetNode set, Location location) {
+          super(location,"Hide");
     this.type = type;
     this.set = set;
   }
+    public HideNode HideNode(String type, SetNode set, Location location, boolean o) {
+        HideNode out =  new HideNode(type,set,location);
+        out.setObs(o);
+        return out;
+    }
   public String myString(){
-    return "Hidding "+type+" "+set.myString();
+    return "Hide "+type+" "+set.myString();
   }
 
   public String getType() {
@@ -61,13 +68,13 @@ public class HidingNode extends ASTNode {
   }
 
   public String toString() {
-    return "HidingNode(type=" + this.getType() + ", set=" + this.getSet() + ")";
+    return "HideNode(type=" + this.getType() + ", set=" + this.getSet() + ")";
   }
 
   public boolean equals(final Object o) {
     if (o == this) return true;
-    if (!(o instanceof HidingNode)) return false;
-    final HidingNode other = (HidingNode) o;
+    if (!(o instanceof HideNode)) return false;
+    final HideNode other = (HideNode) o;
     if (!other.canEqual((Object) this)) return false;
     if (!super.equals(o)) return false;
     final Object this$type = this.getType();
@@ -80,7 +87,7 @@ public class HidingNode extends ASTNode {
   }
 
   protected boolean canEqual(final Object other) {
-    return other instanceof HidingNode;
+    return other instanceof HideNode;
   }
 
   public int hashCode() {

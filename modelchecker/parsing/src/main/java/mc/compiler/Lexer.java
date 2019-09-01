@@ -169,7 +169,7 @@ public class Lexer {
         return new OwnersRuleToken(location);
       case "aut":
         return new AutomatonToken(location);
-      case "hiding":
+      case "hiding":  // HideToken for \{..}  HidingToken for hiding{..}(..)
         return new HidingToken(location);
     }
 

@@ -477,7 +477,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   }
 
-  private void processHiding(Automaton automaton, HidingNode hiding) throws CompilationException {
+  private void processHiding(Automaton automaton, HideNode hiding) throws CompilationException {
     Set<String> alphabet = automaton.getAlphabet();
     if (automaton.getAlphabetBeforeHiding() == null) {
       automaton.setAlphabetBeforeHiding(new HashSet<>(automaton.getAlphabet()));
