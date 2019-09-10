@@ -1,4 +1,0 @@
-processes {
-A = a->b->STOP
-}
-automata A.

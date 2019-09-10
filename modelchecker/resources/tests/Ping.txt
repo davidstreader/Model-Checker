@@ -1,4 +1,0 @@
-processes {
-
-X = a->b->X.
-}

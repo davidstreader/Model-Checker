@@ -478,7 +478,7 @@ public class Expander {
     private ASTNode expand(CompositeNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
         ASTNode process1 = expand(astNode.getFirstProcess(), variableMap, context);
         ASTNode process2 = expand(astNode.getSecondProcess(), variableMap, context);
-        //System.out.println("Composite Composite");
+        //System.out.println("Composite Composite "+astNode.myString());
         if (process1 instanceof TerminalNode) {
             return process2;
         } else if (process2 instanceof TerminalNode) {

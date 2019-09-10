@@ -1,3 +1,0 @@
-equation (ApplyAlphabet=true, AlphabetCount=2, MaxTransitions=2) {
-	X~X.
-}

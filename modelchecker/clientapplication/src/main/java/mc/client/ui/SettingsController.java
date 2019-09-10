@@ -93,7 +93,9 @@ public class SettingsController implements Initializable {
   }
 
   public void addFontListener(FontListener fl){ // Listener pattern
+      //System.out.println("FontListener "+  fl.getClass().getCanonicalName());
       fontListeners.add(fl);
+      //System.out.println("FontListeners cnt "+fontListeners.size());
   }
   public void myReset(){
     maxNodesSlider.setValue(40);
@@ -157,7 +159,7 @@ public class SettingsController implements Initializable {
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
-    System.out.println("initialise Settings "+Symbolic +"  and "+isSymbolic());
+    //System.out.println("initialise Settings "+Symbolic +"  and "+isSymbolic());
     Symb.setSelected(isSymbolic());
     Col.setSelected(isShowColor());
     maxNodesSlider.setValue(maxNodes);
@@ -174,7 +176,7 @@ public class SettingsController implements Initializable {
       });
       fontSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
           font = newVal.intValue();
-          fontListeners.get(0).changeFontSize();
+          fontListeners.stream().forEach(x->x.changeFontSize());
       });
       repulseSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
       repulse = newVal.intValue();
@@ -194,7 +196,7 @@ public class SettingsController implements Initializable {
 
     initDispType();
 
-    System.out.println("initialise Settings "+Symbolic +"  and "+isSymbolic());
+   // System.out.println("initialise Settings "+Symbolic +"  and "+isSymbolic());
 
   }
 

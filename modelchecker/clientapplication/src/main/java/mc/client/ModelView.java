@@ -55,7 +55,7 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
  *
  * Both will need to be ditched
  */
-public class ModelView implements Observer {
+public class ModelView implements Observer, FontListener {
 
   private Graph<GraphNode, DirectedEdge> graph;  //Used by graph layout algorithm
   private Layout<GraphNode, DirectedEdge> layout;
@@ -81,8 +81,8 @@ public class ModelView implements Observer {
   private Map<String, MappingNdMarking> mappings = new HashMap<>();
 
  private VisualizationServer.Paintable boarder;
-  private static final Font sourceCodePro;
-
+  private static  Font sourceCodePro;
+  private boolean fontListening = false;
   @Setter
   private SettingsController settings; // Contains linkage length and max nodes
 
@@ -93,6 +93,16 @@ public class ModelView implements Observer {
   private BiConsumer<List<OperationResult>, List<OperationResult>> updateLog;
   //@Setter
   //private BiConsumer<List<ImpliesResult>, List<ImpliesResult>> updateImpLog;
+
+
+    @Override
+    public void changeFontSize() {  // Lister Pattern
+        //System.out.println( "       ModelView changeFont ");
+        float fs = settings.getFont();
+        ModelView.sourceCodePro =  ModelView.sourceCodePro.deriveFont(fs);
+       //System.out.println("ModelView changeFont called with "+fs);
+
+    }
 
   public ProcessModel getProcess(String id) {
     return compiledResult.getProcessMap().get(id);
@@ -195,6 +205,7 @@ public class ModelView implements Observer {
    */
 
   public VisualizationViewer<GraphNode, DirectedEdge> updateGraph(SwingNode s) {
+
     if (compiledResult == null) {
       return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
     }
@@ -242,6 +253,10 @@ public class ModelView implements Observer {
     vv.addPreRenderPaintable(boarder);
     vv.addPostRenderPaintable(new PetriMarkingPaintable(vv,this.processModels));
     processesChanged.clear();
+    if (!fontListening) {
+        settings.addFontListener(this);
+        fontListening = true;
+    }
     return vv;
   }
 
@@ -611,7 +626,7 @@ public class ModelView implements Observer {
 
     );
 
-
+  //  settings.addFontListener(this);
     ((SpringlayoutBase) layout).setStretch(0.8);
     ((SpringlayoutBase) layout).setRepulsionRange(1000);
 
@@ -637,7 +652,9 @@ public class ModelView implements Observer {
    // vv.addMouseMotionListener(cml);
     //System.out.println();
 
+
     //label the nodes
+
     vv.getRenderContext().setVertexLabelTransformer(GraphNode::getLabel);
     vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getAll);
     //vv.getRenderContext().setEdgeArrowStrokeTransformer(edgeStroke);
@@ -648,8 +665,9 @@ public class ModelView implements Observer {
 
     // Sets edges as lines
     vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.mixedLineCurve(graph));
-
+   // vv.getRenderContext().getEdgeLabelTransformer().;
     processModels = MultimapBuilder.hashKeys().hashSetValues().build();
+    //  settings.addFontListener(this); can NOY be done here ?!?
   }
 
 
@@ -661,7 +679,9 @@ public class ModelView implements Observer {
    */
   private ModelView() {
     CompilationObservable.getInstance().addObserver(this);
+
     initalise();
+   // settings.addFontListener(this);  can NOT be done here
   }
 
   //register font
@@ -674,6 +694,8 @@ public class ModelView implements Observer {
     } catch (FontFormatException | IOException e) {
       source = null;
     }
+     // System.out.println("New Font size "+source.getSize());
+
     sourceCodePro = source;
   }
 

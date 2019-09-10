@@ -17,8 +17,8 @@ public class DirectedEdge {
   public String getAll(){
     StringBuilder sb = new StringBuilder();
     if (boolGuard!=null && boolGuard.length()>0)
-      sb.append("edge "+ boolGuard);
-    sb.append(" "+label);
+      sb.append("edge "+ boolGuard+" ");
+    sb.append(label);
     if (assignment!=null && assignment.length()>0)
       sb.append(" "+assignment);
 

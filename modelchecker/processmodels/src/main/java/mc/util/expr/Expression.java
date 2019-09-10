@@ -108,6 +108,7 @@ public class Expression {
         return "Expression.Substitute(ctx=" + this.getCtx() + ", variables=" + this.getVariables() + ", expr=" + this.getExpr() + ")";
       }
     }
+
     private static class SubstituteReals {
         Context ctx;
         Map<String,Double> variables;
@@ -180,6 +181,7 @@ public class Expression {
         return "Expression.SubstituteReals(ctx=" + this.getCtx() + ", variables=" + this.getVariables() + ", expr=" + this.getExpr() + ")";
       }
     }
+
     private static class And {
         Context ctx;
         Expr expr1;

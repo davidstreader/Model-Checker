@@ -30,7 +30,7 @@ public class ChoiceFun {
                 out.add(buildMark(m1, m2));
             }
         }
-        //System.out.println("New Roots "+out);
+        //System.out.println("Choice New Roots "+out);
         return out;
     }
 
@@ -42,7 +42,7 @@ public class ChoiceFun {
                 out.add(s1 + MAPLET + s2);
             }
         }
-        //System.out.println("Next root "+out);
+        //System.out.println("buildMark  "+out);
         return out;
     }
 
@@ -100,21 +100,24 @@ public class ChoiceFun {
         Petrinet choice = new Petrinet(id, false);
         choice.addPetrinet(net1, true, true); //adds net1 + root and end but changes Ids
         List<Set<String>> oneRoots = choice.reName(oRoots);
-        //System.out.println("new choice Root "+choice.getRoots());
+     //System.out.println("new choice1 Root "+choice.getRoots());
+     //System.out.println("choice root "+choice.getRootNames());
         choice.addPetrinet(net2, true, true);  //adds net2 + end but changes Ids
         List<Set<String>> twoRoots = choice.reName(tRoots);  // have to rename the roots
-        //System.out.println("new choice Root "+choice.getRoots());
-        //System.out.println("  oneRoots " + oneRoots + "   twoRoots " + twoRoots);
+     //System.out.println("new choice2 Root "+choice.getRoots());
+     //System.out.println("choice root "+choice.getRootNames());
+     //System.out.println("  oneRoots " + oneRoots + "   twoRoots " + twoRoots);
         //net2.setUpv2o(net1,net2);
 
         //System.out.println("Befor Glue O  \n"+choice.myString());
         choice.glueOwners(own1, own2);
         choice.reown("c");
-
+        //System.out.println("After Glue O  \n"+choice.myString());
         //for each pair of roots Ri, Rj build a Ri[]Rj root and copy the root post transition
         List<Set<String>> newRoots = new ArrayList<>();
         for (Set<String> r1 : twoRoots) {
             for (Set<String> r2 : oneRoots) {
+                //System.out.println("Root looping "+r1+" "+r2);
                 //Copy both roots and then Glue
                 //The Root2 must be copied prior to Gluing as they may be needed later (next iteration)
                 Set<PetriNetPlace> newr1 = new HashSet<PetriNetPlace>();
@@ -126,16 +129,18 @@ public class ChoiceFun {
                 for (String rt2 : r2) {
                     newr2.add(choice.copyRootOrEnd(choice.getPlace(rt2), "None", false));
                 }
-
+     //System.out.println("____before Glue "+choice.getRootNames());
                 Multimap<String, String> s2s = choice.gluePlaces(newr1, newr2, false);
                //System.out.println("   XXX After Gluing " + r1 + " with " + r2 + " \n" + choice.myString());
             }
 
             //System.out.println("XXX End r1 "+r1+"\n  " + choice.myString() + "\n");
         }
+       //System.out.println("ping1 "+choice.myString());
+
         choice.removeRoots(twoRoots);
         choice.removeRoots(oneRoots); // had to keep roots
-
+       //System.out.println("ping2 "+choice.myString());
         choice.removeStarE();
         oneRoots.addAll(twoRoots);
         List<String> tokeep = choice.getRootNames().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
@@ -154,7 +159,7 @@ public class ChoiceFun {
             }
         }
 
-        //System.out.println("FINAL After Gluing  \n"+choice.myString());
+     //System.out.println("FINAL After Gluing  \n"+choice.myString());
 
         choice = PetrinetReachability.removeUnreachableStates(choice);
         //System.out.println("\n[] OUT "+ choice.myString(""));

@@ -92,6 +92,8 @@ public class AbstractionFunction implements IProcessFunction {
      * allowed a simplification of the saturation algorithm
      * <p>
      * abstraction that preserves ownership or CONCURRENT information is research
+     *    Looks like need to preserve some tau events  SEE problem with
+     *       (a||b) => (c+d)  also need to add interveaning tau events.
      * Limit to just pruning states
      *
      * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}

@@ -27,9 +27,15 @@ public class NativesManager {
         }
 
     }
-    private static Path getMacLibDir() {
+    private static Path getMacLibDirXX() {
         String homeDir = System.getProperty("user.home");
         Path libDir = Paths.get(homeDir, "lib");
+        libDir.toFile().mkdirs();
+        return libDir;
+    }
+    private static Path getMacLibDir() {
+        String homeDir = System.getProperty("user.dir");
+        Path libDir = Paths.get(homeDir, "x86_64-macosx");
         libDir.toFile().mkdirs();
         return libDir;
     }

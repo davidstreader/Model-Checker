@@ -480,7 +480,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    */
   public Petrinet interpretASTNode(ASTNode currentNode, String petriId)
     throws CompilationException, InterruptedException {
-    //System.out.println("ASTNode " + petriId + " " + currentNode.myString());
+    //System.out.println("Interpreter ASTNode " + petriId + " " + currentNode.myString());
 
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
@@ -492,10 +492,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     PetrinetInterpreter.indent = PetrinetInterpreter.indent.concat("-");
     String className = currentNode.getClass().getSimpleName();
   /*  if (currentNode.getReferences() != null) {
-      System.out.println(">AST " + PetrinetInterpreter.indent + className +
+      //System.out.println(">AST " + PetrinetInterpreter.indent + className +
         " refs " + currentNode.getReferences());
     } else {
-      System.out.println(">AST " + PetrinetInterpreter.indent + className);
+      //System.out.println(">AST " + PetrinetInterpreter.indent + className);
     } */
     //System.out.println(currentNode.myString());
 //
@@ -588,7 +588,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       //System.out.println(petri.myString());
     } //else
 
-  /*  System.out.println("AST<" + PetrinetInterpreter.indent + className + " info " + info
+  /*System.out.println("AST<" + PetrinetInterpreter.indent + className + " info " + info
       + "\n" + petri.myString("edge"));
     if (PetrinetInterpreter.indent.length() > 1)
       PetrinetInterpreter.indent = PetrinetInterpreter.indent.substring(1); */
@@ -867,7 +867,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   private Petrinet interpretComposite(CompositeNode composite, String petriId)
     throws CompilationException, InterruptedException {
 
-    //System.out.println("interpretCOMPOSITE "+composite.getOperation());
+    //System.out.println("interpret COMPOSITE "+composite.myString());
     //System.out.println(asString(processMap));
 //NEEDed may be the renaming
     //interpretProcess(composite.getFirstProcess(), petriId + ".pc1");
@@ -889,6 +889,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       .compose(model1.getId() + composite.getOperation() + model2.getId(),
         (Petrinet) model1,
         (Petrinet) model2, composite.getFlags());
+      //System.out.println("interpreter Operation outputs "+comp.myString());
     return comp;
     //addPetrinet( comp, petri);
   }

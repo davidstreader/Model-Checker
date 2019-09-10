@@ -73,7 +73,7 @@ public class Parser {
 
     public AbstractSyntaxTree parse(List<Token> tokens, Context context) throws CompilationException, InterruptedException {
         reset();
-        System.out.println("Parse input " + tokens);
+        //System.out.println("Parse input " + tokens);
         this.tokens = tokens;
         this.context = context;
         domain = "*";
@@ -154,7 +154,7 @@ public class Parser {
     private ActionLabelNode parseActionLabel() throws CompilationException, InterruptedException {
         int start = index;
         StringBuilder builder = new StringBuilder();
-        System.out.println("parseActionLabel Start " + peekToken().toString());
+        //System.out.println("parseActionLabel Start " + peekToken().toString());
 
         while (true) {
             Token token = nextToken();
@@ -216,7 +216,7 @@ public class Parser {
             }
         }
         ActionLabelNode out = new ActionLabelNode(builder.toString(), constructLocation(start));
-        System.out.println("parseActionLabel Ends out " + out.myString());
+        //System.out.println("parseActionLabel Ends out " + out.myString());
         return out;
     }
 
@@ -340,7 +340,7 @@ public class Parser {
      */
     private SetNode parseSet() throws CompilationException, InterruptedException {
         int start = index;
-        System.out.println("parseSet()");
+        //System.out.println("parseSet()");
         // ensure the next token is the '{' token
         if (!(nextToken() instanceof OpenBraceToken)) {
             Token error = tokens.get(index - 1);
@@ -364,7 +364,7 @@ public class Parser {
             }
 
             set.add(action.getAction());
-            System.out.println("action "+action.myString());
+            //System.out.println("action "+action.myString());
             // check if another action label can be parsed
             if (!(peekToken() instanceof CommaToken)) {
                 break;
@@ -379,7 +379,7 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
         }
-        System.out.println("end parseSet");
+        //System.out.println("end parseSet");
         return new SetNode(set, rangeMap, constructLocation(start));
     }
 
@@ -622,7 +622,7 @@ public class Parser {
             t.printStackTrace();
             System.out.println("\n\nERROR  processNode == null \n\n");
         }
-        System.out.println("parse out "+processNode.myString());
+        //System.out.println("parse out "+processNode.myString());
         processes.add(processNode);
     }
 
@@ -1139,7 +1139,7 @@ public class Parser {
     }
 
     private Set<String> parseFlags(String functionType) throws CompilationException, InterruptedException {
-        //System.out.println("parsing flags");
+        //System.out.println("parsing flags for "+functionType);
         if (!(nextToken() instanceof OpenBraceToken)) {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
@@ -1169,37 +1169,46 @@ public class Parser {
         }
 
         while (!(peekToken() instanceof CloseBraceToken)) {
-
-            if (!(peekToken() instanceof ActionToken)) {
-                throw constructException("Expecting to parse a flag but received \"" + peekToken().toString() + "\"");
-            }
-            ActionToken token = (ActionToken) nextToken();
-            String flag = token.getAction();
-            if (peekToken() instanceof OpenBracketToken) {
-                nextToken();
-                String expression = parseExpression();
-                Token tken = nextToken();
-                if (!(tken instanceof CloseBracketToken)) {
-                    throw constructException("expecting to parse \"]\" but received \"" + token.toString() + "\"", token.getLocation());
+            if (decimal) {
+                //System.out.println("Decimal to parse");
+                if (!(peekToken() instanceof DecimalToken)) {
+                    throw constructException("Expecting to parse a decimal but received \"" + peekToken().toString() + "\"");
+                } else {
+                    flags.add(((DecimalToken) nextToken()).toString());
+                    //System.out.println("flags " + flags);
                 }
-                flag = flag + "[" + expression + "]";
-            }
+
+            }   else {
+                if (!(peekToken() instanceof ActionToken)) {
+                    throw constructException("Expecting to parse a flag but received \"" + peekToken().toString() + "\"");
+                }
+                ActionToken token = (ActionToken) nextToken();
+                String flag = token.getAction();
+                if (peekToken() instanceof OpenBracketToken) {
+                    nextToken();
+                    String expression = parseExpression();
+                    Token tken = nextToken();
+                    if (!(tken instanceof CloseBracketToken)) {
+                        throw constructException("expecting to parse \"]\" but received \"" + token.toString() + "\"", token.getLocation());
+                    }
+                    flag = flag + "[" + expression + "]";
+                }
 
 
-            if (peekToken() instanceof QuestionMarkToken || peekToken() instanceof NegateToken) {
-                flag = flag + nextToken().toString();
-            }
+                if (peekToken() instanceof QuestionMarkToken || peekToken() instanceof NegateToken) {
+                    flag = flag + nextToken().toString();
+                }
 
-            if (!acceptedFlags.contains(flag) && !wildcard) {
-                throw constructException("\"" + flag + "\" is not a correct flag for " + functionType, token.getLocation());
-            }
-            flags.add(flag);
+                if (!acceptedFlags.contains(flag) && !wildcard) {
+                    throw constructException("\"" + flag + "\" is not a correct flag for " + functionType, token.getLocation());
+                }
+                flags.add(flag);
 
-            if (peekToken() instanceof CommaToken) {
-                nextToken();
+                if (peekToken() instanceof CommaToken) {
+                    nextToken();
+                }
             }
         }
-
         if (!(nextToken() instanceof CloseBraceToken)) {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
@@ -1383,7 +1392,7 @@ public class Parser {
 
     private RangesNode parseRanges() throws CompilationException, InterruptedException {
         int start = index;
-        System.out.println("parse Range start ");
+        //System.out.println("parse Range start ");
         if (!(peekToken() instanceof OpenBracketToken)) {
             throw constructException("expecting to parse \"[\" but received \"" + peekToken().toString() + "\"");
         }
@@ -1406,7 +1415,7 @@ public class Parser {
 
         List<IndexExpNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
         actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
-        System.out.println("parse Range end " + ranges.stream().map(x -> x.myString() + ", ").collect(Collectors.joining()));
+        //System.out.println("parse Range end " + ranges.stream().map(x -> x.myString() + ", ").collect(Collectors.joining()));
         return new RangesNode(ranges, constructLocation(start));
     }
 
@@ -1418,7 +1427,7 @@ public class Parser {
 
         while (true) {
             Token token = nextToken();
-            System.out.println("parseProcessLabel() consumes token " + token.toString());
+            //System.out.println("parseProcessLabel() consumes token " + token.toString());
             if (token instanceof ActionToken) {
                 builder.append(((ActionToken) token).getAction());
             } else if (token instanceof OpenBracketToken) {
@@ -1455,7 +1464,7 @@ public class Parser {
             throw constructException("expecting to parse \":\" but received \"" + error.toString() + "\"", error.getLocation());
         }
         String out = builder.toString();
-        System.out.println("parseProcessLabel returns " + out);
+        //System.out.println("parseProcessLabel returns " + out);
         return out;
     }
 
@@ -1476,7 +1485,7 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \":\" but received \"" + error.toString() + "\"", error.getLocation());
         }
-        System.out.println("parsed Label " + label);
+        //System.out.println("parsed Label " + label);
         return label;
     }
 
@@ -1567,7 +1576,7 @@ public class Parser {
        see below for "P\{a,b,...}" OR P\{[i;0..N], ..}"
      */
     private ASTNode parseHiding() throws CompilationException, InterruptedException {
-        System.out.println("parseHiding()");
+        //System.out.println("parseHiding()");
         int start = index;
         if (!(nextToken() instanceof HidingToken)) {
             throw constructException("expecting to parse \"hiding\" but received \"" + peekToken().toString() + "\"");
@@ -1606,7 +1615,7 @@ public class Parser {
        FOR  "hiding { a,b} P"  OR "hiding {[i;0..N], ..} P" see above
      */
     private HideNode parseHide() throws CompilationException, InterruptedException {
-        System.out.println("parseHide()");
+        //System.out.println("parseHide()");
         int start = index;
         if (!(peekToken() instanceof HideToken) && !(peekToken() instanceof AtToken)) {
             throw constructException("expecting to parse \"\\\" or \"@\" but received \"" + peekToken().toString() + "\"");
@@ -1627,7 +1636,7 @@ public class Parser {
 //    }
 
         HideNode out = new HideNode(type, set, constructLocation(start));
-        System.out.println("parseHide ends " + out.myString());
+        //System.out.println("parseHide ends " + out.myString());
         return out;
     }
     // OPERATIONS

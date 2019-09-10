@@ -127,9 +127,9 @@ public class Compiler {
       EquationEvaluator.EquationReturn eqResults = new EquationEvaluator.EquationReturn();
       if (pmf.getIsFull()) {
 
-          System.out.println("              isPresent "+pmf.getProcessMap().size()+"  "+ast.getProcesses().size());
+          //System.out.println("              isPresent "+pmf.getProcessMap().size()+"  "+ast.getProcesses().size());
          // if (ast.getProcesses().size() <= processMap.get().size()) {
-              System.out.println("equal size"); // not sure why <= and not ==
+              //System.out.println("equal size"); // not sure why <= and not ==
               opResults = evaluator.evaluateOperations(
                   ast.getOperations(), pmf.getProcessMap(),
                   interpreter.getpetrinetInterpreter(), code, z3Context, messageQueue, alpha);
@@ -143,7 +143,7 @@ public class Compiler {
           }
 
 
-      System.out.println("Compiler built pn "+ pmf.getProcessMap().size());
+      //System.out.println("Compiler built pn "+ pmf.getProcessMap().size());
     return new CompilationObject(pmf.getProcessMap(), opResults, eqResults.getResults());
   }
 

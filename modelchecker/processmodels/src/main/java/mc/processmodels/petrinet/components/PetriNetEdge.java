@@ -33,6 +33,10 @@ public class PetriNetEdge extends ProcessModelObject implements Comparable {
   // but the Net variables are the union of the Net variables
 
   /*
+     set of probability distributions held on the PetriNet
+   */
+
+  /*
     Optional is when a transition is the result of broadcast synchronisation
      (The petri Net equivalence to adding listening loop is to add transitions with wings Pn<-->Tr)
      to prevent clutter we use "Optional" edges and build the Token rule to add the listening loops
@@ -41,7 +45,15 @@ public class PetriNetEdge extends ProcessModelObject implements Comparable {
   public void setOptional(boolean b){ optional = b;}
   public boolean getOptional(){return optional;}
   public boolean notOptional(){return !optional; }
-  public PetriNetEdge(String id, PetriNetPlace to, PetriNetTransition from) {
+
+    // set of probability distibution ids - data on PetriNet
+    private Set<String> probDists = new TreeSet<>();
+    public   Set<String> getProbabilityDistributions(){return probDists;}
+    public void addProbabilityDistribution(String id) {probDists.add(id);}
+    public void clearProbabilityDistributions(){probDists.clear();}
+
+
+    public PetriNetEdge(String id, PetriNetPlace to, PetriNetTransition from) {
     super(id, "petrinetEdge");
     this.from = from;
     this.to = to;

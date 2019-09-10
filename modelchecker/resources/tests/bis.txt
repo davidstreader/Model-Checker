@@ -1,9 +1,0 @@
-processes {
-
-A = a->b->c->STOP.
-B = a->b->c->STOP.
-}
-operation{
-A~B.
-}
-

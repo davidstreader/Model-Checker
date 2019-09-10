@@ -105,6 +105,7 @@ public class TokenRule {
     int nodesCreated = 1;
     int j = 0; //without these 2 LofC loop never terminates!
     while (!toDo.isEmpty()) {
+        //System.out.println("toDo size "+toDo.size());
       if (j++ > stateSizeBound) {
         System.out.println("\nTokenRule Failure " + convertFrom.getId() + "\nLooping = " + j + "\n");
         convertFrom.validatePNet();
@@ -215,7 +216,7 @@ public class TokenRule {
       if (!previouslyVisitedPlaces.contains(currentMarking)) {
         previouslyVisitedPlaces.add(currentMarking);
       }
-      //System.out.println("todo size "+toDo.size());
+      //System.out.println("loop end todo size "+toDo.size());
       //System.out.println("Add to Previous "+previouslyVisitedPlaces.size()+"  "+currentMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
     }
 

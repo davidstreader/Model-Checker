@@ -1,8 +1,0 @@
-processes {
-
-//K = b-> (x->STOP[]y->c->STOP).
-H = b-> (x->STOP[]y->c->STOP).
-S = (a->x->y->STOP) || H.
-//R = ownersRule(S).
-}
-

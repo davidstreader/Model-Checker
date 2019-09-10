@@ -8,11 +8,10 @@ import com.rits.cloning.Cloner;
 import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModelObject;
+import mc.processmodels.petrinet.ProbabilityDistribution;
+import mc.util.expr.Expression;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PetriNetPlace extends ProcessModelObject implements Comparable<PetriNetPlace> {
@@ -28,6 +27,13 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   private Set<String> references = new LinkedHashSet<>();      // where leaf is to be glued to
   private Set<String> leafRef = new LinkedHashSet<>();  // prior to gluing only on Leaf
   private Set<String> owners = new HashSet<>();  // this is needed in event Refinement and broadcast events
+
+    // set of probability distibution ids - data on PetriNet
+  private Set<String> probDists = new TreeSet<>();
+  public   Set<String> getProbabilityDistributions(){return probDists;}
+  public void addProbabilityDistribution(String id) {probDists.add(id);}
+  public void clearProbabilityDistributions(){probDists.clear();}
+
   public void cleanStart(){
     startNos = new LinkedHashSet<>();
     start = false;

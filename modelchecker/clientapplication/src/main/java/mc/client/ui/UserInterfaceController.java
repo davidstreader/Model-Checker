@@ -85,10 +85,11 @@ public class UserInterfaceController implements Initializable, FontListener {
     public void changeFontSize() {  // Lister Pattern
         int f = settingsController.getFont();
         String sfont =  "-fx-font-size: "+f+"px;";
-       //   System.out.println("changeFontSize  "+sfont);
+          //System.out.println("UserInterfaceController changeFontSize  "+sfont);
         userCodeInput.setStyle("-fx-background-color: #151515;"+sfont);
-
+        compilerOutputDisplay.setStyle(sfont);
     }
+
 
     /**
    * Called to initialize a controller after its root element has been
@@ -233,8 +234,8 @@ public class UserInterfaceController implements Initializable, FontListener {
                     if (userCodeInput.getCaretBounds().isPresent())
 
                       autocompleteBox.setHeight(list.size() * 0.5);
-                   // System.out.println("contents = " + autocompleteBox.getContent().toString());
-                   // System.out.println("Height = " + autocompleteBox.getHeight());
+                   //System.out.println("contents = " + autocompleteBox.getContent().toString());
+                   //System.out.println("Height = " + autocompleteBox.getHeight());
                     autocompleteBox.show(userCodeInput,
                       (userCodeInput.getCaretBounds().get().getMaxX() + 20), //+x = right
                       (userCodeInput.getCaretBounds().get().getMaxY() + 10)); //+y = down
@@ -684,7 +685,7 @@ public class UserInterfaceController implements Initializable, FontListener {
 
                 if (!messageLog.isEmpty()) {
                   LogMessage t = ((LogMessage) messageLog.poll());
-                  System.out.println("Userinterface messageLog " + t.getMessage());
+                  System.out.println("Log " + t.getMessage());
                   Platform.runLater(() -> {
                     compilerOutputDisplay.appendText("** " + t.getMessage() + "\n");
                   });
