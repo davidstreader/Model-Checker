@@ -275,6 +275,7 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
    */
   @SuppressWarnings("unchecked")
   public void mouseDragged(MouseEvent e) {
+
     if(locked == false) {
       VisualizationViewer<V,E> vv = (VisualizationViewer<V, E>)e.getSource();
       if(vertex != null) {

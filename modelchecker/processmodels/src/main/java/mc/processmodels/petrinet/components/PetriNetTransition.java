@@ -170,6 +170,14 @@ public class PetriNetTransition extends ProcessModelObject {
         .collect(Collectors.toSet());
   }
 
+  public boolean postEqualsPre() {
+      if (post().size() != pre().size()) return false;
+      for(PetriNetPlace pl: post()){
+          if (!pre().contains(pl)) return false;
+      }
+      return true;
+  }
+
   public String toString() {
     StringBuilder builder = new StringBuilder();
 

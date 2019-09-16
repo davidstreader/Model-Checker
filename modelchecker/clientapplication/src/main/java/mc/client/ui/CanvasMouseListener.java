@@ -12,7 +12,6 @@ import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
 import mc.processmodels.MappingNdMarking;
 import mc.processmodels.ProcessModelObject;
-import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.components.PetriNetPlace;
@@ -32,7 +31,7 @@ public class CanvasMouseListener implements MouseListener {
     private Map<String, MappingNdMarking> mappings; // ProcessId->TokenMapping
     private Multimap<String, GraphNode> processModelVertexes; //Place,tran,node -> Graph
     private VisualizationViewer<GraphNode, DirectedEdge> vv;
-    String aid = null;
+    String automataIDofNet = null;
     private Map<GraphNode, NodeStates> currentlyColored = new HashMap<>();
     //private Map<String, Multiset<PetriNetPlace>> currentMarkingsSeen = new TreeMap<>();
 
@@ -94,7 +93,7 @@ public class CanvasMouseListener implements MouseListener {
             MappingNdMarking thisMapping;
             if (currentNodeClicked != null) {
                 String processId = currentNodeClicked.getProcessModelId();
-                aid = processId.substring(0, processId.indexOf('(')) + "(automata)";
+                automataIDofNet = processId.substring(0, processId.indexOf('(')) + "(automata)";
                 //System.out.println("CLICKED " + currentNodeClicked.toString());
                 ProcessModelObject clk = currentNodeClicked.getRepresentedFeature();
                 if (!(clk instanceof PetriNetTransition)) {
@@ -178,22 +177,20 @@ public class CanvasMouseListener implements MouseListener {
                                 newMarking = TokenRule.newMarking(cm, pntClicked);
                                 CurrentMarkingsSeen.currentMarkingsSeen.put(processId, newMarking);
 
-                                //System.out.println(" ?mapping? "+thisMapping.n2m2String()) ;
+                            //System.out.println(" ?mapping? "+thisMapping.n2m2String()) ;
                                 if (thisMapping.contains(newMarking)) {
-                                    //System.out.println(" ?Process? "+processId); // A.*  contains domain
-                                    //System.out.println(" ?? "+thisMapping.get(newMarking).getId());
-                                    //System.out.println("pid2aid "+thisMapping.getPidToAid().keySet());
-
+                             //System.out.println("contains "+newMarking.stream().map(n->n.getId()+", ").collect(Collectors.joining()));
 
                                     //System.out.println("aid "+aid);
                                     //System.out.println("pMV "+processModelVertexes.keySet());
-                                    for (GraphNode autG : processModelVertexes.get(aid)) {
+                                    for (GraphNode autG : processModelVertexes.get(automataIDofNet)) {
                                         //System.out.println(autG.toString());
                                         if (autG.getNodeId().equals(thisMapping.get(newMarking).getId())) {
-                                            autG.setNodeColor(NodeStates.SELECT);
+                                            autG.setNodeColor(NodeStates.ERROR);
                                             //System.out.println("Transition aut " + autG.getNodeId());
                                         } else {
-                                            autG.setNodeColor(NodeStates.NOMINAL);
+                                          //System.out.println("not NewMarking ");
+                                            autG.setNodeColor(autG.getOriginalColor());
                                         }
 
                                     }
@@ -213,9 +210,9 @@ public class CanvasMouseListener implements MouseListener {
                     currentColoredNode.setNodeColor(currentlyColored.get(currentColoredNode));
 
                 } */
-                if (aid != null) {
-                    //System.out.println("aid = "+aid);
-                    for (GraphNode autG : processModelVertexes.get(aid)) {
+                if (automataIDofNet != null) {
+                    //System.out.println("aid = "+ automataIDofNet);
+                    for (GraphNode autG : processModelVertexes.get(automataIDofNet)) {
 
                         //System.out.println(autG.getNodeId());
                         autG.setNodeColor(autG.getOriginalColor());
@@ -246,7 +243,7 @@ public class CanvasMouseListener implements MouseListener {
                         ((PetriNetTransition) gn.getRepresentedFeature()))) {
                         gn.setNodeColor(NodeStates.SELECT);
                     } else {
-                        gn.setNodeColor(NodeStates.NOMINAL);
+                        gn.setNodeColor(gn.getOriginalColor());
                     }
                 }
             }

@@ -42,6 +42,9 @@ import java.util.function.Supplier;
 
 import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
 
+/*
+*   No referance to jung  look in the ModelView
+ */
 public class UserInterfaceController implements Initializable, FontListener {
   private boolean holdHighlighting = false; // If there is an compiler issue, highlight the area. Dont keep applying highlighting it wipes it out
   private javafx.stage.Popup autocompleteBox = new javafx.stage.Popup();
@@ -69,11 +72,14 @@ public class UserInterfaceController implements Initializable, FontListener {
   private Menu openRecentTab;
   @FXML
   private Button compileButton;
-  @FXML
-  private boolean showPlay = false;
+    @FXML
+    private Button addBtn;
+    @FXML
+    private Button frzBtn;
+    @FXML
+    private Button unfrzBtn;
 
-
-  // for keep updating the file that has already been saved.
+    // for keep updating the file that has already been saved.
   private File currentOpenFile = null;
   private boolean modified = false;
 
@@ -101,9 +107,14 @@ public class UserInterfaceController implements Initializable, FontListener {
    */
   @Override
   public void initialize(URL location, ResourceBundle resources) {
-
+    String col = "rgba(153, 255, 204, 1.0)";
     try {
-      //Load recent files
+        addBtn.setStyle("-fx-background-color: "+col);
+        frzBtn.setStyle("-fx-background-color: "+col);
+        unfrzBtn.setStyle("-fx-background-color: "+col);
+     //   removeBtn.setStyle("-fx-background-color: "+col);
+        modelsList.setStyle("-fx-background-color: "+col);
+        //Load recent files
       BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("recentfiles.conf")));
       String line;
       while ((line = bufferedReader.readLine()) != null) {
@@ -550,7 +561,9 @@ public class UserInterfaceController implements Initializable, FontListener {
     }
   }
 
-
+/*
+   This is the Add button
+ */
   @FXML
   private void handleAddSelectedModel(ActionEvent event) {
     if (modelsList.getSelectionModel().getSelectedItem() != null && modelsList.getSelectionModel().getSelectedItem() instanceof String) {
@@ -558,7 +571,7 @@ public class UserInterfaceController implements Initializable, FontListener {
       ModelView.getInstance().addDisplayedModel(modelsList.getSelectionModel().getSelectedItem());
       SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
 
-      ProcessModel pm = ModelView.getInstance().getProcess(modelsList.getSelectionModel().getSelectedItem());
+     //dstr ProcessModel pm = ModelView.getInstance().getProcess(modelsList.getSelectionModel().getSelectedItem());
 
       //  GraphView gv = new GraphView(pm);
       // SwingUtilities.invokeLater(() -> newDisplay.setContent(gv.display(newDisplay)));
@@ -572,27 +585,35 @@ public class UserInterfaceController implements Initializable, FontListener {
       // refreshtransitionColor();
   }
 
-  @FXML
-  private CheckBox Play = new CheckBox();
 
-
+/* clear ALL*/
   @FXML
   private void handleClearGraph(ActionEvent event) {
     ModelView.getInstance().clearDisplayed();
     SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
   }
+/* clear Selected
+    @FXML
+    private void handleClear(ActionEvent event) {
 
-  @FXML
-  private void handlePlay(ActionEvent event) {
-    showPlay = Play.isSelected();
-    System.out.println("Play pressed " + showPlay);
-  }
+        String selecteditem = modelsList.getSelectionModel().getSelectedItem();
+        if (selecteditem != null) {
+            System.out.println("selecteditem " + selecteditem);
+            ModelView.getInstance().removeProcessModel(selecteditem);
+
+        }
+        ModelView.getInstance().removeProcessModel(selecteditem);
+        SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().removeBorder(modelDisplay)));
+
+    }
+**/
 
   @FXML
   private void handleFreeze(ActionEvent event) {
     String selecteditem = modelsList.getSelectionModel().getSelectedItem();
     if (selecteditem != null) {
-      ModelView.getInstance().freezeProcessModel(selecteditem);
+        ModelView.getInstance().freezeProcessModel(selecteditem);
+     //   ModelView.getInstance().removeProcessModel(selecteditem);
     }
   }
 

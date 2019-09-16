@@ -92,19 +92,33 @@ public class MappingNdMarking {
         for (Multiset.Entry<PetriNetPlace> placEnt : mark.entrySet()) {
             idMark.add(placEnt.getElement().getId(), placEnt.getCount());
         }
-        if (idMarkingToNode.containsKey(idMark)) found = true;
+        // MultiSet equal not containsKey
+        for (Multiset<String> markKey : idMarkingToNode.keySet()) {
+           if (markKey.containsAll(idMark) && idMark.containsAll(markKey)){
+               found = true;
+               break;
+           }
+        }
+      //  if (idMarkingToNode.containsKey(idMark)) found = true;
 
         return found;
     }
+    /*
+        assumes input is valid else returns null
+     */
     public AutomatonNode get(Multiset<PetriNetPlace> mark) {
         PetriNetPlace pl = null;
         Multiset<String> idMark = HashMultiset.create();
         for (Multiset.Entry<PetriNetPlace> placEnt : mark.entrySet()) {
             idMark.add(placEnt.getElement().getId(), placEnt.getCount());
         }
-        if (idMarkingToNode.containsKey(idMark)) ;
-        String id = idMarkingToNode.get(idMark);
-        return idToAutomatonNode.get(id);
+        // MultiSet equal not containsKey
+        for (Multiset<String> markKey : idMarkingToNode.keySet()) {
+            if (markKey.containsAll(idMark) && idMark.containsAll(markKey)){
+                return idToAutomatonNode.get(idMarkingToNode.get(markKey));
+            }
+        }
+        return null;
     }
 
     public Multiset<PetriNetPlace> get(AutomatonNode nd) {

@@ -7,6 +7,7 @@ import java.util.Map;
 
 /**
  * Created by Jacob Beal on 17/03/2017.
+ *  No meaningful documentation so must be removed some time soon
  */
 public class TrieNode<E> {
     private HashMap<String, TrieNode> children = new HashMap<String, TrieNode>();
