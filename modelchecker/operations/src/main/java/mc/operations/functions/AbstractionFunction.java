@@ -714,7 +714,7 @@ public class AbstractionFunction implements IProcessFunction {
         Automaton[] as = new Automaton[1];
         as[0] = aut;
         Automaton a = compose(id, flags, context, as);
-        Petrinet p = OwnersRule.ownersRule(a);
+        Petrinet p = null; //OwnersRule.ownersRule(a);
         //System.out.println(p.myString());
         //System.out.println("ABS NET 2 NET END ");
         return p;

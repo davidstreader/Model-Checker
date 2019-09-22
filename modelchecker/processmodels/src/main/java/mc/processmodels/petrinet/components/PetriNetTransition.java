@@ -2,6 +2,7 @@ package mc.processmodels.petrinet.components;
 
 
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 import mc.Constant;
 import mc.processmodels.ProcessModelObject;
 
@@ -9,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class PetriNetTransition extends ProcessModelObject {
+public class PetriNetTransition extends ProcessModelObject implements Comparable {
   String label;
   Set<PetriNetEdge> incoming = new HashSet<>();
   public Set<PetriNetEdge> copyIncoming() {
@@ -162,6 +163,16 @@ public class PetriNetTransition extends ProcessModelObject {
             .collect(Collectors.toSet());
   }
 
+    public Set<String> nonOptionalOwners() {  //TokenRule
+        return incoming.stream()
+            .filter(ed->ed.getOptional())
+            .map(PetriNetEdge::getFrom)
+            .map(x->((PetriNetPlace)x).getOwners())
+            .flatMap(x->x.stream())
+            .collect(Collectors.toSet());
+    }
+
+
   public Set<PetriNetPlace> post() {
     return outgoing.stream()
         .map(PetriNetEdge::getTo)
@@ -212,7 +223,7 @@ public class PetriNetTransition extends ProcessModelObject {
     builder.append("-"+label+"->");
     for (PetriNetEdge edge : getOutgoing()) {
       if (edge.getGuard()!=null) builder.append(edge.getGuard().getAssStr());
-      builder.append("+"+edge.getTo().getId());
+      builder.append("+"+ edge.getOptional()+" "+ edge.getTo().getId());
     }
     builder.append(", own "+this.getOwners());
      return builder.toString();
@@ -249,4 +260,12 @@ public class PetriNetTransition extends ProcessModelObject {
   public void setOwners(Set<String> owners) {
     this.owners = owners;
   }
+
+    @Override
+    public int compareTo(Object o) {
+      if (o instanceof PetriNetTransition ){
+          if (((PetriNetTransition) o).getId().equals(this.getId())) return 0;
+      }
+      return 1;
+    }
 }

@@ -125,23 +125,21 @@ public class AutomataParallelFunction {
     if (edgeLabel.equals(Constant.HIDDEN) || edgeLabel.equals(Constant.DEADLOCK)) {
       unsyncedActions.add(edgeLabel);
 
-      // broadcasting actions are always unsynced
+      // broadcasting actions are NOT  unsynced in OwnersRule
     } else if (edgeLabel.endsWith("!")) {
       if (containsReceiver(edgeLabel, listEdgeLabels)) {  // containsReceiver == if "b!" and "{..b?..}"
         syncedActions.add(edgeLabel);
-      }
-      if (containsBroadcaster(edgeLabel, listEdgeLabels)) {
-        syncedActions.add(edgeLabel);
+      } else  if (containsBroadcaster(edgeLabel, listEdgeLabels)) {
+        syncedActions.add(edgeLabel);  // a! sync a!  OwnersRule
       } else {
-        unsyncedActions.add(edgeLabel);
+        unsyncedActions.add(edgeLabel);  //unsynced a!
       }
     } else if (edgeLabel.endsWith("?")) {
       if (!containsBroadcaster(edgeLabel, listEdgeLabels)) {
         if (containsReceiver(edgeLabel, listEdgeLabels)) {
           syncedActions.add(edgeLabel);
         }
-
-        unsyncedActions.add(edgeLabel);  //unsynced b!
+        unsyncedActions.add(edgeLabel);  //unsynced b?
       }
     } else if (listEdgeLabels.contains(edgeLabel)) {
       syncedActions.add(edgeLabel);
@@ -174,7 +172,7 @@ private void processUnsyncedActions(List<AutomatonEdge> edges1, List<AutomatonEd
         //Dont set any links from terminal error nodes.
         // adds some !a and ?a edges that will be deleted in processSyncedActions
         AutomatonEdge newEdge = automaton.addEdge(edge.getLabel(), from.get(i), to.get(i),
-                edge.getGuard(), false,false);
+                edge.getGuard(), edge.getOptionalOwners(),false);
 
         Collection<String> ownersToAdd;
 
@@ -263,16 +261,19 @@ private void processUnsyncedActions(List<AutomatonEdge> edges1, List<AutomatonEd
           if (edge2.getGuard() != null) {
             guard.mergeWith(edge2.getGuard());
           }
-// The new synced edge
+// The new synced edge  OwnersRule
           AutomatonEdge newEdge = automaton.addEdge(currentSyncEdgeLabel, from, to,
             guard, false,false);
           //setup the optional Owners for broadcast events - non blocking send USED in Owners Rule
-          if (edge1.getLabel().endsWith("?") && edge2.getLabel().endsWith("!")) {
+          if (edge1.getLabel().endsWith(Constant.BROADCASTSinput)
+              && edge2.getLabel().endsWith(Constant.BROADCASTSoutput)) {
             newEdge.getOptionalOwners().addAll(edge1.getEdgeOwners());
           }
-           else if (edge2.getLabel().endsWith("?") && edge1.getLabel().endsWith("!")) {
+           else if (edge2.getLabel().endsWith(Constant.BROADCASTSinput)
+              && edge1.getLabel().endsWith(Constant.BROADCASTSoutput)) {
             newEdge.getOptionalOwners().addAll(edge2.getEdgeOwners());
           }
+
           Set<String> ownersToAdd = new HashSet<>();
           ownersToAdd.addAll(getOwners(edge1,automaton1));
           ownersToAdd.addAll(getOwners(edge2,automaton2));

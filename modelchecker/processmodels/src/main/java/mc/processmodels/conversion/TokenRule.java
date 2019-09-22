@@ -72,7 +72,7 @@ public class TokenRule {
     //keeps the id numbers low - op_eval resets Automaton.tagid
     Petrinet convertFrom = cFrom.copy();
     Automaton outputAutomaton = new Automaton(convertFrom.getId(), false);
-    //System.out.println("TOKEN RULE  STARTING \n    " + convertFrom.myString());
+    //System.out.println("TOKEN RULE  STARTING \n    " + convertFrom.myString("edge"));
     MyAssert.validate(convertFrom,"Token Rule precondition ");
     //assert convertFrom.validatePNet("GOT YOU"): "Token Rule precondition";
 
@@ -107,7 +107,7 @@ public class TokenRule {
     while (!toDo.isEmpty()) {
         //System.out.println("toDo size "+toDo.size());
       if (j++ > stateSizeBound) {
-        System.out.println("\nTokenRule Failure " + convertFrom.getId() + "\nLooping = " + j + "\n");
+        //System.out.println("\nTokenRule Failure " + convertFrom.getId() + "\nLooping = " + j + "\n");
         convertFrom.validatePNet();
         outputAutomaton.validateAutomaton();
         //System.out.println("TokenRule Failure " + outputAutomaton.myString() + "tf tf tf \n");
@@ -140,74 +140,91 @@ public class TokenRule {
         //System.out.println("Mark as ERROR "+markingToNodeMap.get(currentMarking).getId());
         markingToNodeMap.get(currentMarking).setErrorNode(true);
       }
-
-      //System.out.println("currentMarking1 "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
-
-      //System.out.println("satisfiedPostTransitions "+ satisfiedPostTransitions.size());
+     //System.out.println("satisfiedPostTransitions "+ satisfiedPostTransitions.size());
       //Loops through all satisfied Transitions building a newMarking
         // updates markingToNodeMap + builds an Automata edge
       for (PetriNetTransition transition : satisfiedPostTransitions) {
   /*
     If more than one transition is equal except for optional places
-      then if the optional places of one of them is marked  then
-           ONLY that transition can be fired!
+      then ONLY the transition with the most places  can be fired!
   */
-        Set<PetriNetTransition> equNB = satisfiedPostTransitions.stream().filter(x -> transition.NonBlockingEqu(x)).collect(Collectors.toSet());
-        if (equNB.size() > 1) {
-          if (equNB.stream().filter(tr -> tr.markedBy(currentMarking)).collect(Collectors.toSet()).size() > 0) {
-            if (!transition.markedBy(currentMarking))
-              continue;
-          }
-        }
-        //We must be careful not to change the currentMarking
-   //System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-
-        Multiset<PetriNetPlace> cloneMarking = TreeMultiset.create();
-          for (Multiset.Entry<PetriNetPlace> ple :currentMarking.entrySet()) {
-            cloneMarking.add(((PetriNetPlace) ple.getElement().copy()), ple.getCount());
-          }
-   //System.out.println("cloneMarking "+cloneMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-
-        Multiset<PetriNetPlace> newMarking = HashMultiset.create(newMarking(currentMarking, transition));
-   //System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-
-        // updates markingToNodeMap + builds an Automata edge
-        if (!markingToNodeMap.containsKey(newMarking)) {
-          AutomatonNode newNode = outputAutomaton.addNode();
-          newNode.setLabelNumber(nodesCreated++);
-          //System.out.println(" add "+ Petrinet.marking2String(newMarking)+"->"+newNode.getId());
-          markingToNodeMap.put(newMarking, newNode);
-          nodeToMarkingMap.put(newNode, newMarking);
-          boolean isEr = false;
-           for(PetriNetPlace pl: newMarking.elementSet()) {
-               if (pl.isERROR()) {
-                  // isEr = true;
-                   break;
-               }
-           }
-          if (isEr) {
-              toDo.clear();
-          } else {
-              if (!toDo.contains(newMarking)) {
-                  toDo.add(newMarking);
-                  //System.out.println("   Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-                  if (newMarking.size() > ownCnt) {
-                      System.out.println("Token Rule Makring not 1 Safe = " + convertFrom.getOwners() + " " + cFrom.getId());
-                      System.out.println("           newMarking " + newMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
-                      //  throw new CompilationException(convertFrom.getClass(), "Token Rule Makring to large ");
-                  } //+ newMarking.toString());
+          if (transition.getLabel().endsWith(Constant.BROADCASTSoutput)) {
+              Set<PetriNetTransition> equNB = satisfiedPostTransitions.stream().filter(x -> transition.NonBlockingEqu(x)).collect(Collectors.toSet());
+              if (equNB.size() > 1) {
+                  for (PetriNetTransition eqnb : equNB) {
+                      if (transition.pre().size() < eqnb.pre().size()) continue;
+                      //ignore transition as larger transition enabled
+                  }
               }
           }
-        }
+          //We must be careful not to change the currentMarking
+       //System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
 
+/*          Multiset<PetriNetPlace> cloneMarking = TreeMultiset.create();
+          for (Multiset.Entry<PetriNetPlace> ple : currentMarking.entrySet()) {
+              cloneMarking.add(((PetriNetPlace) ple.getElement().copy()), ple.getCount());
+          }
+          //System.out.println("cloneMarking "+cloneMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+*/
+          Multiset<PetriNetPlace> newMarking = HashMultiset.create(newMarking(currentMarking, transition));
+          //System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
 
+          // updates markingToNodeMap for this transition
+          if (!markingToNodeMap.containsKey(newMarking)) {
+              AutomatonNode newNode = outputAutomaton.addNode();
+              newNode.setLabelNumber(nodesCreated++);
+              //System.out.println(" add "+ Petrinet.marking2String(newMarking)+"->"+newNode.getId());
+              markingToNodeMap.put(newMarking, newNode);
+              nodeToMarkingMap.put(newNode, newMarking);
+              boolean isEr = false;
+              for (PetriNetPlace pl : newMarking.elementSet()) {
+                  if (pl.isERROR()) {
+                      // isEr = true;
+                      break;
+                  }
+              }
+              if (isEr) {
+                  toDo.clear();
+              } else {
+                  if (!toDo.contains(newMarking)) {
+                      toDo.add(newMarking);
+                      //System.out.println("   Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+                      if (newMarking.size() > ownCnt) {
+                          System.out.println("Token Rule Makring not 1 Safe = " + convertFrom.getOwners() + " " + cFrom.getId());
+                          System.out.println("           newMarking " + newMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
+                          //  throw new CompilationException(convertFrom.getClass(), "Token Rule Makring to large ");
+                      } //+ newMarking.toString());
+                  }
+              }
+          }
 
-        Set<String> own = transition.getOwners();
-        AutomatonEdge ed =
-          outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
-            markingToNodeMap.get(newMarking), null, false, false);
-        ed.setEdgeOwners(own);
-        //System.out.println("  adding edge "+ed.myString());
+/*
+  Not all places of a broadcast transition need be marked hence the ownership might
+  be not all the owners of the transition (think Owners rule)
+ */
+          boolean opt = false;
+          Set<String> own = transition.getOwners();
+          if (transition.getLabel().endsWith(Constant.BROADCASTSoutput)) {
+              //System.out.println("transition.getLabel() " + transition.getLabel() + " " + transition.getOwners());
+              Multiset<PetriNetPlace> unMarkedPre = HashMultiset.create(transition.pre());
+              unMarkedPre.removeIf(x -> currentMarking.contains(x));
+              //System.out.println("unMarkedPre " + unMarkedPre.stream().map(x -> x.getOwners().toString() + " ").collect(Collectors.joining()));
+          }
+          AutomatonEdge ed = null;
+          // this transition will be processed by OwnersRule but may have optional owners dstr Sept 2019
+          if (transition.optionalOwners().size() > 0) {
+              ed = outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
+                  markingToNodeMap.get(newMarking), null,
+                  transition.optionalOwners(), !currentMarking.containsAll(transition.pre()));
+          } else {
+
+               ed = outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
+                      markingToNodeMap.get(newMarking), null,
+                   false, !currentMarking.containsAll(transition.pre()));
+          }
+          ed.setEdgeOwners(own);
+
+          //System.out.println("  adding edge "+ed.myString());
       } // END of satisfiedTransitions processing
 
 
@@ -249,7 +266,7 @@ public class TokenRule {
     //MyAssert.myAssert(outputAutomaton.validateAutomaton("Token Rule output "+outputAutomaton.getId()+" VALID = "), "Token Rule Failure");
     MyAssert.validate(outputAutomaton,"Token Rule output ");
     // assert outputAutomaton.validateAutomaton():"Token Rule Failure";
-    //System.out.println("Token Rule END "+outputAutomaton.myString());
+    //System.out.println("Token Rule END \n"+outputAutomaton.myString()+"\n");
     return outputAutomaton;
   }
 /*
@@ -265,7 +282,7 @@ public class TokenRule {
    /* get owners of the optional Places not marked*/
    Multiset<PetriNetPlace> opunMarked = HashMultiset.create(transition.pre());
    opunMarked.removeAll(currentMarking);
-   Set<String> opOwn = opunMarked.stream()
+   Set<String> ownPrePlaceUnMarker = opunMarked.stream()
      .map(x -> x.getOwners())
      .flatMap(x -> x.stream())
      .collect(Collectors.toSet());
@@ -281,7 +298,7 @@ public class TokenRule {
    //System.out.println("newMarking1 "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
    newMarking.addAll(transition.getOutgoing().stream()
      .filter(ed -> !((ed.getOptional() &&
-       opOwn.containsAll(((PetriNetPlace) ed.getTo()).getOwners()))))    //
+       ownPrePlaceUnMarker.containsAll(((PetriNetPlace) ed.getTo()).getOwners()))))    //
      .map(PetriNetEdge::getTo)
      .map(PetriNetPlace.class::cast)
      .collect(Collectors.toList()));
@@ -294,16 +311,21 @@ return newMarking;
   Used both in the Token Rule and interactivly
  */
 
-  public static Set<PetriNetTransition> satisfiedTransitions(Multiset<PetriNetPlace> currentMarking) {
-    Set<PetriNetTransition> out = post(currentMarking).stream() //88
-      //  .filter(transition -> currentMarking.containsAll(transition.pre()))
-        .filter(tr -> (!tr.getLabel().equals(Constant.DEADLOCK)))
-        .filter(transition -> currentMarking.containsAll(transition.preNotOptional())) // drops the optional preplaces
-      .distinct()
-      .collect(Collectors.toSet());
-    //System.out.println(out.stream().map(x->x.getId()).reduce("satisfied ",(x,y)->x+y+" "));
-    return out;
-  }
+    public static Set<PetriNetTransition> satisfiedTransitions(Multiset<PetriNetPlace> currentMarking) {
+        Set<PetriNetTransition> out = post(currentMarking).stream() //88
+            //  .filter(transition -> currentMarking.containsAll(transition.pre()))
+            .filter(tr -> (!tr.getLabel().equals(Constant.DEADLOCK)))
+            .filter(transition -> currentMarking.containsAll(transition.preNotOptional())) // drops the optional preplaces
+            .distinct()
+            .collect(Collectors.toSet());
+        //System.out.println(out.stream().map(x->x.getId()).reduce("satisfied ",(x,y)->x+y+" "));
+        return out;
+    }
+
+    public static boolean allSatTransitions(PetriNetTransition tr, Multiset<PetriNetPlace> currentMarking) {
+        return currentMarking.containsAll(tr.pre());
+        //System.out.println(out.stream().map(x->x.getId()).reduce("satisfied ",(x,y)->x+y+" "));
+    }
 
   public static boolean isSatisfied(Multiset<PetriNetPlace> currentMarking, PetriNetTransition tr) {
 

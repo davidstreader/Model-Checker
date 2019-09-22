@@ -1,5 +1,6 @@
 package mc.compiler.interpreters;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
@@ -797,7 +798,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       }
     } else if (model instanceof Automaton) {
         System.out.println("PetrinetInterpreter Think this is deadcode");
-      copy = OwnersRule.ownersRule((Automaton) model);
+      copy = OwnersRule.ownersRule((Automaton) model );
     } else {
         System.out.println("PetrinetInterpreter Think this is deadcode");
         //System.out.println("processMap "+processMap.keySet());
@@ -908,10 +909,12 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     selfRef = false;
     Automaton a = getLocalAutomaton(context, alpha, func);
     //.out.println("interpretFunction "+a.myString());
-    /* used to look at output of abstraction prior to a2p2a */
-    //Automaton debug = a.copy(); debug.setId("debug");
-    //processMap.put(debug.getId(),debug);
+    /* used to look at output of functions prior to OwnersRule-TokenRule
 
+          Automaton debug = a.copy();
+          debug.setId("debug-"+func.getFunction());
+          processMap.put(debug.getId(), debug);
+   */
     selfRef = true;
     //System.out.println("function "+func.myString()+ " -> "+a.myString());
     processed = OwnersRule.ownersRule(a);
@@ -1140,7 +1143,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       Automaton ain = getLocalAutomaton(context, alpha, ((FunctionNode) ast).getProcesses().get(0));
 
       Set<String> alphaFlags = new TreeSet<>();
+      if (alpha == null) alpha = new TreeSet<>();
       alphaFlags.addAll(alpha);  // add the listening events for revAP2BC
+        if (func.getFlags() == null) func.setFlags(ImmutableSet.copyOf(new TreeSet<>()));
       alphaFlags.addAll(func.getFlags());
       a = instantiateClass(functions.get(func.getFunction()))
         .compose(ain.getId() + ".fn", alphaFlags, context, ain);

@@ -740,7 +740,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
    */
   public boolean validatePNet(String ping) throws CompilationException {
     boolean r = validatePNet();
-    System.out.println(ping + " " + r);
+    //System.out.println(ping + " " + r);
     return r;
   }
 

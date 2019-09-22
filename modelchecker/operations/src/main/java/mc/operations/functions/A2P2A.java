@@ -54,7 +54,6 @@ public class A2P2A implements IProcessFunction {
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
    * @param context  the z3 context
-   * @param tt
    * @param automata a variable number of automata taken in by the function
    * @return the resulting automaton of the operation
    * @throws CompilationException when the function fails
@@ -63,15 +62,16 @@ public class A2P2A implements IProcessFunction {
   public Automaton compose(String id, Set<String> flags, Context context,
                             Automaton... automata)
           throws CompilationException {
-    //System.out.println("Pingo2");
+    //System.out.println("A2P2A");
     assert automata.length == 1;
+      //System.out.println(automata[0].myString());
     Automaton inputA = automata[0].copy();
     inputA.setId(inputA.getId()+".2a");
     Petrinet pn = new Petrinet(id+".p",false);
 
     //   pn = PetrinetReachability.removeUnreachableStates( OwnersRule.ownersRule(inputA));
     //System.out.println("A2p2a input "+ inputA.myString());
-    pn.addPetrinet(OwnersRule.ownersRule(inputA), true, true); //root needed
+    pn.addPetrinet(OwnersRule.ownersRule(inputA ), true, true); //root needed
     //System.out.println("\n p in a2P2a "+pn.myString());
     Automaton   aut = TokenRule.tokenRule(pn) ;
     //System.out.println("\n End a in a2p2A "+aut.myString());
@@ -97,11 +97,11 @@ public class A2P2A implements IProcessFunction {
   @Override
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets)
           throws CompilationException {
-    System.out.println("A2P2A input Petrinet");
+    //System.out.println("A2P2A input Petrinet");
     assert petrinets.length == 1;
     Petrinet inputP = petrinets[0].copy();
     Automaton   aut = TokenRule.tokenRule(inputP) ;
-    Petrinet p = OwnersRule.ownersRule(aut);
+    Petrinet p = OwnersRule.ownersRule(aut );
     //System.out.println("\n p in a2P2a "+pn.myString());
     TokenRule.tokenRule(p) ;
     return p;
@@ -110,11 +110,11 @@ public class A2P2A implements IProcessFunction {
   @Override
   public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess)
           throws CompilationException {
-    System.out.println("A2P2A  input MultiProcessModel");
+    //System.out.println("A2P2A  input MultiProcessModel");
     assert multiProcess.length ==  1;
     MultiProcessModel m = multiProcess[0];
     Automaton  aut = (Automaton) m.getProcess(ProcessType.AUTOMATA);
-    Petrinet p = OwnersRule.ownersRule(aut);
+    Petrinet p = OwnersRule.ownersRule(aut );
     Automaton   a = TokenRule.tokenRule(p) ;
     MultiProcessModel mNew = new MultiProcessModel(aut.getId());
     mNew.addProcess(p);

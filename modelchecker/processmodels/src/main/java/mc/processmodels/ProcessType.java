@@ -55,7 +55,7 @@ public enum ProcessType {
    */
   private static void init() {
     PETRINET_CONVERSIONS.put(AUTOMATA, TokenRule::tokenRule); // For inline construction of automaton
-    AUTOMATA_CONVERSIONS.put(PETRINET, OwnersRule::ownersRule);
+  //    AUTOMATA_CONVERSIONS.put(PETRINET, OwnersRule::ownersRule);
     MULTIPROCESS_CONVERSIONS.put(AUTOMATA, p -> p.getProcess(AUTOMATA));
     MULTIPROCESS_CONVERSIONS.put(PETRINET, p -> p.getProcess(PETRINET));
 

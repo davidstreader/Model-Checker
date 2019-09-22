@@ -105,7 +105,7 @@ public class RevAP2BC implements IProcessFunction {
     auts[0] = a;
     Automaton aout =  compose(id,flags,context, auts);
 
-    return OwnersRule.ownersRule(aout);
+    return OwnersRule.ownersRule(aout );
   }
   public Petrinet OLDcompose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
 

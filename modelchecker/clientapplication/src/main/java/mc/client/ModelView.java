@@ -356,7 +356,7 @@ public class ModelView implements Observer, FontListener {
             GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination, nodeTermination,
                 NodeType.AUTOMATA_NODE, "" + n.getLabelNumber(), n);
             nodeMap.put(n.getId(), node);
-         System.out.println("add "+node.getNodeId()+" "+ node.getNodeColor()+" "+node.getOriginalColor());
+         //System.out.println("add "+node.getNodeId()+" "+ node.getNodeColor()+" "+node.getOriginalColor());
             graph.addVertex(node);
         });
 
@@ -375,6 +375,7 @@ public class ModelView implements Observer, FontListener {
             }
             if (settings.isShowOwners()) {
                 label += " " + e.getEdgeOwners();
+                if (e.getOptionalEdge())  label += " Opt ";
             }
 
             graph.addEdge(new DirectedEdge(bool, label + "", ass, UUID.randomUUID().toString()), from, to);

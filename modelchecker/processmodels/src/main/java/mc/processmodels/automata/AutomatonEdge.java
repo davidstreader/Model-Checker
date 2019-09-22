@@ -55,6 +55,9 @@ public class AutomatonEdge extends ProcessModelObject {
     boolean removeOwnerLocation(String owner) {
         return edgeOwners.remove(owner);
     }
+    boolean removeOptOwnerLocation(String owner) {
+        return optionalOwners.remove(owner);
+    }
 
     @Getter
     @Setter
@@ -71,6 +74,8 @@ public class AutomatonEdge extends ProcessModelObject {
     /*Edge built from send event NOT synchronising with receive event
        when there exist receive events in parallel process
      */
+    @Getter
+    @Setter
     private boolean optionalEdge = false;
 
     @Getter
@@ -129,10 +134,10 @@ public class AutomatonEdge extends ProcessModelObject {
         String out = "";
         if (guard != null) {
             out = getId() + "  " + from.getId() + "-" + label + "->" + to.getId() + " " +
-                guard.myString() + " o= " + edgeOwners + " optional= " + optionalEdge;
+                guard.myString() + " o= " + edgeOwners + " optional=" + optionalEdge+ "  optOwn "+ optionalOwners;
         } else {
             out = getId() + "  " + from.getId() + "-" + label + "->" + to.getId() +
-                " guard null " + " o= " + edgeOwners + " optional= " + optionalEdge;
+                " guard null " + " o= " + edgeOwners + " optional=" + optionalEdge + "  optOwn "+ optionalOwners;
         }
         return out;
     }
@@ -217,17 +222,22 @@ public class AutomatonEdge extends ProcessModelObject {
     }
 
     private static void relabelOwners(Automaton aut, String label) {
-        aut.getEdges().forEach(e -> {
+        aut.getEdges().forEach(edge -> {
 
-            Set<String> owners = e.getEdgeOwners().stream()
+            Set<String> owners = edge.getEdgeOwners().stream()
                 .map(o -> o + label)
                 .collect(Collectors.toSet());
-            Set<String> toRemove = new HashSet<>(e.getEdgeOwners());
-            toRemove.forEach(o -> aut.removeOwnerFromEdge(e, o));
+            Set<String> toRemove = new HashSet<>(edge.getEdgeOwners());
+            toRemove.forEach(o -> aut.removeOwnerFromEdge(edge, o));
             try {
-                aut.addOwnersToEdge(e, owners);
+                aut.addOwnersToEdge(edge, owners);
             } catch (CompilationException ignored) {
             }
+
+            Set<String> optOwners = edge.getOptionalOwners().stream()
+                .map(o -> o + label)
+                .collect(Collectors.toSet());
+            edge.setOptionalOwners(optOwners);
         });
     }
 

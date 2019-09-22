@@ -102,7 +102,7 @@ public class SequentialInfixFun {
               sequence.addOwnersToEdge(
                 sequence.addEdge(edge.getLabel(), origin, newNode,
                   edge.getGuard() == null ? null : edge.getGuard().copy(),
-                  false, edge.getOptionalEdge()), edge.getEdgeOwners());
+                  edge.getOptionalOwners(), edge.getOptionalEdge()), edge.getEdgeOwners());
             } catch (CompilationException e) {
               e.printStackTrace();
             }
@@ -147,8 +147,8 @@ public class SequentialInfixFun {
    */
   public Petrinet compose(String id, Petrinet n1, Petrinet n2)
     throws CompilationException {
-    //if (n1==null) System.out.println("compose n1 null");
-    //if (n2==null) System.out.println("compose n2 null");
+    //if (n1==null)System.out.println("compose n1 null");
+    //if (n2==null)System.out.println("compose n2 null");
     return compose(id, n1, n2, null);
   }
 
@@ -308,8 +308,10 @@ public class SequentialInfixFun {
       AutomatonNode fromNode = nodeMap.get(readEdge.getFrom().getId());
       AutomatonNode toNode = nodeMap.get(readEdge.getTo().getId());
       writeAutomaton.addOwnersToEdge(
-        writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(), false, readEdge.getOptionalEdge()),
-        getEdgeOwnersFromProduct(readEdge.getEdgeOwners(), edgeOwnersMap)
+        writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(),
+         getEdgeOwnersFromProduct(readEdge.getOptionalOwners(), edgeOwnersMap),
+            readEdge.getOptionalEdge()),
+         getEdgeOwnersFromProduct(readEdge.getEdgeOwners(), edgeOwnersMap)
       );
     }
   }

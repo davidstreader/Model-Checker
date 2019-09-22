@@ -166,7 +166,7 @@ public class GaloisAP2BC implements IProcessFunction {
     auts[0] = a;
     Automaton aout = compose(id, flags, context, auts);
 
-    return OwnersRule.ownersRule(aout);
+    return OwnersRule.ownersRule(aout );
   }
 
 
