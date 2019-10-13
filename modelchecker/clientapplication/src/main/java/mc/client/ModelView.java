@@ -499,8 +499,13 @@ public class ModelView implements Observer, FontListener {
             // EdgeType et = EdgeType.DIRECTED;
             String lab = "";
             if (edge.getOptional()) {
+
                 // et = EdgeType.UNDIRECTED;//NICE try but fails
                 lab = "Opt";
+                int i = edge.getOptionNum();
+                if (i > 0) {
+                    lab  = lab+1;
+                }
             }
             if (settings.isShowOwners()) {
                 PetriNetPlace place;

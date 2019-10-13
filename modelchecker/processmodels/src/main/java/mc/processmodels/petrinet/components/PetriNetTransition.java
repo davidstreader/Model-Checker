@@ -5,15 +5,21 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import mc.Constant;
 import mc.processmodels.ProcessModelObject;
+import mc.processmodels.conversion.Step;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class PetriNetTransition extends ProcessModelObject implements Comparable {
-  String label;
-  Set<PetriNetEdge> incoming = new HashSet<>();
-  public Set<PetriNetEdge> copyIncoming() {
+  private String label;
+  private Set<PetriNetEdge> incoming = new HashSet<>();
+  private Set<PetriNetEdge> outgoing = new HashSet<>();
+  private TreeSet<String> owners = new TreeSet<>();
+//id and type in ProcessModelObject id unique to process (not between processes)
+
+    public Set<PetriNetEdge> copyIncoming() {
     //System.out.println("in size "+incoming.size());
     Set<PetriNetEdge> out = new HashSet<>();
     for(PetriNetEdge ed: incoming){
@@ -22,7 +28,6 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
     }
     return out;
   }
-  Set<PetriNetEdge> outgoing = new HashSet<>();
   public Set<PetriNetEdge> copyOutgoing() {
     //System.out.println("out size "+outgoing.size());
     Set<PetriNetEdge> out = new HashSet<>();
@@ -32,7 +37,6 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
     }
     return out;
   }
-  Set<String> owners = new HashSet<>();
 
   public boolean equals(Object tr){
     if (!(tr instanceof PetriNetTransition) )
@@ -59,7 +63,7 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
       owners.add(o);
     }
   }public void clearOwners() {
-      owners = new HashSet<>();
+      owners = new TreeSet<>();
 
   }
   public void removeEdge(PetriNetEdge ed){
@@ -119,14 +123,22 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
         .collect(Collectors.toSet()); */
   }
 
-  public Set<PetriNetPlace> preNotOptional() {
-    return incoming.stream()
+    public Set<PetriNetPlace> preNotOptional() {
+        return incoming.stream()
             .filter(ed->!ed.getOptional())
             .map(PetriNetEdge::getFrom)
             .map(PetriNetPlace.class::cast)
             .distinct()
             .collect(Collectors.toSet());
-  }
+    }
+    public Set<PetriNetPlace> preOptional() {
+        return incoming.stream()
+            .filter(ed->ed.getOptional())
+            .map(PetriNetEdge::getFrom)
+            .map(PetriNetPlace.class::cast)
+            .distinct()
+            .collect(Collectors.toSet());
+    }
   public Set<PetriNetPlace> postNotOptional() {
     return outgoing.stream()
       .filter(ed->!ed.getOptional())
@@ -135,6 +147,25 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
       .distinct()
       .collect(Collectors.toSet());
   }
+
+    public Step tr2Step(Multiset<PetriNetPlace> mark) {
+      /*System.out.println("tr2Step "+this.getId()+" pre= "+
+            this.pre().stream().map(x->x.getId()+", ").collect(Collectors.joining())+"; mark= "+
+            mark.stream().map(x->x.getId()+", ").collect(Collectors.joining())); */
+        Set<String> markedPre = mark.stream().
+                                filter(x->this.pre().contains(x)).
+                                 map(x->x.getId()).
+                                collect(Collectors.toSet());
+
+      //System.out.println("markedPre "+markedPre);
+        Set<String> posttr = this.post().stream().map(x -> x.getId()).
+                                collect(Collectors.toSet());
+        String lab = this.getLabel();
+        Step o = new Step(markedPre, lab, posttr);
+      //System.out.println("tr2Step >"+o.myString());
+        return o;
+    }
+
   public boolean NonBlockingEqu(PetriNetTransition tr) {
     Set<String> pre = preNotOptional().stream().
       map(PetriNetPlace::getId).
@@ -217,13 +248,13 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
     StringBuilder builder = new StringBuilder();
     builder.append(getId()+", ");
     for (PetriNetEdge edge : getIncoming()) {
-      builder.append(edge.getFrom().getId()+"+");
+      builder.append(edge.getFrom().getId()+"+"+ edge.getOptional()+"-"+edge.getOptionNum()+" ");
       if (edge.getGuard()!=null) builder.append(edge.getGuard().getGuardStr());
     }
     builder.append("-"+label+"->");
     for (PetriNetEdge edge : getOutgoing()) {
       if (edge.getGuard()!=null) builder.append(edge.getGuard().getAssStr());
-      builder.append("+"+ edge.getOptional()+" "+ edge.getTo().getId());
+      builder.append("+"+ edge.getOptional()+"-"+edge.getOptionNum()+" "+ edge.getTo().getId());
     }
     builder.append(", own "+this.getOwners());
      return builder.toString();
@@ -241,7 +272,7 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
     return this.outgoing;
   }
 
-  public Set<String> getOwners() {
+  public TreeSet<String> getOwners() {
     return this.owners;
   }
 
@@ -257,7 +288,7 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
     this.outgoing = outgoing;
   }
 
-  public void setOwners(Set<String> owners) {
+  public void setOwners(TreeSet<String> owners) {
     this.owners = owners;
   }
 

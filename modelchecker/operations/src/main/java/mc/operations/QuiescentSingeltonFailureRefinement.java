@@ -50,7 +50,9 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
    * Evaluate the quiescent singeltonFailure  refinement function.
    *  we stick to OPTIONS  2. (see quiescent trace refinement)
    *     1.  augment automaton with listening loops and Quiescent events (like STOP events)
-   *     2.  apply singelton failure refinement
+   *         hence complete traces are quiescent traces
+   *     2.  file]ter out the non quiescent states and
+   *         apply singelton failure refinement
    * @param alph
    * @param processModels automaton in the function (e.g. {@code A} in {@code A ~ B})
    * @return the resulting automaton of the operation
@@ -189,8 +191,8 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     List<Set<String>> refusalWrap = new ArrayList<>();
     Set<String> refusal = new TreeSet<>();
     Set<String> ready = new TreeSet<>();
-    Set<String> rQ = new TreeSet<>();
-    rQ.add("!"+Constant.Quiescent);
+  //  Set<String> rQ = new TreeSet<>();
+ //   rQ.add("!"+Constant.Quiescent);
     boolean first = true;
     for (AutomatonNode nd: nds){
       //System.out.println(nd.getId()+"->"+ nd.getOutgoingEdges().stream().map(ed->ed.getLabel()+" ").collect(Collectors.joining()));

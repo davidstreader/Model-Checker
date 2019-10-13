@@ -72,7 +72,7 @@ public class TraceWork {
 
         try {
           //System.out.println("TraceWorks nfa "+a.myString());
-          Automaton newdfa; //BUILD DFA
+          Automaton newdfa; //BUILD DFA + add quiescent edges
           newdfa = nfa2dfaworks.compose(  a.getId(),  flags,  context,  tt,
             buildData,  //lambda to build data for later comparision
             a);

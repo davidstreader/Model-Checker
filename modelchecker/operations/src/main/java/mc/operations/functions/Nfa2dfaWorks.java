@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public class Nfa2dfaWorks {
   /**
    * Build a dfa from a nfa  Add Quiescent loop edge to the dfa where needed
+   *                         + add Quiescent edge
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}

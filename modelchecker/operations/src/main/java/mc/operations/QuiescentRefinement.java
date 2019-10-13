@@ -45,7 +45,9 @@ public class QuiescentRefinement implements IOperationInfixFunction {
   /**
    * Evaluate the quiescent trace  refinement function.
    * OPTIONS 1. apply algorithm directly to what is displayed
-   *         2. augment automaton with listening loops and apply complete trace refinement
+   *         2. augment automaton with listening loops
+   *         The DFA will have Quiescent edges hence complete traces = quiescent traces
+   *          and apply complete trace refinement
    * option 1 has proven very hard to implement - after several attempts am forced to
    * acknowledge that I can not define this algorithm
    *
@@ -101,7 +103,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     TraceWork tw = new TraceWork();
     //return tr.evaluate(alpha, flags, context, trace, processModels);
     return tw.evaluate(flags,context, pms,
-      TraceType.QuiescentTrace,
+      TraceType.QuiescentTrace,  // builds DFA with Quiescent edges
       trace,
       tr::readyWrapped,
       (s1, s2, cong1, error) -> tr.isReadySubset(s1, s2, cong1, error)

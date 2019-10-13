@@ -80,13 +80,13 @@ public class ChoiceFun {
         Petrinet E = Petrinet.oneEventNet("*E", "e1");
         Petrinet net1 = sf.compose("n1", nt1, E);
         net1.reown("1");
-        Set<String> own1 = net1.getOwners();
+        TreeSet<String> own1 = net1.getOwners();
 
         Petrinet nt2 = n2.copy().reId("2");
         Petrinet F = Petrinet.oneEventNet("*E", "e2");
         Petrinet net2 = sf.compose("n2", nt2, F);
         net2.reown("2");
-        Set<String> own2 = net2.getOwners();
+        TreeSet<String> own2 = net2.getOwners();
         //System.out.println("YYY   YYY   YYY   YYY   YYY\n\n     *********[]********[]*****\n  "+ net1.myString()+" \n  "+net2.myString());
 
         //System.out.println("[]PETRI1 "+net1.myString("edge"));

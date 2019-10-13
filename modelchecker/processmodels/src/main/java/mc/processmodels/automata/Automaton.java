@@ -1309,10 +1309,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
       //Change to make copies re id the edge
         Set<String> newOpos = new HashSet<>();
-        System.out.println("ownersMap.key "+ ownersMap.keySet());
+      //System.out.println("ownersMap.key "+ ownersMap.keySet());
         //os.stream().map(x->ownersMap.get(x)).collect(Collectors.toSet());
         for (String s : edge.getOptionalOwners()) {
-            System.out.println("s= "+s);
+            //System.out.println("s= "+s);
             if (ownersMap.containsKey(s)) newOpos.add(ownersMap.get(s));
         }
 

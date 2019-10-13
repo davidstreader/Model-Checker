@@ -128,18 +128,18 @@ public class Main {
 
         ProcessBuilder builder = new ProcessBuilder("java", "-XX:+UseG1GC", "-Djava.library.path=" + nativePath, "-jar", Utils.getJarPath(), "reloaded");
         Map<String, String> environment = builder.environment();
-        if (Utils.isMac()) {
+        //if (Utils.isMac()) {
             //Set the mac native path
             environment.put("DYLD_LIBRARY_PATH", nativePath);
 
             System.out.println("DYLD_LIBRARY_PATH " + nativePath);
-        } else if (Utils.isWin()) {
+       // } else if (Utils.isWin()) {
             //Set the windows native path
             environment.put("PATH", nativePath);
-        } else {
+      //  } else {
             //Set the linux native path
             environment.put("LD_LIBRARY_PATH", nativePath);
-        }
+      //  }
         //System.out.println("\n\n*******\n "+builder.command()+"\n*******\n");
         System.out.println("user.dir " + System.getProperty("user.dir") + "  " +
             System.getProperty("os.name") + " " + System.getProperty("os.arch"));

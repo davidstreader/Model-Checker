@@ -15,20 +15,22 @@ import java.util.*;
 @Data
 public class PetriNetEdge extends ProcessModelObject implements Comparable {
 
-  public int compareTo(Object ed){
-    if (ed instanceof PetriNetEdge)
-      return getId().compareTo(((PetriNetEdge) ed).getId());
-    else
-      return -1;
-  }
   private ProcessModelObject from;
-
   private ProcessModelObject to;
-
   private Guard guard;
+  // id and type in ProcessModelObject id unique with in Processes
+  private TreeSet<String> variables = new TreeSet<>();
+  private boolean  optional = false;
+    /*
+      Optional is when a transition is the result of broadcast synchronisation
+       (The petri Net equivalence to adding listening loop is to add transitions with wings Pn<-->Tr)
+       to prevent clutter we use "Optional" edges and build the Token rule to add the listening loops
+       For a!  || a?->.. -a?->  need optionNum to distinguish listeners of single owner
+       and to connect in from out.
+     */
+    private Integer optionNum = 0;  // only set to none zero by parallel composition
 
-  private Set<String> variables = new HashSet<>();
-  // for all Edges in a Sequential Net have the same variables  the PetriNet
+    // for all Edges in a Sequential Net have the same variables  the PetriNet
   // Parallel composition dose not change the Edge variables
   // but the Net variables are the union of the Net variables
 
@@ -36,21 +38,18 @@ public class PetriNetEdge extends ProcessModelObject implements Comparable {
      set of probability distributions held on the PetriNet
    */
 
-  /*
-    Optional is when a transition is the result of broadcast synchronisation
-     (The petri Net equivalence to adding listening loop is to add transitions with wings Pn<-->Tr)
-     to prevent clutter we use "Optional" edges and build the Token rule to add the listening loops
-   */
-  private boolean  optional = false;
-  public void setOptional(boolean b){ optional = b;}
-  public boolean getOptional(){return optional;}
-  public boolean notOptional(){return !optional; }
+  public void setOptionNum(int o) {optionNum = o;}
+  public Integer getOptionNum() {return optionNum;}
 
     // set of probability distibution ids - data on PetriNet
     private Set<String> probDists = new TreeSet<>();
     public   Set<String> getProbabilityDistributions(){return probDists;}
     public void addProbabilityDistribution(String id) {probDists.add(id);}
     public void clearProbabilityDistributions(){probDists.clear();}
+
+    public void setOptional(boolean b){ optional = b;}
+    public boolean getOptional(){return optional;}
+    public boolean notOptional(){return !optional; }
 
 
     public PetriNetEdge(String id, PetriNetPlace to, PetriNetTransition from) {
@@ -77,7 +76,12 @@ public class PetriNetEdge extends ProcessModelObject implements Comparable {
       }
 
   }
-
+    public int compareTo(Object ed){
+        if (ed instanceof PetriNetEdge)
+            return getId().compareTo(((PetriNetEdge) ed).getId());
+        else
+            return -1;
+    }
 
   public String toString() {
       String fr, t;
@@ -94,7 +98,7 @@ public class PetriNetEdge extends ProcessModelObject implements Comparable {
     StringBuilder sb = new StringBuilder();
     sb.append("Edge "+this.getId()+" from "+from.getId());
     if (guard!=null) sb.append(" - "+guard.myString());
-    sb.append(" -> "+to.getId()+" optional= "+optional);
+    sb.append(" -> "+to.getId()+" optional= "+optional+ " optN= "+optionNum);
 
      //for (String o: owners){out = out +o+" ";}
     return sb.toString();

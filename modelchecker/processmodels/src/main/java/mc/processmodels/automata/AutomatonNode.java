@@ -1,18 +1,14 @@
 package mc.processmodels.automata;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import lombok.Getter;
 import lombok.Setter;
 import mc.Constant;
 import mc.compiler.Guard;
 import mc.compiler.ast.ASTNode;
 import mc.processmodels.ProcessModelObject;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by sheriddavi on 24/01/17.

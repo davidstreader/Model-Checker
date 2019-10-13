@@ -49,8 +49,15 @@ public class RelabelElementNode extends ASTNode {
 
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append("Rel "+ newLabel+" "+newProcess.myString()+" "+oldLabel);
-    sb.append(" "+ranges.myString());
+    sb.append("Relable ");
+      if (newLabel == null) sb.append(" newLab==null ");
+      else sb.append(" newLab "+ newLabel);
+      if (newProcess == null) sb.append("newProcess==null ");
+      else sb.append(" newProcess "+ newProcess);
+      if (oldLabel == null) sb.append("oldLab==null ");
+      else sb.append(" oldLab "+ oldLabel);
+      if (ranges == null) sb.append("  ranges=null ");
+    else sb.append(" "+ranges.myString());
     return sb.toString();
   }
 

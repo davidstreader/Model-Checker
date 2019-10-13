@@ -23,7 +23,7 @@
             <Label layoutX="172.0" layoutY="182.0" text="Step" />
              <Slider fx:id="delaySlider" blockIncrement="0.0" layoutX="224.0" layoutY="220.0" majorTickUnit="1.0" max="4.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" value="2.0" />
              <Label layoutX="177.0" layoutY="220.0" prefHeight="0.0" prefWidth="35.0" text="Delay" />
-             <Slider fx:id="fontSlider" blockIncrement="0.0" layoutX="224.0" layoutY="264.0" majorTickUnit="1.0" max="30.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" value="14.0" />
+             <Slider fx:id="fontSlider" blockIncrement="0.0" layoutX="224.0" layoutY="264.0" majorTickUnit="1.0" max="50.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" value="14.0" />
              <Label layoutX="177.0" layoutY="264.0" prefHeight="0.0" prefWidth="35.0" text="Font" />
              <CheckBox fx:id="Own" layoutX="26.0" layoutY="136.0" mnemonicParsing="false" text="Owners" />
             <CheckBox fx:id="Col" layoutX="26.0" layoutY="166.0" mnemonicParsing="false" text="Color" />

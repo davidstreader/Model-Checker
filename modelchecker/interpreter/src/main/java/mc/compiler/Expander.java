@@ -377,7 +377,7 @@ public class Expander {
             Object element = iterator.next();
             variableMap.put(astNode.getVariable(), element);
             //System.out.println("astNode Put variableMap " + astNode.getVariable() + " val " + variableMap.get(astNode.getVariable()).toString());
-          //  if (holdCondition != null)System.out.println("holdCondition " + holdCondition.toString());
+            //  if (holdCondition != null)System.out.println("holdCondition " + holdCondition.toString());
             //evaluate when guard HERE
             if (holdCondition == null ||
                 evaluateCondition(holdCondition, variableMap, context)) {
@@ -786,23 +786,34 @@ public class Expander {
 
     }
 
-// Relable events replacing "delta"
+    // Relable events replacing "delta"
     private RelabelNode expand(RelabelNode relabel, Context context) throws CompilationException, InterruptedException {
         List<RelabelElementNode> relabels = new ArrayList<>();
-
-        for (RelabelElementNode element : relabel.getRelabels()) {
-            if (!element.hasRanges()) {
-               if  (element.getNewLabel().equals("delta") ) {
-                 element.setNewLabel(Constant.DEADLOCK);
-               } else if (element.getNewLabel().equals("tau") ) {
-                   element.setNewLabel(Constant.HIDDEN);
-               }
-                relabels.add(element);
-            } else {
-                Map<String, Object> variableMap = new HashMap<>();
-                relabels.addAll(expand(element, variableMap, element.getRanges().getRanges(), 0, context));
+        System.out.println("Pong " + relabel.myString());
+        System.out.println(new Throwable().getStackTrace().toString());
+        if (!relabel.getRelabels().equals(null)) {
+            for (RelabelElementNode element : relabel.getRelabels()) {
+                if (element == null) continue;
+                System.out.println("P " + element.myString());
+                if (! (element.getNewLabel() == null)) {
+                    if (!element.hasRanges()) {
+                        if (element.getNewLabel().equals("delta")) {
+                            element.setNewLabel(Constant.DEADLOCK);
+                        } else if (element.getNewLabel().equals("tau")) {
+                            element.setNewLabel(Constant.HIDDEN);
+                        }
+                        relabels.add(element);
+                    } else {
+                        Map<String, Object> variableMap = new HashMap<>();
+                        relabels.addAll(expand(element, variableMap, element.getRanges().getRanges(), 0, context));
+                    }
+                }
+                else { // event Refinement
+                  relabels.add(element);
+                }
             }
         }
+        System.out.println("Ping " + relabels.stream().map(x -> x.myString() + " ").collect(Collectors.joining()));
 
         return new RelabelNode(relabels, relabel.getLocation());
     }

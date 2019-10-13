@@ -16,7 +16,7 @@ import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModelObject;
 
-public class AutomatonEdge extends ProcessModelObject {
+public class AutomatonEdge extends ProcessModelObject implements Comparable {
 
     //private static final String INTERSECTION = "^";
     //@Getter
@@ -241,4 +241,12 @@ public class AutomatonEdge extends ProcessModelObject {
         });
     }
 
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof AutomatonEdge) {
+            return this.getId().compareTo(((AutomatonEdge) o).label);
+        } else {
+            return -1;
+        }
+    }
 }

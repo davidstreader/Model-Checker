@@ -56,6 +56,12 @@ public class OwnersRule {
      * automata events are marked as optional if they are to be ignored in
      * by the ownerRule as a more general transition exists.
      *
+     * Broadcast - non blocking send amendment.
+     *    Owners rule works for handshake  with same name synchronisation +
+     *    Token rule sets automata edges to be optional when
+     *     an the edge is the product of transition with some optional edge dropped
+     *    non blocking send with one listening event.
+     *
      * @param ain The automaton to be converted
      * @return a petrinet representation fo the automaton
      */
@@ -99,7 +105,9 @@ public class OwnersRule {
             if (own.equals("_default"))
                 throw new CompilationException(ain.getClass(), "Owners Failure in Owners Rule " + ain.myString());
             Petrinet petri = new Petrinet(autom.getId(), false);
-            petri.setOwners(Collections.singleton(own));
+            TreeSet<String> os = new TreeSet<>();
+            os.add(own);
+            petri.setOwners(os);
             Stack<AutomatonNode> toDo = new Stack<>();
             Stack<AutomatonNode> processed = new Stack<>();
             toDo.add(root);
@@ -114,7 +122,7 @@ public class OwnersRule {
                 processed.add(nd);
                 if (!nd2Pl.containsKey(nd)) {
                     PetriNetPlace added = petri.addPlace();
-                    Set<String> owns = new TreeSet<>();
+                    TreeSet<String> owns = new TreeSet<>();
                     owns.add(own);
                     added.setOwners(owns);
                     if (nd.isStopNode()) {
@@ -182,7 +190,9 @@ public class OwnersRule {
                         //System.out.println("    " + ed.getId()+ "  "+opt);
                         petri.addEdge(tran, nd2Pl.get(ed.getFrom()), opt);
                         petri.addEdge(nd2Pl.get(ed.getTo()), tran, opt);
-                        tran.setOwners(Collections.singleton(own));
+                        TreeSet<String> O = new TreeSet<>();
+                        O.add(own);
+                        tran.setOwners(O);
 
                         //System.out.println("    Adding " + tran.myString());
                     } else {

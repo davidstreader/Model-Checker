@@ -167,8 +167,8 @@ public class SequentialInfixFun {
     //System.out.println("\n   ***\n   ***\n1 =>  PETRI1 " + id + " " + net1.myString());
     //System.out.println("=> n2  PETRI2 " + id + " " + net2.myString());
 
-    Set<String> own1 = new HashSet<>();
-    Set<String> own2 = new HashSet<>();
+    TreeSet<String> own1 = new TreeSet<>();
+    TreeSet<String> own2 = new TreeSet<>();
 
     own1.addAll(net1.getOwners());
     own2.addAll(net2.getOwners());
@@ -208,7 +208,7 @@ public class SequentialInfixFun {
       for (Set<String> rt : net2.getRoots()) {
         // FOR EACH PAIR BUILD A NEW END-ROOT NODE THEN FICK IN PLACE
         //System.out.println("\n *******SEQ   START " + i++ + " end "+ends+ " root = " + rt);
-        composition.setOwners(new HashSet<>());
+        composition.setOwners(new TreeSet<>());
 
         net1.getPlaces().values().stream().forEach(x -> x.setTerminal(""));
         composition.setRootFromStart();

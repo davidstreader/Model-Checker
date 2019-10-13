@@ -63,8 +63,10 @@ public class RefineFun {
       Set<PetriNetPlace> postEvents = tr.post();
 
         prePostEvents.retainAll(postEvents);
-      Set<String> prePostOwners = prePostEvents.stream().map(x->x.getOwners()).
-          flatMap(Set::stream).collect(Collectors.toSet());
+      TreeSet<String> prePostOwners = new TreeSet<>();
+
+          prePostEvents.stream().map(x->x.getOwners()).
+          flatMap(Set::stream).forEach(o->prePostOwners.add(o));
       System.out.println("  prePostOwneres "+prePostOwners);
       System.out.println("  pre " + preEvents.stream().map(x -> x.getId() + " ").collect(Collectors.joining()) +
         "  post " + postEvents.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
@@ -98,11 +100,11 @@ public class RefineFun {
       }
 
       postEvents = tr.post();
-      Set<String> postTrOwn = new HashSet<>();
+      TreeSet<String> postTrOwn = new TreeSet<>();
       for(PetriNetPlace pl: postEvents) {
         postTrOwn.addAll(pl.getOwners());
       }
-      Set<String> endOfP2Own = new HashSet<>();
+      TreeSet<String> endOfP2Own = new TreeSet<>();
       for(PetriNetPlace pl: endOfP2) {
         endOfP2Own.addAll(pl.getOwners());
       }

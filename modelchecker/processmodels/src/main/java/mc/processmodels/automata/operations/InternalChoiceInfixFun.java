@@ -123,11 +123,11 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
     Petrinet petrinet2 = net2.copy().reId("2");
     //System.out.println("\n"+id+" + PETRI1 "+net1.myString());
     //System.out.println(id+" + PETRI2 "+net2.myString());
-    Set<String> o1 = new HashSet<>();
+    TreeSet<String> o1 = new TreeSet<>();
     for(String el: petrinet1.getOwners()){
       o1.add(el);
     }
-    Set<String> o2 = new HashSet<>();
+    TreeSet<String> o2 = new TreeSet<>();
     for(String el: petrinet2.getOwners()){
       o2.add(el);
     }

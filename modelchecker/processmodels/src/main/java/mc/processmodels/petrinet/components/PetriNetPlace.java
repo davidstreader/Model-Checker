@@ -26,7 +26,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   // Place with ref "X" will be glued to other Place with "X" fromRef
   private Set<String> references = new LinkedHashSet<>();      // where leaf is to be glued to
   private Set<String> leafRef = new LinkedHashSet<>();  // prior to gluing only on Leaf
-  private Set<String> owners = new HashSet<>();  // this is needed in event Refinement and broadcast events
+  private TreeSet<String> owners = new TreeSet<>();  // this is needed in event Refinement and broadcast events
 
     // set of probability distibution ids - data on PetriNet
   private Set<String> probDists = new TreeSet<>();
@@ -64,8 +64,8 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     }
     return out;
   }
-  public Set<String> copyOwners() {
-    Set<String> out = new HashSet<>();
+  public TreeSet<String> copyOwners() {
+    TreeSet<String> out = new TreeSet<>();
     for(String i: owners) {
       out.add(i);
     }
@@ -312,7 +312,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     return this.leafRef;
   }
 
-  public Set<String> getOwners() {
+  public TreeSet<String> getOwners() {
     return this.owners;
   }
 
@@ -352,7 +352,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     this.leafRef = leafRef;
   }
 
-  public void setOwners(Set<String> owners) {
+  public void setOwners(TreeSet<String> owners) {
     this.owners = owners;
   }
 }
