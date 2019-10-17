@@ -3,13 +3,13 @@ package mc.processmodels.petrinet.components;
 
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
+import lombok.Getter;
+import lombok.Setter;
 import mc.Constant;
 import mc.processmodels.ProcessModelObject;
 import mc.processmodels.conversion.Step;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PetriNetTransition extends ProcessModelObject implements Comparable {
@@ -18,6 +18,10 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
   private Set<PetriNetEdge> outgoing = new HashSet<>();
   private TreeSet<String> owners = new TreeSet<>();
 //id and type in ProcessModelObject id unique to process (not between processes)
+@Getter
+@Setter
+private String  fromTran = "";
+
 
     public Set<PetriNetEdge> copyIncoming() {
     //System.out.println("in size "+incoming.size());
@@ -148,7 +152,7 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
       .collect(Collectors.toSet());
   }
 
-    public Step tr2Step(Multiset<PetriNetPlace> mark) {
+    public Set<String> tr2preSet(Multiset<PetriNetPlace> mark) {
       /*System.out.println("tr2Step "+this.getId()+" pre= "+
             this.pre().stream().map(x->x.getId()+", ").collect(Collectors.joining())+"; mark= "+
             mark.stream().map(x->x.getId()+", ").collect(Collectors.joining())); */
@@ -158,12 +162,8 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
                                 collect(Collectors.toSet());
 
       //System.out.println("markedPre "+markedPre);
-        Set<String> posttr = this.post().stream().map(x -> x.getId()).
-                                collect(Collectors.toSet());
-        String lab = this.getLabel();
-        Step o = new Step(markedPre, lab, posttr);
-      //System.out.println("tr2Step >"+o.myString());
-        return o;
+
+        return markedPre;
     }
 
   public boolean NonBlockingEqu(PetriNetTransition tr) {

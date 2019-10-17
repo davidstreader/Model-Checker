@@ -41,7 +41,8 @@ public class OwnersRule {
      * For each owner O1 project the automata to a SLICE automata(Net)
      * i.e. a net built from  edges with owners containing O1
      * <p>
-     * Build the final net  as the parallel composition of all the slices!
+     * Build the final net  as the parallel composition of the Petri Net slices!
+     * Note slices must distinguish which edge each transition comes from
      * <p>
      * Internal choice introduces multiple start states NOT EASY to code directly
      * So
@@ -51,16 +52,21 @@ public class OwnersRule {
      * <p>
      * For synchronised broadcast events petri edges (each edge has unique owner)
      * may be "optional"
-     * the automata edges built from them must have a lirt of optional owners
+     * the automata edges built from them must have a list of optional owners
      * <p>
      * automata events are marked as optional if they are to be ignored in
      * by the ownerRule as a more general transition exists.
      *
      * Broadcast - non blocking send amendment.
      *    Owners rule works for handshake  with same name synchronisation +
-     *    Token rule sets automata edges to be optional when
-     *     an the edge is the product of transition with some optional edge dropped
-     *    non blocking send with one listening event.
+     *  The Token rule represents the execution of a Transition from a particuular
+     *    marking.
+     *  For each transition the Token rule records the set of maximum markings,
+     *    no superset of the marking executes this transition.
+     *  Only the edges representing the executions of a transition from one of its
+     *    maximum markings are NOT optional.
+     *
+     *    The owners rule can ignore the optional edges of an automata.
      *
      * @param ain The automaton to be converted
      * @return a petrinet representation fo the automaton
@@ -80,12 +86,14 @@ public class OwnersRule {
         Automaton ai = sif.compose(ain.getId(), star, ain);
         //System.out.println("owners S* "+ai.myString());
         // 2. proceed as before
-        Automaton autom = ai.copy(); // smaller Ids make debugging easier
+        Automaton autom = ai.copy(); // (cloner) smaller Ids make debugging easier
         //filter out the optional edges - set in Token Rule
         List<AutomatonEdge> edgeToGo = autom.getEdges().stream().filter(ed -> ed.getOptionalEdge()).collect(Collectors.toList());
+        System.out.println("edge cnt = "+autom.getEdges().size());
         for (AutomatonEdge ed : edgeToGo) {
             autom.removeEdge(ed);
         }
+        System.out.println("edge  \n"+autom.getEdges().stream().filter(x->x.getLabel().endsWith(Constant.BROADCASTSoutput)).map(x->x.myString()+",\n").collect(Collectors.joining()));
         //filter ends
         autom.tagEvents();
         //System.out.println("\nOWNERS Stared Rule " + autom.myString());
@@ -101,7 +109,7 @@ public class OwnersRule {
     */
         //System.out.println("Owners START " + a.myString() + "\n");
         for (String own : autom.getOwners()) {
-            //System.out.println(" >>>>>>>Owner "+ own);
+            System.out.println(" >>>>>>>Owner "+ own);
             if (own.equals("_default"))
                 throw new CompilationException(ain.getClass(), "Owners Failure in Owners Rule " + ain.myString());
             Petrinet petri = new Petrinet(autom.getId(), false);
@@ -175,7 +183,8 @@ public class OwnersRule {
                 for (AutomatonEdge ed : nd.getOutgoingEdges()) {
                     //System.out.println(" Start 2 " + ed.myString() + "      own " + own);
                     // optional send events not  needed
-                    if (ed.getOptionalEdge()) continue;
+                    if (ed.getOptionalEdge()) {
+                        System.out.println("REDUNDENT");continue;}
                     if (ed.getLabel().equals(Constant.DEADLOCK)) continue;
 
                     toDo.push(ed.getTo());
@@ -337,6 +346,7 @@ public class OwnersRule {
     /**
      * Build the set of nodes reachable by undirected edges
      * edges filtered by not containing owner own
+     * Optional edges needed fo this computation!
      *
      * @param a
      * @param ndi

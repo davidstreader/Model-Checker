@@ -77,6 +77,9 @@ public class AutomatonEdge extends ProcessModelObject implements Comparable {
     @Getter
     @Setter
     private boolean optionalEdge = false;
+    @Getter
+    @Setter
+    private String  fromTran = "";
 
     @Getter
     @Setter

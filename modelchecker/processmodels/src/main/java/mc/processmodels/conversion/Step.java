@@ -9,7 +9,6 @@ public class Step implements Comparable {
 
 
     private Set<String> pre = new TreeSet<>();
-    private Set<String> post = new TreeSet<>();
     private String lab;
 
     @Override
@@ -36,18 +35,18 @@ public class Step implements Comparable {
     public void setPre(Set<String> in) {
         pre = in;
     }
-    public Set<String> getPost() {
-        return post;
-    }
 
-    public Step(Set<String> preIn, String labIn, Set<String> postIn) {
+    public Step( String labIn) {
         //System.out.println("build Step "+preIn+"  lab= "+labIn);
         lab = labIn;
-        this.pre = new TreeSet<>();
-        this.post = new TreeSet<>();
-        preIn.stream().forEach(x -> pre.add(x));
-        postIn.stream().forEach(x -> post.add(x));
+        pre = new TreeSet<>();
 
+    }
+    public Step(Set<String> preIn, String labIn) {
+        //System.out.println("build Step "+preIn+"  lab= "+labIn);
+        lab = labIn;
+        pre = new TreeSet<>();
+        preIn.stream().forEach(x -> pre.add(x));
     }
 
 /*
@@ -55,23 +54,18 @@ public class Step implements Comparable {
            1 if sub Step
  */
 
-    public int isSubStep(Step sin) {
-        if (!lab.equals(sin.getLab())) return -1;
-        if (sin.getPre().equals(pre)) {
-            return 0;
-        } else if (sin.getPre().containsAll(pre)) {
-            return 1;
-        } else return -1;
+    public String isSubStep(Set<String> newPre, String labIn) {
+        if (!lab.equals(labIn)) return "clash";
+        if (newPre.equals(pre)) {
+            return "sameStep";
+        } else if (pre.containsAll(newPre)) {
+            return "subStep";
+        } else if (newPre.containsAll(pre)) {
+            return "superStep";
+        }else return "unrleated";
     }
 
-    public Set<String> hasMoreStep(Step sin) {
-        Set<String> more = new TreeSet<>();
-        if (!lab.equals(sin.getLab())) return more;
 
-        pre.stream().forEach(x -> more.add(x));
-        more.removeAll(sin.pre);
-        return more;
-    }
 
     public String myString() {
         return "pre " + pre + ",  lab " + lab;
