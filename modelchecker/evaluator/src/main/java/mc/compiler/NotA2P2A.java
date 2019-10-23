@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class A2P2A implements IProcessFunction {
+public class NotA2P2A implements IProcessFunction {
   /**
    * Gets the method name when it is called (e.g. {@code abs} in {@code abs(A)}).
    *
@@ -53,8 +53,7 @@ public class A2P2A implements IProcessFunction {
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
    * @param context  the z3 context
-   * @param tt
-   * @param automata a variable number of automata taken in by the function
+  * @param automata a variable number of automata taken in by the function
    * @return the resulting automaton of the operation
    * @throws CompilationException when the function fails
    */
@@ -62,7 +61,7 @@ public class A2P2A implements IProcessFunction {
   public Automaton compose(String id, Set<String> flags, Context context,
                             Automaton... automata)
       throws CompilationException {
-    //System.out.println("Pingo2");
+    System.out.println("Pingo2");
     assert automata.length == 1;
     Automaton inputA = automata[0].copy();
     inputA.setId(inputA.getId()+".2a");
@@ -72,10 +71,11 @@ public class A2P2A implements IProcessFunction {
     //System.out.println("A2p2a input "+ inputA.myString());
     pn.addPetrinet(OwnersRule.ownersRule(inputA ), true, true); //root needed
     //System.out.println("\n p in a2P2a "+pn.myString());
-    Automaton   aut = TokenRule.tokenRule(pn) ;
+  //**  Automaton   aut = TokenRule.tokenRule(pn) ;
     //System.out.println("\n End a in a2p2A "+aut.myString());
 
-    return aut;
+     //** return aut;
+      return inputA;
   }
 
 
@@ -124,10 +124,11 @@ public class A2P2A implements IProcessFunction {
     //System.out.println("A2p2a input "+ inputA.myString());
     Petrinet p = OwnersRule.ownersRule(inputA ); //root needed
     //System.out.println("\n p in a2P2a "+pn.myString());
-    Automaton   a = TokenRule.tokenRule(p) ;
+ //   Automaton   a = TokenRule.tokenRule(p) ;
     MultiProcessModel m = new MultiProcessModel(inputA.getId());
     m.addProcess(p);
-    m.addProcess(a);
+ //   m.addProcess(a);
+      m.addProcess(inputA);
     return m;
   }
 

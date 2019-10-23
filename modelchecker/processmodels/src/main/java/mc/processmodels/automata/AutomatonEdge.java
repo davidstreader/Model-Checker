@@ -3,10 +3,7 @@ package mc.processmodels.automata;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
@@ -74,16 +71,27 @@ public class AutomatonEdge extends ProcessModelObject implements Comparable {
     /*Edge built from send event NOT synchronising with receive event
        when there exist receive events in parallel process
      */
-    @Getter
-    @Setter
     private boolean optionalEdge = false;
     @Getter
     @Setter
     private String  fromTran = "";
 
     @Getter
-    @Setter
+     //Think these might be redundent noe we have markedOwners
     private Set<String> optionalOwners = new HashSet<>();
+    public void setOptionalOwners(Set<String> owns){
+        Set<String> mo = new TreeSet<>();
+        owns.stream().forEach(x->mo.add(x));
+        optionalOwners = mo;
+    }
+    @Getter
+     //needed set by token Rule used in Owners Rule
+    private Set<String> markedOwners = new TreeSet<>();
+    public void setMarkedOwners(Set<String> owns){
+        Set<String> mo = new TreeSet<>();
+        owns.stream().forEach(x->mo.add(x));
+        markedOwners = mo;
+    }
     /**
      *
      */
@@ -137,10 +145,10 @@ public class AutomatonEdge extends ProcessModelObject implements Comparable {
         String out = "";
         if (guard != null) {
             out = getId() + "  " + from.getId() + "-" + label + "->" + to.getId() + " " +
-                guard.myString() + " o= " + edgeOwners + " optional=" + optionalEdge+ "  optOwn "+ optionalOwners;
+                guard.myString() + " o= " + edgeOwners + " optional=" + optionalEdge+ "  markOwn "+ markedOwners;
         } else {
             out = getId() + "  " + from.getId() + "-" + label + "->" + to.getId() +
-                " guard null " + " o= " + edgeOwners + " optional=" + optionalEdge + "  optOwn "+ optionalOwners;
+                " guard null " + " o= " + edgeOwners + " optional=" + optionalEdge + "  markOwn "+ markedOwners;
         }
         return out;
     }
@@ -241,6 +249,10 @@ public class AutomatonEdge extends ProcessModelObject implements Comparable {
                 .map(o -> o + label)
                 .collect(Collectors.toSet());
             edge.setOptionalOwners(optOwners);
+            Set<String> mkOwners = edge.getMarkedOwners().stream()
+                .map(o -> o + label)
+                .collect(Collectors.toSet());
+            edge.setMarkedOwners(mkOwners);
         });
     }
 

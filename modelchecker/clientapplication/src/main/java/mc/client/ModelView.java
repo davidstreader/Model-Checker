@@ -55,6 +55,8 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
  * Currently called by UseInterfaceController  FMX App
  * dstr  needs to refactored.
  * hateful jung connected here no documentation
+ * MUST remove jung! After 2 years still can not find if I can (and how to) change
+ * some of the bacis graph features
  */
 public class ModelView implements Observer, FontListener {
 
@@ -375,7 +377,10 @@ public class ModelView implements Observer, FontListener {
             }
             if (settings.isShowOwners()) {
                 label += " " + e.getEdgeOwners();
-                if (e.getOptionalEdge())  label += " Opt ";
+            }
+            if (settings.isShowOptional()) {
+                if (e.getOptionalEdge())  bool += (" Opt "+e.getMarkedOwners());
+
             }
 
             graph.addEdge(new DirectedEdge(bool, label + "", ass, UUID.randomUUID().toString()), from, to);
@@ -460,10 +465,11 @@ public class ModelView implements Observer, FontListener {
             }
 
             //System.out.println("Owners setting "+ settings.isShowOwners());
-
+            String lab = "";
+            if (settings.isShowIds()) lab = place.getId();
             // changing the label on the nodes forces the Petri Net to be relayed out.
             GraphNode node = new GraphNode(petri.getId(), place.getId(),
-                nodeTermination, nodeTermination, NodeType.PETRINET_PLACE, "", place);
+                nodeTermination, nodeTermination, NodeType.PETRINET_PLACE, lab, place);
             placeId2GraphNode.put(place.getId(), node);
             graph.addVertex(node);
             nodeMap.put(place.getId(), node);
@@ -474,7 +480,9 @@ public class ModelView implements Observer, FontListener {
 
         petri.getTransitions().values().stream().filter(x -> !x.isBlocked())
             .forEach(transition -> {
-                String lab = transition.getLabel() + "";
+                String lab = "";
+                if (settings.isShowIds()) lab += transition.getId()+"-";
+                lab += transition.getLabel() + "";
     /*  if (settings.isShowOwners()) {
         for(String o:transition.getOwners()){lab+=o;}
       } else {
@@ -498,13 +506,14 @@ public class ModelView implements Observer, FontListener {
             //           BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
             // EdgeType et = EdgeType.DIRECTED;
             String lab = "";
+            if (settings.isShowIds()) lab += edge.getId()+"-";
             if (edge.getOptional()) {
 
                 // et = EdgeType.UNDIRECTED;//NICE try but fails
                 lab = "Opt";
                 int i = edge.getOptionNum();
                 if (i > 0) {
-                    lab  = lab+1;
+                    lab  = lab+i;
                 }
             }
             if (settings.isShowOwners()) {

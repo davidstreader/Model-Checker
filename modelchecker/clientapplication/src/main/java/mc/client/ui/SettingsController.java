@@ -28,8 +28,10 @@ public class SettingsController implements Initializable {
     private Integer repulse = 25;
   private Integer spring = 50;
   private Integer step = 150;
-  private boolean showOwners = false;
-  private boolean showColor = true;
+    private boolean showIds = false;
+    private boolean showOptional = false;
+    private boolean showOwners = false;
+    private boolean showColor = true;
   private boolean Congruance = false;
   private boolean Symbolic = false;
   Collection<String> disp = new ArrayList<>();
@@ -55,9 +57,13 @@ public class SettingsController implements Initializable {
   private Slider stepSlider;
 
 
-  @FXML
-  private CheckBox Own = new CheckBox();
-  @FXML
+    @FXML
+    private CheckBox Ids = new CheckBox();
+    @FXML
+    private CheckBox Opt = new CheckBox();
+    @FXML
+    private CheckBox Own = new CheckBox();
+    @FXML
   private CheckBox Col = new CheckBox();
   @FXML
   private CheckBox Cong = new CheckBox();
@@ -69,8 +75,10 @@ public class SettingsController implements Initializable {
 
   private void handleButtonAction(ActionEvent e) {
 
-    showOwners = Own.isSelected();
-    showColor = Col.isSelected();
+      showIds = Ids.isSelected();
+      showOptional = Opt.isSelected();
+      showOwners = Own.isSelected();
+      showColor = Col.isSelected();
 
     Congruance = Cong.isSelected();
     Symbolic = Symb.isSelected();
@@ -135,10 +143,16 @@ public class SettingsController implements Initializable {
     return showColor;
   }
 
-  public boolean isShowOwners() {
-    return showOwners;
-  }
-  public boolean isSymbolic() {
+    public boolean isShowIds() {
+        return showIds;
+    }
+    public boolean isShowOptional() {
+        return showOptional;
+    }
+    public boolean isShowOwners() {
+        return showOwners;
+    }
+    public boolean isSymbolic() {
     return Symbolic;
   }
 
@@ -191,8 +205,10 @@ public class SettingsController implements Initializable {
 
     });
 
-    Own.setOnAction(e -> handleButtonAction(e));
-    Symb.setOnAction(e -> handleButtonAction(e));
+      Ids.setOnAction(e -> handleButtonAction(e));
+      Opt.setOnAction(e -> handleButtonAction(e));
+      Own.setOnAction(e -> handleButtonAction(e));
+      Symb.setOnAction(e -> handleButtonAction(e));
 
     initDispType();
 

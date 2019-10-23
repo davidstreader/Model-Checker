@@ -307,12 +307,13 @@ public class SequentialInfixFun {
     for (AutomatonEdge readEdge : readAutomaton.getEdges()) {
       AutomatonNode fromNode = nodeMap.get(readEdge.getFrom().getId());
       AutomatonNode toNode = nodeMap.get(readEdge.getTo().getId());
-      writeAutomaton.addOwnersToEdge(
-        writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(),
-         getEdgeOwnersFromProduct(readEdge.getOptionalOwners(), edgeOwnersMap),
-            readEdge.getOptionalEdge()),
-         getEdgeOwnersFromProduct(readEdge.getEdgeOwners(), edgeOwnersMap)
+      AutomatonEdge ed  = writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(),
+          getEdgeOwnersFromProduct(readEdge.getOptionalOwners(), edgeOwnersMap),
+          readEdge.getOptionalEdge());
+        writeAutomaton.addOwnersToEdge(ed , getEdgeOwnersFromProduct(readEdge.getEdgeOwners(), edgeOwnersMap)
       );
+        ed.setMarkedOwners(readEdge.getMarkedOwners());
+
     }
   }
 

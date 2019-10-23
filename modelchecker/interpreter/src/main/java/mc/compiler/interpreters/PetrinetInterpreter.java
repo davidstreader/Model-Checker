@@ -23,6 +23,7 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+import mc.processmodels.petrinet.operations.PetrinetReachability;
 import mc.processmodels.petrinet.operations.RefineFun;
 import mc.processmodels.petrinet.utils.PetrinetLabeller;
 import mc.util.expr.ExpressionPrinter;
@@ -907,17 +908,33 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //NO self references allowed as functions need to be applied to automata built from
     // Net not From TREE
     selfRef = false;
-    Automaton a = getLocalAutomaton(context, alpha, func);
-    //.out.println("interpretFunction "+a.myString());
+    if ( func.getFunction().equals("p2a2p")) {
+        System.out.println("interpret P2A2P");
+         Automaton a = interpretAutIdentifier((IdentifierNode) ((FunctionNode) func).getProcesses().get(0));
+        System.out.println("\nOwners starting");
+        processed = OwnersRule.ownersRule(a,processMap); // pass in the processMap for debugging
+
+    }else if ( func.getFunction().equals("prune")) {
+        System.out.println("interpret prune");
+        processed = interpretIdentifier((IdentifierNode) ((FunctionNode) func).getProcesses().get(0));
+        processed = instantiateClass(functions.get(func.getFunction()))
+            .compose(processed.getId() + ".fn", new TreeSet<>(), context, processed);
+
+    } else {
+        Automaton a = getLocalAutomaton(context, alpha, func);
+        //.out.println("interpretFunction "+a.myString());
     /* used to look at output of functions prior to OwnersRule-TokenRule
 
           Automaton debug = a.copy();
           debug.setId("debug-"+func.getFunction());
           processMap.put(debug.getId(), debug);
+
    */
-    selfRef = true;
-    //System.out.println("function "+func.myString()+ " -> "+a.myString());
-    processed = OwnersRule.ownersRule(a);
+        selfRef = true;
+        System.out.println("\n   function "+func.myString()+ " -> "+a.getId());
+        processed = OwnersRule.ownersRule(a);
+    }
+
     return processed;
   }
 

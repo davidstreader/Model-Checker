@@ -33,7 +33,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   @Getter
   @Setter
   private boolean errorNode;
-  @Getter
+
   @Setter
   private boolean quiescent;
 

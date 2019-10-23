@@ -38,7 +38,7 @@ public class AutomataParallelFunction {
 
     this.automaton1 = automaton1;
     this.automaton2 = automaton2;
-    System.out.println( "Parallel \n"+automaton1.myString()+" \n "+ automaton2.myString());
+    System.out.println( "Parallel  "+automaton1.getId()+"  "+ automaton2.getId());
     // construct the parallel composition of the states from both automata
     setupNodes(automaton1.getNodes(), automaton2.getNodes());
     // find the synchronous and non-synchronous actions in both alphabet sets

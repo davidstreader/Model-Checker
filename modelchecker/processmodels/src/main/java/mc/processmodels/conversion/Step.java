@@ -10,25 +10,30 @@ public class Step implements Comparable {
 
     private Set<String> pre = new TreeSet<>();
     private String lab;
+    private String id;
+    private static int sid = 1;
 
     @Override
     public int compareTo(Object o) {
         if (o instanceof Step) {
             Step stepO = ((Step) o);
-            if (lab.equals(stepO.lab) &&
+
+            return (lab+pre).compareTo(stepO.lab+stepO.pre);
+           /* if (lab.equals(stepO.lab) &&
                 (pre.size() == stepO.pre.size()) &&
                 this.pre.stream().map(st -> (stepO.pre.contains(st))).
                     reduce(true, (x, y) -> x && y)) {
                 return 0;
-            }
+            }*/
         }
-        return -1;
+        return -100;
     }
 
     public String getLab() {
         return lab;
     }
-
+    public static void reset(){sid=1;}
+    public String getId(){return id;}
     public Set<String> getPre() {
         return pre;
     }
@@ -42,11 +47,18 @@ public class Step implements Comparable {
         pre = new TreeSet<>();
 
     }
+    public Step copy(){
+        Set<String> newPre = new TreeSet<>();
+        this.pre.stream().forEach(x->newPre.add(x));
+        return new Step(newPre,lab);
+    }
     public Step(Set<String> preIn, String labIn) {
-        //System.out.println("build Step "+preIn+"  lab= "+labIn);
+        System.out.println("build Step "+preIn+"  lab= "+labIn);
         lab = labIn;
         pre = new TreeSet<>();
+        id = "S"+sid++;
         preIn.stream().forEach(x -> pre.add(x));
+        System.out.println( this.myString());
     }
 
 /*
@@ -54,20 +66,20 @@ public class Step implements Comparable {
            1 if sub Step
  */
 
-    public String isSubStep(Set<String> newPre, String labIn) {
+    public String isNewSubStep(Set<String> newPre, String labIn) {
         if (!lab.equals(labIn)) return "clash";
         if (newPre.equals(pre)) {
-            return "sameStep";
+            return "newSameStep";
         } else if (pre.containsAll(newPre)) {
-            return "subStep";
+            return "newSubStep";
         } else if (newPre.containsAll(pre)) {
-            return "superStep";
+            return "newSuperStep";
         }else return "unrleated";
     }
 
 
 
     public String myString() {
-        return "pre " + pre + ",  lab " + lab;
+        return "  >Step>  id "+id+ " pre " + pre + ",  lab " + lab;
     }
 }

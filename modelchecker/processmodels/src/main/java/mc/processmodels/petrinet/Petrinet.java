@@ -419,6 +419,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
             transIdMap.put(tr.getId(), newtr.getId());
             newtr.addOwners(tr.getOwners());
+
             for (String tro : tr.getOwners()) {
                 if (!owns.contains(tro)) owns.add(tro);
                 //System.out.println("  tro "+tro+" owns"+owns);
@@ -435,11 +436,15 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
                 PetriNetTransition to = petri.getTransitions().get(transIdMap.get(ed.getTo().getId()));
                 PetriNetPlace from = petri.getPlace(placeIdMap.get(ed.getFrom().getId()));
                 PetriNetEdge newed = petri.addEdgeWithTag(tag, to, from, ed.getOptional());
+                newed.setOptionNum(ed.getOptionNum());
+                newed.setOptional(ed.getOptional());
                 newed.setGuard(ed.getGuard());
             } else {
                 PetriNetPlace to = petri.getPlace(placeIdMap.get(ed.getTo().getId()));
                 PetriNetTransition from = petri.getTransitions().get(transIdMap.get(ed.getFrom().getId()));
                 PetriNetEdge newed = petri.addEdgeWithTag(tag, to, from, ed.getOptional());
+                newed.setOptionNum(ed.getOptionNum());
+                newed.setOptional(ed.getOptional());
                 newed.setGuard(ed.getGuard());
             }
         }
@@ -1470,6 +1475,37 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         //System.out.println("REMOVED "+place.getId()+ " so CHECK "+myString());
     }
 
+    public Set<String> usedEdgesSet(Set<PetriNetPlace> mark, PetriNetTransition tr) {
+        Set<String> usedEdges = new TreeSet<>();
+
+        for (PetriNetEdge ed : tr.getIncoming()) {
+            if (mark.contains(ed.getFrom())) {
+                usedEdges.add(ed.getId());
+                if (tr.getLabel().endsWith(Constant.BROADCASTSoutput)) {
+                 System.out.println("ed"+ ed.myString());
+                    for (PetriNetEdge edout : tr.getOutgoing()) {
+                 System.out.println("  edout"+edout.myString());
+                        if (((PetriNetPlace) ed.getFrom()).getOwners().
+                            equals(((PetriNetPlace) edout.getTo()).getOwners()) &&
+                            ed.getOptionNum().equals(edout.getOptionNum())) {
+                            usedEdges.add(edout.getId());
+                            System.out.println("added");
+                        }
+                    }
+                } else {
+                    for (PetriNetEdge edout : tr.getOutgoing()) {
+                        if (((PetriNetPlace) ed.getFrom()).getOwners().
+                            equals(((PetriNetPlace) edout.getTo()).getOwners())) {
+                            usedEdges.add(edout.getId());
+                        }
+                    }
+                }
+            }
+        }
+        if (usedEdges.size()> 2)  System.out.println(this.getId() + " UsedEdgesSet " + usedEdges.size());
+        return usedEdges;
+    }
+
     public void removeTransition(PetriNetTransition transition) throws CompilationException {
         if (!transitions.values().contains(transition)) {
             //System.out.println(transition.myString());
@@ -1507,7 +1543,15 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     }
 
     public void removeEdge(PetriNetEdge edge) throws CompilationException {
-        if (!edges.values().contains(edge)) {
+
+        removeEdge(edge,true);
+    }
+    public void removeEdge(String edgeId, boolean checkExistance) throws CompilationException {
+     removeEdge(this.getEdges().get(edgeId), checkExistance);
+    }
+    public void removeEdge(PetriNetEdge edge, boolean checkExistance) throws CompilationException {
+            //System.out.println("remove edge check "+checkExistance);
+            if (checkExistance && !edges.values().contains(edge)) {
             Throwable t = new Throwable();
             t.printStackTrace();
             throw new CompilationException(getClass(), "Cannot remove an edge that is not part of"

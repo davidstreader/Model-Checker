@@ -18,6 +18,7 @@ import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 
+import mc.processmodels.petrinet.operations.PetrinetReachability;
 import mc.util.expr.MyAssert;
 
 /**
@@ -83,13 +84,15 @@ public class TokenRule {
                                       Map<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarkingMap) {
         //String nameOnly = convertFrom.getId().replaceAll("[0-9]*$", "");
         //keeps the id numbers low - op_eval resets Automaton.tagid
+        //PetrinetReachability.removeUnreachableStates(cFrom);
         Petrinet convertFrom = cFrom.copy();
+        Step.reset();
         Automaton outputAutomaton = new Automaton(convertFrom.getId(), false);
-        System.out.println("TOKEN RULE  STARTING \n    " + convertFrom.myString("edge"));
+        //System.out.println("TOKEN RULE  STARTING \n    " + convertFrom.myString("edge"));
         MyAssert.validate(convertFrom, "Token Rule precondition ");
         //assert convertFrom.validatePNet("GOT YOU"): "Token Rule precondition";
-        Map<PetriNetTransition, Set<Step>> maxSteps = new TreeMap<>();
-        Map<Step, Set<AutomatonEdge>> step2AutEdge = new TreeMap<>();
+        Map<String, Set<Step>> maxSteps = new TreeMap<>();
+        Map<String, Set<AutomatonEdge>> step2AutEdge = new TreeMap<>();
         outputAutomaton.setOwners(convertFrom.getOwners());
         //System.out.println(convertFrom.getRoots());
         List<Set<PetriNetPlace>> rootsPlaces = new ArrayList<Set<PetriNetPlace>>();
@@ -117,6 +120,7 @@ public class TokenRule {
         }
         int ownCnt = convertFrom.getOwners().size();
         Set<Multiset<PetriNetPlace>> previouslyVisitedPlaces = new HashSet<>();
+        Set<String> previouslyVisitedSteps = new TreeSet<>();
         int nodesCreated = 1;
         int j = 0; //without these 2 LofC loop never terminates!
         while (!toDo.isEmpty()) {
@@ -130,7 +134,7 @@ public class TokenRule {
 
             } // second LofC  NEVER Called - looks redundent!
             Multiset<PetriNetPlace> currentMarking = toDo.pop();
-            System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
+            //System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
             //System.out.print("\nStarting  prev " +previouslyVisitedPlaces.size()+" todo "+toDo.size()+  " \n");
     /*  for(PetriNetPlace pl :currentMarking){
@@ -140,7 +144,7 @@ public class TokenRule {
 
             if (previouslyVisitedPlaces.contains(currentMarking)) {
                 //System.out.println("Visted!");
-                continue;
+               continue;
             }
 
             //System.out.println("currentMarking "+currentMarking);
@@ -163,6 +167,10 @@ public class TokenRule {
     If more than one transition is equal except (same name) for optional places
       then ONLY the transition with the most places  can be fired!
   */
+  // One transition MUST be visited more than once - different steps
+                String transitionId = transition.getId();
+
+
                 if (transition.getLabel().endsWith(Constant.BROADCASTSoutput)) {
                     Set<PetriNetTransition> equNB = satisfiedPostTransitions.stream().filter(x -> transition.NonBlockingEqu(x)).collect(Collectors.toSet());
                     if (equNB.size() > 1) {
@@ -171,6 +179,7 @@ public class TokenRule {
                             //ignore transition as larger transition enabled
                         }
                     }
+
                 }
                 //We must be careful not to change the currentMarking
                 //System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
@@ -204,7 +213,8 @@ public class TokenRule {
                         if (!toDo.contains(newMarking)) {
                             toDo.add(newMarking);
                             //System.out.println("   Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-                            if (newMarking.size() > ownCnt) {
+                            if ((!transition.getLabel().endsWith(Constant.BROADCASTSoutput)) &&
+                                newMarking.size() > ownCnt) {
                                 System.out.println("Token Rule Makring not 1 Safe = " + convertFrom.getOwners() + " " + cFrom.getId());
                                 System.out.println("           newMarking " + newMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
                                 //  throw new CompilationException(convertFrom.getClass(), "Token Rule Makring to large ");
@@ -227,7 +237,9 @@ public class TokenRule {
                 }
                 if (transition.getLabel().endsWith(Constant.BROADCASTSoutput)) {
                     ed.setOptionalEdge(true);
-                    ed.setFromTran(transition.getId());
+                    ed.setFromTran(transitionId);
+                    ed.setMarkedOwners(getMarkedOwners(currentMarking, transition));
+               System.out.println("token " + ed.myString());
                 } else {
                     ed.setOptionalEdge(false);
                     ed.setFromTran("");
@@ -237,79 +249,84 @@ public class TokenRule {
   be not all the owners of the transition (think Owners rule)
   One transition can be fired with different Steps.
     Only the automata edged built from the maximal Step should be not optional
-    All optional edges are ignored by the Owners Rule
+    Optional edges are treated differently by the Owners Rule
  */
                 Set<String> own = transition.getOwners();
                 ed.setEdgeOwners(own);
                 if (transition.getLabel().endsWith(Constant.BROADCASTSoutput)) {
-                    System.out.println(transition.getId()+" lab " + transition.getLabel() + " pre " + transition.pre().stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+                    //System.out.println(transitionId + " lab " + transition.getLabel() + " pre " + transition.pre().stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
                     Multiset<PetriNetPlace> unMarkedPre = HashMultiset.create(transition.pre());
                     unMarkedPre.removeIf(x -> currentMarking.contains(x));
                     //System.out.println("unMarkedPre " + unMarkedPre.stream().map(x -> x.getOwners().toString() + " ").collect(Collectors.joining()));
                     Set<String> markedPre = transition.tr2preSet(currentMarking);
-                    System.out.println("markedPre "+markedPre);
+                    //System.out.println("markedPre "+markedPre);
                     boolean newStep = true;
-                    if (maxSteps.containsKey(transition)) {
-                        for (Step st : maxSteps.get(transition)) {
-                            String markedIs = st.isSubStep(markedPre, transition.getLabel());
-                            System.out.println("  "+markedIs+" markedPre= "+markedPre+ "  step= "+st.myString());
-                            System.out.println("  OLDmaxStep "+transition.getId()+" st-> " + st.myString() + " " + transition.getLabel()  );
-                            if (markedIs.equals("superStep")) {// is super Step so remove all old and add new max
+                    if (maxSteps.containsKey(transitionId)) {
+                        for (Step st : maxSteps.get(transitionId)) {
+                            if (previouslyVisitedSteps.contains(st.getId())) {
+                                //System.out.println("Visit again "+st.myString());
+                                continue;
+                            } else previouslyVisitedSteps.add(st.getId());
+                            String markedIs = st.isNewSubStep(markedPre, transition.getLabel());
+                            //System.out.println("  " + markedIs + " markedPre= " + markedPre + "  step= " + st.myString());
+                            //System.out.println("  OLDmaxStep "+transitionId+" st-> " + st.myString() + " " + transition.getLabel()  );
+                            if (markedIs.equals("newSuperStep")) {// is super Step so remove all old and add new max
                                 //remove old max
-                                for (AutomatonEdge edg : step2AutEdge.get(st)) {
+                                for (AutomatonEdge edg : step2AutEdge.get(st.getId())) {
                                     edg.setOptionalEdge(true);
                                     ed.setFromTran("");
-                                    System.out.println("  make optional " + edg.myString());
+                                    //System.out.println("  make optional " + edg.myString());
                                 }
-                                step2AutEdge.remove(st);
+                                step2AutEdge.remove(st.getId());
                                 Set<AutomatonEdge> auEdSet = new TreeSet<>();
                                 auEdSet.add(ed);
-                                Step temp = new Step(transition.getLabel());
-                                temp.setPre(markedPre);
-                                maxSteps.get(transition).remove(st);
-                                maxSteps.get(transition).add(temp);
-                                step2AutEdge.put(temp, auEdSet);
-                                ed.setOptionalEdge(false);
-                                System.out.println("  NEWmaxStep " +transition.getId() + " -> " + maxSteps.get(transition).stream().map(x->x.myString()+" ").collect(Collectors.joining())  );
-                                System.out.println("  newSuper " + ed.myString());
-                                newStep = false;
-                                continue;
-                            } else if (markedIs.equals("sameStep")) { // is same step so add edge
-                                System.out.print("  "+markedIs+" "+ step2AutEdge.get(st).size() + " *-->* ");
-                                step2AutEdge.get(st).add(ed);
-                                System.out.println(step2AutEdge.get(st).size());
-                                ed.setOptionalEdge(false);
+                                Step temp = new Step(markedPre,transition.getLabel());
 
-                                System.out.println("  sameStep> " + ed.myString());
+                                //System.out.println("temp "+temp.myString());
+                                maxSteps.get(transitionId).remove(st);
+                                maxSteps.get(transitionId).add(temp);
+                                step2AutEdge.put(temp.getId(), auEdSet);
+                                ed.setOptionalEdge(false);
+                                //System.out.println("  NEWmaxStep " +transitionId + " -> " + maxSteps.get(transitionId).stream().map(x->x.myString()+" ").collect(Collectors.joining())  );
+                                //System.out.println("  newSuper " + ed.myString());
                                 newStep = false;
-                                continue;
-                            } else if (markedIs.equals("subStep")) {
+
+                            } else if (markedIs.equals("newSameStep")) { // is same step so add edge
+                                //System.out.println("  s2Aut " + step2AutEdge.keySet());
+                                //System.out.print("  " + markedIs + " " + step2AutEdge.get(st.getId()).size() + " *-->* ");
+                                step2AutEdge.get(st.getId()).add(ed);
+                                ed.setOptionalEdge(false);
+                                //System.out.println("  sameStep> " + ed.myString());
                                 newStep = false;
-                                continue;
+
+                            } else if (markedIs.equals("newSubStep")) {
+                                newStep = false;
+
                             }
-                            // neither super not equal So
+                            //System.out.println("Pingo");
+                            // neither super nor equal So
                         }
-                    }
+                    } //
                     if (newStep) { // first time or unrleated so add maximal
 
                         Step firstStep = new Step(markedPre, transition.getLabel());
-                        if (!maxSteps.containsKey(transition)) {
-                            System.out.println("  *firstTime marked "+markedPre+"  ed " + ed.myString());
+                        if (!maxSteps.containsKey(transitionId)) {
+                            //System.out.println("  *firstTime tr "+ transitionId+"  "+" marked "+markedPre+"  ed " + ed.myString());
                             Set<Step> firstS = new TreeSet<>();
                             firstS.add(firstStep);
-                            maxSteps.put(transition, firstS);
-                        }
-                        System.out.println("  maxSteps.size() "+maxSteps.size());
-                        maxSteps.keySet().stream().forEach(x->
-                            System.out.println("    "+x.getId()+" -> "+maxSteps.get(x).stream().map(z->z.myString()+" - ").collect(Collectors.joining())));
+                            maxSteps.put(transitionId, firstS);
+                            //System.out.println("maxStep.put " + transitionId + " ~> " + firstS.stream().map(x -> x.myString() + "~").collect(Collectors.joining()));
 
-                        Set<AutomatonEdge> auEdSet = new TreeSet<>();
-                        auEdSet.add(ed);
-                        step2AutEdge.put(firstStep, auEdSet);
-                        ed.setOptionalEdge(false);
-                        System.out.println("  first ed= "+ ed.myString());
+                            Set<AutomatonEdge> auEdSet = new TreeSet<>();
+                            auEdSet.add(ed);
+                            step2AutEdge.put(firstStep.getId(), auEdSet);
+                            ed.setOptionalEdge(false);
+                        } else {
+                            //System.out.println(transitionId + " ERROR ERROR " + maxSteps.get(transitionId).stream().map(x -> x.myString() + ", ").collect(Collectors.joining()));
+                        }
+                        //System.out.println("  first ed= "+ ed.myString());
                     }
-                    System.out.println(transition.getId()+" lab " + transition.getLabel() + " pre " + transition.pre().stream().map(x->x.getId()+" ").collect(Collectors.joining())+ " END ");
+                    //System.out.println(transitionId+" lab " + transition.getLabel() + " pre " + transition.pre().stream().map(x->x.getId()+" ").collect(Collectors.joining())+ " END ");
                 }
 
                 //System.out.println("  adding edge "+ed.myString());
@@ -349,13 +366,15 @@ public class TokenRule {
                 //System.out.println("SETERROR node "+nd.myString());
             }
         }
+
+
         outputAutomaton.removeDuplicateEdges();  // may occur with broadcast
         outputAutomaton.setEndFromNodes();
         outputAutomaton.setSequential(cFrom.isSequential());
         //MyAssert.myAssert(outputAutomaton.validateAutomaton("Token Rule output "+outputAutomaton.getId()+" VALID = "), "Token Rule Failure");
         MyAssert.validate(outputAutomaton, "Token Rule output ");
         // assert outputAutomaton.validateAutomaton():"Token Rule Failure";
-        System.out.println("Token Rule END \n" + outputAutomaton.myString() + "\n");
+        //System.out.println("Token Rule END " + outputAutomaton.myString() );
         return outputAutomaton;
 
     }
@@ -364,9 +383,16 @@ public class TokenRule {
       For a given marking and satisfied transition build next marking
       Used both in the Token Rule and interactivly
     For a!  || a?->.. -a?->  need optionNum to distinguish listeners of single owner
-
+            Multiset<PetriNetPlace> mkm = HashMultiset.create(mk);
      */
+    public static Set<PetriNetPlace> newMarking(Set<PetriNetPlace> currentMarking, PetriNetTransition transition) {
+        Multiset<PetriNetPlace> mcM = HashMultiset.create(currentMarking);
+        Multiset<PetriNetPlace> out = newMarking(mcM, transition);
+        return out.elementSet();
+    }
+
     public static Multiset<PetriNetPlace> newMarking(Multiset<PetriNetPlace> currentMarking, PetriNetTransition transition) {
+
         Multiset<PetriNetPlace> newMarking = HashMultiset.create(currentMarking);
         //System.out.println("\ncurrentMarking " + currentMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
         //System.out.println("Transition " + transition.myString());
@@ -397,6 +423,27 @@ public class TokenRule {
         //System.out.println("newMarking " + newMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
         return newMarking;
     }
+
+    public static Set<String> getMarkedOwners(Multiset<PetriNetPlace> currentMarking, PetriNetTransition transition) {
+        /*System.out.println("currentMarking " + currentMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining())+
+                " tran "+ transition.getId()); */
+        /* get the owners+ optionNum of the marked Places */
+        Set<String> ownMarked = new TreeSet<>();
+        for (PetriNetEdge ed : transition.getIncoming()) {
+       //System.out.println("  Token in "+ed.myString());
+            PetriNetPlace fr = (PetriNetPlace) ed.getFrom();
+        //System.out.println("  getMarkedOwners "+fr.getId()+ " "+ fr.getOwners());
+            if (currentMarking.contains(fr)) {
+                ownMarked.addAll(fr.getOwners());
+       //System.out.println("  adding "+fr.getOwners());
+            }
+
+        }
+
+        //System.out.println("ownMarked " + ownMarked);
+        return ownMarked;
+    }
+
 /*  Store code when optionNum did not exist
     public static Multiset<PetriNetPlace>  newMarking(Multiset<PetriNetPlace> currentMarking, PetriNetTransition transition) {
         Multiset<PetriNetPlace> newMarking = HashMultiset.create(currentMarking);

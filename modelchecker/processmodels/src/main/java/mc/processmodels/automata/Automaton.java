@@ -50,7 +50,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   @Getter
   private int ownerId = 0;
   @Setter
-  @Getter
+
   private boolean sequential = false;
   public boolean isSequential(){return sequential;}
   // abstraction can muck up concurrancy hence set this flag
@@ -152,6 +152,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             .collect(Collectors.toSet());
         edge.setOptionalOwners(ownersOpt);
 
+        Set<String> markedOwn = edge.getMarkedOwners().stream()
+            .map(o -> o + label)
+            .collect(Collectors.toSet());
+        edge.setMarkedOwners(markedOwn);
 
     });
   }
@@ -448,8 +452,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       //   //System.out.println(" edge "+edge.myString());
       edge.setEdgeOwners(edge.getEdgeOwners().stream().
           map(x -> ownersMap.get(x)).collect(Collectors.toSet()));
-      edge.setOptionalOwners(edge.getOptionalOwners().stream().
-          map(x -> ownersMap.get(x)).collect(Collectors.toSet()));
+      edge.setOptionalOwners(edge.getOptionalOwners()); //set copies
+      edge.setMarkedOwners(edge.getMarkedOwners());    //set copies
     }
     //System.out.println("Reowned "+myString());
     return this;
@@ -688,6 +692,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       }
       addOwnersToEdge(ed, e.getEdgeOwners());
       ed.setOptionalEdge(e.getOptionalEdge());
+      ed.setMarkedOwners(e.getMarkedOwners());
 
     }
   }
@@ -1328,6 +1333,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       }
       //System.out.println(" newos "+ newos);
       reIded.addOwnersToEdge(xedge, newos);
+      xedge.setMarkedOwners(edge.getMarkedOwners());
       //System.out.println("End of adding Edge"+xedge.myString());
     }
     //System.out.println("2 "+ reIded.myString());
@@ -1372,8 +1378,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public void tagEvents() {
     for (AutomatonEdge ed : getEdges()) {
-      ed.setLabel(ed.getLabel() + ":" + tagid++);
-      //System.out.println("tag "+ed.myString());
+        if (!ed.getLabel().endsWith(Constant.BROADCASTSoutput)) {
+            ed.setLabel(ed.getLabel() + ":" + tagid++);
+        } else {
+            System.out.println("Notag " + ed.myString());
+        }
     }
   }
 
