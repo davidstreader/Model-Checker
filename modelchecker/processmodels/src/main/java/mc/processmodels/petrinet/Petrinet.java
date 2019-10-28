@@ -1367,7 +1367,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
             Throwable t = new Throwable();
             t.printStackTrace();
             //System.out.println("to "+to.myString());
-            //System.out.println(this.myString());
+            //System.out.println(to.myString());
             throw new CompilationException(getClass(), "2Cannot add an edge  " + from.getId() + "->" +
                 to.getId() + " not inside the petrinet " + myString());
         }
@@ -1482,14 +1482,14 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
             if (mark.contains(ed.getFrom())) {
                 usedEdges.add(ed.getId());
                 if (tr.getLabel().endsWith(Constant.BROADCASTSoutput)) {
-                 System.out.println("ed"+ ed.myString());
+                 //System.out.println("ed"+ ed.myString());
                     for (PetriNetEdge edout : tr.getOutgoing()) {
-                 System.out.println("  edout"+edout.myString());
+                 //System.out.println("  edout"+edout.myString());
                         if (((PetriNetPlace) ed.getFrom()).getOwners().
                             equals(((PetriNetPlace) edout.getTo()).getOwners()) &&
                             ed.getOptionNum().equals(edout.getOptionNum())) {
                             usedEdges.add(edout.getId());
-                            System.out.println("added");
+                            //System.out.println("added");
                         }
                     }
                 } else {
@@ -1502,7 +1502,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
                 }
             }
         }
-        if (usedEdges.size()> 2)  System.out.println(this.getId() + " UsedEdgesSet " + usedEdges.size());
+        //if (usedEdges.size()> 2)  System.out.println(this.getId() + " UsedEdgesSet " + usedEdges.size());
         return usedEdges;
     }
 
@@ -1733,6 +1733,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
                     PetriNetEdge e =
                         addEdge(transitionMap.get(edge.getTo()), places.get(edge.getFrom().getId() + tag), edge.getOptional());
                     if (edge.getGuard() != null) e.setGuard(edge.getGuard());
+
                 }
             } else {
                 if (transitionMap.containsKey(edge.getFrom())) {

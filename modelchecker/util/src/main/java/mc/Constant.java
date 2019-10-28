@@ -5,6 +5,8 @@ public class Constant {
     public static final String HIDDEN = "\u03C4";  // tau event
     public static final String DEADLOCK = "\u03B4";  // delta event
     public static final String BROADCASTSoutput = "!";
+    public static final String OwnersFixed = "!%";
+    public static final String OwnersOpt = "?%";
     public static final String BROADCASTSinput = "?";
     public static final String ACTIVE = "^";
     public static final String EPSILON  = "\u03B5";  // empty trace

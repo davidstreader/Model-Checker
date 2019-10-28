@@ -83,7 +83,7 @@ public final class PetrinetReachability {
                 if (transition.getLabel().equals(Constant.DEADLOCK)) continue;
                 Set<PetriNetPlace> newMarking = new HashSet<>(currentMarking);
 
-                if (transition.getLabel().endsWith(Constant.BROADCASTSoutput)) {
+              /*  if (transition.getLabel().endsWith(Constant.BROADCASTSoutput)) {
                     Set<PetriNetTransition> equNB = satisfiedPostTransitions.stream().filter(x -> transition.NonBlockingEqu(x)).collect(Collectors.toSet());
                     if (equNB.size() > 1) {
                         for (PetriNetTransition eqnb : equNB) {
@@ -96,7 +96,7 @@ public final class PetrinetReachability {
                         }
                     }
 
-                }
+                } */
 
                 newMarking = TokenRule.newMarking(currentMarking, transition);
 
@@ -118,11 +118,11 @@ public final class PetrinetReachability {
 
 
         //3. keep prePlaces that are optional (keeps ownership consistent)
-        Set<PetriNetPlace> keepOpt = new TreeSet<>();
+        Set<String> keepOpt = new TreeSet<>();
         for (String tr : visitedTransitions) {
             for (PetriNetEdge ed :  petri.getTransitions().get(tr).getIncoming()) {
                 if (ed.getOptional()) {
-                    keepOpt.add((PetriNetPlace) ed.getFrom());
+                    keepOpt.add(((PetriNetPlace) ed.getFrom()).getId());
                 }
             }
         }

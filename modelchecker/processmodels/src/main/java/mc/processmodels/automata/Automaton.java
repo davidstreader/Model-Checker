@@ -111,11 +111,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     Set<String> preowners1 = automaton1.reown().getOwners();
     Set<String> preowners2 = automaton2.reown().getOwners();
 //If the automata share soem location relabel
-    Set<String> intersection = new HashSet<>(preowners1);
+ //System.out.println("ownerProduct #1 with automaton2 "+automaton2.myString());
+
+      Set<String> intersection = new HashSet<>(preowners1);
     intersection.retainAll(preowners2);
     if (intersection.size() > 0) {
-      relabelOwners(automaton1, "._1");
-      relabelOwners(automaton2, "._2");
+      relabelOwners(automaton1, "_1");
+      relabelOwners(automaton2, "_2");
       preowners1 = automaton1.getOwners();
       preowners2 = automaton2.getOwners();
     }
@@ -127,7 +129,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     Multimap<String, String> table = ArrayListMultimap.create();
     owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o1, o1 + INTERSECTION + o2)));
     owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o2, o1 + INTERSECTION + o2)));
-    //System.out.println("table "+table);
+    //System.out.println("ownerProduct Ends with automaton2 "+automaton2.myString());
     return table;
   }
 
@@ -146,17 +148,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         aut.addOwnersToEdge(edge, owners);
       } catch (CompilationException ignored) {
       }
-
-        Set<String> ownersOpt = edge.getOptionalOwners().stream()
+        edge.setOptionalOwners(edge.getOptionalOwners().stream()
             .map(o -> o + label)
-            .collect(Collectors.toSet());
-        edge.setOptionalOwners(ownersOpt);
-
-        Set<String> markedOwn = edge.getMarkedOwners().stream()
+            .collect(Collectors.toSet()));
+        edge.setMarkedOwners(edge.getMarkedOwners().stream()
             .map(o -> o + label)
-            .collect(Collectors.toSet());
-        edge.setMarkedOwners(markedOwn);
-
+            .collect(Collectors.toSet()));
+        //System.out.println("relabelOwners");
     });
   }
 
@@ -452,10 +450,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       //   //System.out.println(" edge "+edge.myString());
       edge.setEdgeOwners(edge.getEdgeOwners().stream().
           map(x -> ownersMap.get(x)).collect(Collectors.toSet()));
-      edge.setOptionalOwners(edge.getOptionalOwners()); //set copies
-      edge.setMarkedOwners(edge.getMarkedOwners());    //set copies
+      edge.setOptionalOwners(edge.getOptionalOwners().stream().
+          map(x -> ownersMap.get(x)).collect(Collectors.toSet())); //applying function
+      edge.setMarkedOwners(edge.getMarkedOwners().stream().
+          map(x -> ownersMap.get(x)).collect(Collectors.toSet()));
+        //System.out.println("reown edge "+edge.myString());
     }
-    //System.out.println("Reowned "+myString());
+    //System.out.println("REOWENED "+myString());
     return this;
   }
 
@@ -676,6 +677,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       }
       addOwnersToEdge(ed, edge.getEdgeOwners());
       ed.setOptionalEdge(edge.getOptionalEdge());
+      ed.setMarkedOwners(edge.getMarkedOwners());
     }
 
     for (AutomatonEdge e : oldNode.getOutgoingEdges()) {
@@ -1320,10 +1322,16 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             //System.out.println("s= "+s);
             if (ownersMap.containsKey(s)) newOpos.add(ownersMap.get(s));
         }
+        Set<String> newOmrk = new HashSet<>();
+        for (String s : edge.getMarkedOwners()) {
+            //System.out.println("s= "+s);
+            if (ownersMap.containsKey(s)) newOmrk.add(ownersMap.get(s));
+        }
 
       AutomatonEdge xedge = reIded.addEdge(edge.getLabel(),
         from, to, edge.getGuard(), newOpos, edge.getOptionalEdge());
-      //System.out.println("  Added "+xedge.myString());
+        xedge.setMarkedOwners(newOmrk);
+   //System.out.println("  Added xedge "+xedge.myString());
       Set<String> os = edge.getEdgeOwners();
       //System.out.print("os "+os);
       Set<String> newos = new HashSet<>();
@@ -1333,7 +1341,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       }
       //System.out.println(" newos "+ newos);
       reIded.addOwnersToEdge(xedge, newos);
-      xedge.setMarkedOwners(edge.getMarkedOwners());
       //System.out.println("End of adding Edge"+xedge.myString());
     }
     //System.out.println("2 "+ reIded.myString());
@@ -1376,15 +1383,22 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return out + "}";
   }
 
-  public void tagEvents() {
-    for (AutomatonEdge ed : getEdges()) {
-        if (!ed.getLabel().endsWith(Constant.BROADCASTSoutput)) {
+    public void tagEvents() { //taging BcastOutput changes parallel composition
+        for (AutomatonEdge ed : getEdges()) {
+             if (!ed.getLabel().endsWith(Constant.BROADCASTSoutput)) {
             ed.setLabel(ed.getLabel() + ":" + tagid++);
         } else {
             System.out.println("Notag " + ed.myString());
         }
+        }
     }
-  }
+    public void tagBCEvents() { //taging BcastOutput changes parallel composition
+        for (AutomatonEdge ed : getEdges()) {
+             if (ed.getLabel().endsWith(Constant.BROADCASTSoutput)) {
+            ed.setLabel(ed.getLabel() + ":" + tagid++);
+        }
+        }
+    }
 
   /**
    * @param ed

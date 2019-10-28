@@ -60,6 +60,13 @@ public class AutomatonEdge extends ProcessModelObject implements Comparable {
     @Setter
     private String label;
 
+    public boolean deTaggeEqualLabel(AutomatonEdge ed) {
+        String[] parts = label.split(":");
+        String[] edParts = ed.getLabel().split(":");
+
+        return parts[0].equals(edParts[0]);
+    }
+
     @Getter
     @Setter
     private AutomatonNode from;

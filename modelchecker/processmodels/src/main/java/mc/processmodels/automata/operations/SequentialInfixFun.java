@@ -36,8 +36,9 @@ public class SequentialInfixFun {
     Cloner cloner = new Cloner();
     Automaton automaton1 = cloner.deepClone(a1);
     Automaton automaton2 = cloner.deepClone(a2);
+      //System.out.println("automaton2 #0  "+ automaton2.myString());
     Multimap<String, String> setOfOwners = Automaton.ownerProduct(automaton1, automaton2);
-
+      //System.out.println("automaton2 #1  "+ automaton2.myString());
     //System.out.println("setOfOwners "+setOfOwners.toString());
     //store a map to the nodes so id can be ignored
     Map<String, AutomatonNode> automata1nodes = new HashMap<>();
@@ -61,7 +62,7 @@ public class SequentialInfixFun {
       }
     });
 
-    //System.out.println("Sequence 1 "+sequence.myString());
+  //System.out.println("automaton2 #2  "+ automaton2.myString());
 
     copyAutomataEdges(sequence, automaton1, automata1nodes, setOfOwners);
 
@@ -78,7 +79,7 @@ public class SequentialInfixFun {
       return sequence;
     }
 
-
+      //System.out.println("automaton2 #3  "+ automaton2.myString());
 //below copies the automaton hence renames the nodes
     AutomataReachability.removeUnreachableNodes(automaton2).getNodes().forEach(node -> {
       //System.out.println("2 adding "+node.myString());
@@ -99,10 +100,11 @@ public class SequentialInfixFun {
             AutomatonNode origin = edge.getFrom();
             //System.out.println("last "+edge.myString());
             try {
-              sequence.addOwnersToEdge(
-                sequence.addEdge(edge.getLabel(), origin, newNode,
-                  edge.getGuard() == null ? null : edge.getGuard().copy(),
-                  edge.getOptionalOwners(), edge.getOptionalEdge()), edge.getEdgeOwners());
+                AutomatonEdge ed = sequence.addEdge(edge.getLabel(), origin, newNode,
+                                  edge.getGuard() == null ? null : edge.getGuard().copy(),
+                                  edge.getOptionalOwners(), edge.getOptionalEdge());
+              sequence.addOwnersToEdge(ed, edge.getEdgeOwners());
+              ed.setMarkedOwners(edge.getMarkedOwners());
             } catch (CompilationException e) {
               e.printStackTrace();
             }
@@ -115,7 +117,7 @@ public class SequentialInfixFun {
       .flatMap(List::stream)
       .forEach(sequence::removeEdge);
     stopNodes.forEach(sequence::removeNode);
-    //System.out.println("automaton2  "+ automaton2.myString());
+    //System.out.println("automaton2 #4  "+ automaton2.myString());
 
     copyAutomataEdges(sequence, automaton2, automata2nodes, setOfOwners);
 
@@ -310,11 +312,13 @@ public class SequentialInfixFun {
       AutomatonEdge ed  = writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(),
           getEdgeOwnersFromProduct(readEdge.getOptionalOwners(), edgeOwnersMap),
           readEdge.getOptionalEdge());
-        writeAutomaton.addOwnersToEdge(ed , getEdgeOwnersFromProduct(readEdge.getEdgeOwners(), edgeOwnersMap)
-      );
-        ed.setMarkedOwners(readEdge.getMarkedOwners());
 
+      writeAutomaton.addOwnersToEdge(ed , getEdgeOwnersFromProduct(readEdge.getEdgeOwners(), edgeOwnersMap));
+      ed.setMarkedOwners(getEdgeOwnersFromProduct(readEdge.getMarkedOwners(), edgeOwnersMap));
+//System.out.println("copyAutomataEdges "+readEdge.getMarkedOwners()+" -"+ed.getLabel()+"> "+   ed.getMarkedOwners());
+ //System.out.println(ed.myString());
     }
+      //System.out.println("WRITE "+writeAutomaton.myString());
   }
 
   private Set<String> getEdgeOwnersFromProduct(Set<String> edgeOwners,

@@ -10,6 +10,7 @@ import mc.processmodels.ProcessModelObject;
 import mc.processmodels.conversion.Step;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class PetriNetTransition extends ProcessModelObject implements Comparable {
@@ -58,6 +59,24 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
         return this.label.equals(Constant.DEADLOCK);
     }
 
+    public boolean same(String fromId, String lab, String toId) {
+        String ltr = label.split("\\:")[0];
+        if (ltr.endsWith(Constant.BROADCASTSoutput) || ltr.endsWith(Constant.BROADCASTSinput) ) {
+            ltr = ltr.substring(0, ltr.length() - 1);
+        }
+        if (lab.endsWith(Constant.BROADCASTSoutput) || lab.endsWith(Constant.BROADCASTSinput) ) {
+            lab = lab.substring(0, lab.length() - 1);
+        }
+        if (ltr.equals(lab)) {
+            if (preOne().equals(fromId) && postOne().equals(toId)){
+                 return true;
+            }
+        }
+        System.out.println("SAME "+preOne()+"-"+fromId+", "+label.split("\\:")[0]+"-"+lab.split("\\:")[0] +", "+postOne()+"-"+toId );
+
+        return false;
+    }
+
     public void addOwner(String ownerName) {
         //System.out.println("addOwner "+ownerName);
         owners.add(ownerName);
@@ -102,17 +121,26 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
         this.label = label;
     }
 
-    public PetriNetPlace preOne() {
+    private String preOne() {
         //System.out.println(incoming.size());
-        if (incoming.size() == 0) return null;
+        if (incoming.size() != 1) return null;
         for (PetriNetEdge ed : incoming) {
             //System.out.println("ed "+ed.myString());
-            return (PetriNetPlace) ed.getFrom();
+            return  ed.getFrom().getId();
             //System.out.println(p.getId());
         }
         return null;
     }
-
+    private String postOne() {
+        //System.out.println(incoming.size());
+        if (outgoing.size() != 1) return null;
+        for (PetriNetEdge ed : outgoing) {
+            //System.out.println("ed "+ed.myString());
+            return  ed.getTo().getId();
+            //System.out.println(p.getId());
+        }
+        return null;
+    }
     public boolean markedBy(Multiset<PetriNetPlace> mark) {
         return mark.containsAll(pre());
     }
