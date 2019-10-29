@@ -72,7 +72,7 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
                  return true;
             }
         }
-        System.out.println("SAME "+preOne()+"-"+fromId+", "+label.split("\\:")[0]+"-"+lab.split("\\:")[0] +", "+postOne()+"-"+toId );
+        //System.out.println("SAME "+preOne()+"-"+fromId+", "+label.split("\\:")[0]+"-"+lab.split("\\:")[0] +", "+postOne()+"-"+toId );
 
         return false;
     }

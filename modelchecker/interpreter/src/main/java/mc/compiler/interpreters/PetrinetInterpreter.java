@@ -555,6 +555,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       if (selfRef)
         petri = Petrinet.stopNet(ref, "E");
       else {
+          System.out.println("===================");
+          System.out.println(currentNode.myString());
+          System.out.println("===================");
         throw new CompilationException(this.getClass(),
           "No self reference allowed within function", currentNode.getLocation());
       }
@@ -908,13 +911,14 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //NO self references allowed as functions need to be applied to automata built from
     // Net not From TREE
     selfRef = false;
-    if ( func.getFunction().equals("p2a2p")) {
+ /*   if ( func.getFunction().equals("p2a2p")) {
         System.out.println("interpret P2A2P");
          Automaton a = interpretAutIdentifier((IdentifierNode) ((FunctionNode) func).getProcesses().get(0));
         System.out.println("\nOwners starting");
         processed = OwnersRule.ownersRule(a,processMap); // pass in the processMap for debugging
 
-    }else if ( func.getFunction().equals("prune")) {
+    }else  */
+        if ( func.getFunction().equals("prune")) {
         System.out.println("interpret prune");
         processed = interpretIdentifier((IdentifierNode) ((FunctionNode) func).getProcesses().get(0));
         processed = instantiateClass(functions.get(func.getFunction()))
@@ -931,7 +935,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
    */
         selfRef = true;
-        System.out.println("\n   function "+func.myString()+ " -> "+a.getId());
+        //System.out.println("\n   function "+func.myString()+ " -> "+a.getId());
         processed = OwnersRule.ownersRule(a);
     }
 

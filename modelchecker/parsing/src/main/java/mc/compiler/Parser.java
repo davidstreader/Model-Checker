@@ -108,7 +108,7 @@ public class Parser {
             "\n ops " + operationFunctions.keySet());
         AbstractSyntaxTree out =
             new AbstractSyntaxTree(processes, alphabet, operations, equations, variableMap);
-        System.out.println("parse output " + out.myString());
+        //System.out.println("parse output " + out.myString());
         return out;
     }
 

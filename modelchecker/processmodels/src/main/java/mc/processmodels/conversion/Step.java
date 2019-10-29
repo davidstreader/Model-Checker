@@ -53,12 +53,12 @@ public class Step implements Comparable {
         return new Step(newPre,lab);
     }
     public Step(Set<String> preIn, String labIn) {
-        System.out.println("build Step "+preIn+"  lab= "+labIn);
+        //System.out.println("build Step "+preIn+"  lab= "+labIn);
         lab = labIn;
         pre = new TreeSet<>();
         id = "S"+sid++;
         preIn.stream().forEach(x -> pre.add(x));
-        System.out.println( this.myString());
+        //System.out.println( this.myString());
     }
 
 /*
@@ -74,7 +74,7 @@ public class Step implements Comparable {
             return "newSubStep";
         } else if (newPre.containsAll(pre)) {
             return "newSuperStep";
-        }else return "unrleated";
+        }else return "unrelated";
     }
 
 

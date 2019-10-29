@@ -62,7 +62,7 @@ import java.util.Set;
         public Automaton compose(String id, Set<String> flags, Context context,
                                  Automaton... automata)
             throws CompilationException {
-            System.out.println("P2A2P   input Aut \nP2A2P   works\nP2A2P   works");
+            System.out.println("P2A2P  for debugging use only input Aut ");
             assert automata.length == 1;
             Automaton inputA = automata[0].copy();
 
@@ -91,11 +91,7 @@ import java.util.Set;
             System.out.println("P2A input Petrinet ");
             assert petrinets.length == 1;
             Petrinet inputP = petrinets[0].copy();
-            Automaton aut = TokenRule.tokenRule(inputP) ;
-            Petrinet p = OwnersRule.ownersRule(aut );
-            //System.out.println("\n p in a2P2a "+pn.myString());
-            TokenRule.tokenRule(p) ;
-            return p;
+            return inputP;
         }
 
         @Override

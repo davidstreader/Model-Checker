@@ -1388,7 +1388,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
              if (!ed.getLabel().endsWith(Constant.BROADCASTSoutput)) {
             ed.setLabel(ed.getLabel() + ":" + tagid++);
         } else {
-            System.out.println("Notag " + ed.myString());
+           // System.out.println("Notag " + ed.myString());
         }
         }
     }

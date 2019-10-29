@@ -63,7 +63,7 @@
                                 Stack<String> trace,
                                 Collection<ProcessModel> processModels) throws CompilationException {
 
-            System.out.println("Bisimulation "+flags+ " on Automaton "+processIds(processModels) );
+            //System.out.println("Bisimulation "+flags+ " on Automaton "+processIds(processModels) );
             boolean cong = flags.contains(Constant.CONGURENT);
 
             if (processModels.iterator().next() instanceof Automaton) {
