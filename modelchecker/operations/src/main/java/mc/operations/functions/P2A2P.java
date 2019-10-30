@@ -62,7 +62,7 @@ import java.util.Set;
         public Automaton compose(String id, Set<String> flags, Context context,
                                  Automaton... automata)
             throws CompilationException {
-            System.out.println("P2A2P  for debugging use only input Aut ");
+            //System.out.println("P2A2P  for debugging use only input Aut ");
             assert automata.length == 1;
             Automaton inputA = automata[0].copy();
 

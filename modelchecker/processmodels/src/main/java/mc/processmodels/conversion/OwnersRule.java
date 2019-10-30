@@ -196,7 +196,7 @@ public class OwnersRule {
                 gapFinder(ndId1,ndId2,clumps,autom,own,nd2Clump);
             }
 
-
+            //System.out.println("CLUMPS after gap filling "+clumps);
             //Build places for clumps
             for (Set<String> clmp : clumps) {
                 //System.out.println("building Places for " + clmp);
@@ -234,31 +234,12 @@ public class OwnersRule {
 
                 }
 
-
-
-
                 toDo.clear();
                 processed.clear();
                 toDo.push(root.getId());
             }
 
             //Use the nd2Pl Mapp to build the projected automaton
-         /*
-            StringBuilder sb = new StringBuilder();
-            sb.append("ND2PL " + nd2Pl.keySet() + "\n");
-            for (String k : nd2Pl.keySet()) {
-                sb.append(k + "->" + nd2Pl.get(k).getId() + ", ");
-            }
-            System.out.println(sb.toString() + "\nND2PL");
-            System.out.println("clumps #2 " +clumps);
-                for (Set<String> c:clumps) {
-                    StringBuilder sbu = new StringBuilder();
-                    for (String el:c) {
-                        sbu.append(el+"->"+nd2Pl.get(el).getId()+",");
-                    }
-                    System.out.println(sbu.toString());
-                }
-           */
             //System.out.println("Half way "+petri.myString());
             while (!toDo.isEmpty()) {
                 AutomatonNode nd = autom.getNode(toDo.pop());
@@ -559,7 +540,7 @@ public class OwnersRule {
      * @return
      */
 
-    private static Set<String> clump(Automaton a, String ndi, String own) throws CompilationException {
+/*    private static Set<String> clump(Automaton a, String ndi, String own) throws CompilationException {
         Map<String, String> bridge = new TreeMap<>();
         Set<String> clumps = new TreeSet<>();
 
@@ -567,7 +548,13 @@ public class OwnersRule {
         //System.out.println("Bridge \n" + bridge.keySet().stream().map(x -> " " + x + "->" + bridge.get(x) + "\n").collect(Collectors.joining()));
         return clumps;
     }
-
+*/
+/*
+    There are 3(or 6) ways to add nodes to a clump looking at each way in turn  has
+    the problem that any addition to the clump may enable a prviously use way to
+    add additional nodes. Hence any element added to a clump must also be used to add
+     further elements. This only stops when no new elements are added.
+ */
     private static Set<String> clump(Automaton a, String ndi, String own, Map<String, String> bridge) throws CompilationException {
         Set<String> processed = new HashSet<>();
         Set<String> clump = new TreeSet<>();
@@ -577,24 +564,40 @@ public class OwnersRule {
 
         while (!sofar.isEmpty()) {
             String ndId = sofar.pop();
-            //System.out.println("clumpfrom "+nd.getId());
+            //System.out.println("clump processing "+ndId+" by own "+own + " with remaining sofar "+sofar);
             if (processed.contains(ndId)) continue;
             Set<String> oneStep = new TreeSet<>();
             AutomatonNode nd = a.getNode(ndId);
             processed.add(ndId);
             clump.add(ndId);
             /*forward */
-            oneStep.addAll(nd.getOutgoingEdges().stream().
+            for (AutomatonEdge ed : nd.getOutgoingEdges()) {
+                //System.out.println(ed.myString());
+                if ((!ed.getEdgeOwners().contains(own)) ||
+                    (ed.getOptionalEdge() && !ed.getMarkedOwners().contains(own))) {
+                    oneStep.add(ed.getTo().getId());
+                }
+            }
+            //System.out.println("oneStep "+oneStep);
+        /*    oneStep.addAll(nd.getOutgoingEdges().stream().
                 filter(ed -> (!ed.getEdgeOwners().contains(own))
                     || (ed.getOptionalEdge() && !ed.getMarkedOwners().contains(own))).
                 map(e -> e.getTo().getId()).collect(Collectors.toSet()));
-
+         */
             /* backward */
-            oneStep.addAll(nd.getIncomingEdges().stream().
+        /*    oneStep.addAll(nd.getIncomingEdges().stream().
                 filter(ed -> (!ed.getEdgeOwners().contains(own))
                     || (ed.getOptionalEdge() && !ed.getMarkedOwners().contains(own))).
                 map(e -> e.getFrom().getId()).collect(Collectors.toSet()));
-
+          */
+            for (AutomatonEdge ed : nd.getIncomingEdges()) {
+                //System.out.println(ed.myString());
+                if ((!ed.getEdgeOwners().contains(own)) ||
+                    (ed.getOptionalEdge() && !ed.getMarkedOwners().contains(own))) {
+                    oneStep.add(ed.getFrom().getId());
+                }
+            }
+            //System.out.println("oneStep "+oneStep);
 // below is just for broadcast processes.
             /*    ONE
              *  If  y
@@ -751,11 +754,11 @@ public class OwnersRule {
             }
 
 
-            //System.out.println("oneStep "+ oneStep);
             sofar.addAll(oneStep);
             clump.addAll(oneStep);
+            //System.out.println("for "+ndi+" oneStep is "+ oneStep+ " sofar "+sofar);
         }
-        //System.out.println("Clump " + clump + " " + bridge.size());
+        //System.out.println("Final Clump " + clump + " " + bridge.size());
         return clump;
     }
 

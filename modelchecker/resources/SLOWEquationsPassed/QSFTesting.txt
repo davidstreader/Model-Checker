@@ -234,10 +234,7 @@ Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <qsf Z:Pro.
 Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <q{cong} Z:Pro. 
  
 
-forall{X:Test} ((((Y:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!}X) <q{cong} (((Z:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!} X)) ==> Y:Pro<qsf{cong}Z:Pro.
-
-
-Y:Pro<qsf{cong}Z:Pro  ==>  forall{X:Test} ((((Y:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!}X) <q{cong} (((Z:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!} X)).
+//Y:Pro<qsf{cong}Z:Pro  ==>  forall{X:Test} ((((Y:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!}X) <q{cong} (((Z:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!} X)).
 
 forall{X:Test} ((X||{a!,b!,x!,y!}Y:Pro) <q (X||{a!,b!,x!,y!}Z:Pro)) ==> Y:Pro<qsf Z:Pro.
 
@@ -269,6 +266,7 @@ Sat Jan 05 11:30:30 NZDT 2019**  ((Y:Pro<qsf Z:Pro) ==> forAll[X:Test]((X:Test||
         Simulations Passed  7744/7744 (implies short circuit ass/conc 6185/0) 
 **     ##Equations## 54208/54208 
 */
+
 
 
 
