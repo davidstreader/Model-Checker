@@ -83,13 +83,20 @@ public class OwnersRule {
      * * | b! own            \b! (own,Orth(own)
      * * |                     \
      * * z -x-Orth(own)->nd     ndClump
-     * |               |         |
-     * w               w         w
-     * |               |         |
-     * ndg1      ndg2
+     *                   |         |
+     *                   w         w
+     *                   |         |
+     *                  ndg1      ndg2
      * under the bridge are gaps  ndg1-- ndg2
      * gaps need to be filled by linking the island on each side of the gap
      *
+     * A degenerate case exists when the b? event (owner o1) is
+     *  both the first to be executed and is not part of a loop
+     *  Can be recognised by ndf-b!-{01,o2}->nd AND  ndp-b!-{o2}->nd
+     *  I.E. both optional and non optional execution lead to the same node.
+     *                bridge = ndf - ndp
+     *  When ng1-x-{o2}->ndf and ng2-x-{o2}0>ndp then
+     *                 gap ng1 - ng2
      * @param ain The automaton to be converted
      * @return a petrinet representation fo the automaton
      * Map<String, ProcessModel> processMap
@@ -120,7 +127,7 @@ public class OwnersRule {
         /*System.out.println("edge cnt = "+autom.getEdges().size());
         for (AutomatonEdge ed : edgeToGo) { autom.removeEdge(ed);  }
         */
-        //System.out.println("Owners autom " + autom.myString());
+        //System.out.println("\nOwners autom \n" + autom.myString()+"\n");
         //System.out.println("edge  \n" + autom.getEdges().stream().filter(x -> x.getLabel().endsWith(Constant.BROADCASTSoutput)).map(x -> x.myString() + ",\n").collect(Collectors.joining()));
         //filter ends
         autom.tagEvents();
@@ -151,7 +158,7 @@ public class OwnersRule {
             int endcnt = 1;  //for setting endNos on NetPlace  - Net will be set from Place
             //BUILD the nd2Pl Mapp
             Map<String, PetriNetPlace> nd2Pl = new TreeMap<>();
-            Map<String, String> bridge = new TreeMap<>();
+            Set<Bridge> bridges = new TreeSet<>();
             Map<String, Set<String>> nd2Clump = new TreeMap<>();
             List<Set<String>> clumps = new ArrayList<>();
             boolean first = true;
@@ -175,9 +182,10 @@ public class OwnersRule {
 
 // a clump of nodes all map to one Place in the Slice Petri net
 // that is all nodes reachable from node nd without owner own doing anything
+// That is project onto ony edges for process at own
                 /* Build a clump only once */
                 if (nd2Clump.containsKey(ndId)) continue;
-                Set<String> clump = clump(autom, ndId, own, bridge);
+                Set<String> clump = clump(autom, ndId, own, bridges);
                 //System.out.println("PostClump "+ndId+ " -> " +clump+" br.size "+bridge.size());
                 //System.out.println("Clump " + clump.stream().map(x -> x.getId() + ", ").collect(Collectors.joining()));
                 for (String n : clump) {
@@ -188,9 +196,10 @@ public class OwnersRule {
             /* At this point all clumps built connecting nodes linked by edges or Bridges.
              *  Gaps are to be reconciled using the bridges built by clumping. */
 
-            //System.out.println("clumps #1 " + clumps);
-            for (String ndId1 : bridge.keySet()) {
-                String ndId2 = bridge.get(ndId1);
+            //System.out.println("clumps before Gap filling " + clumps);
+            for (Bridge bridge : bridges) {
+                String ndId1 = bridge.getFirst();
+                String ndId2 = bridge.getSecond();
                 //System.out.println("Bridge " + ndId1 + "->" + ndId2);
             /* find all gaps under a  bridge  both clumps and nd2Clump are changed */
                 gapFinder(ndId1,ndId2,clumps,autom,own,nd2Clump);
@@ -320,7 +329,7 @@ public class OwnersRule {
             petri.setEndFromPlace();
             //System.out.println("\npushing " + petri.myString());
             subNets.push(petri);
-            //System.out.println(" SLICE Net \n"+petri.myString("edge")+ "\n SLICE Net ");
+            //System.out.println(" SLICE Net \n"+petri.myString()+ "\n SLICE Net ");
             Petrinet debug = petri.copy();
             debug = PetrinetReachability.removeUnreachableStates(debug, false);
             debug.setId("projection-" + own);
@@ -418,6 +427,7 @@ public class OwnersRule {
 
             }
         }
+            //System.out.println("Gaps ends with "+clumps);
     }
     private static Petrinet stripStar(Petrinet pout) throws CompilationException {
         //System.out.println("\n Strip Star input " + pout.myString());
@@ -540,22 +550,16 @@ public class OwnersRule {
      * @return
      */
 
-/*    private static Set<String> clump(Automaton a, String ndi, String own) throws CompilationException {
-        Map<String, String> bridge = new TreeMap<>();
-        Set<String> clumps = new TreeSet<>();
 
-        clumps = clump(a, ndi, own, bridge);
-        //System.out.println("Bridge \n" + bridge.keySet().stream().map(x -> " " + x + "->" + bridge.get(x) + "\n").collect(Collectors.joining()));
-        return clumps;
-    }
-*/
 /*
     There are 3(or 6) ways to add nodes to a clump looking at each way in turn  has
     the problem that any addition to the clump may enable a prviously use way to
     add additional nodes. Hence any element added to a clump must also be used to add
      further elements. This only stops when no new elements are added.
+
+ OUTPUT both retunred clump AND updataed bridge
  */
-    private static Set<String> clump(Automaton a, String ndi, String own, Map<String, String> bridge) throws CompilationException {
+    private static Set<String> clump(Automaton a, String ndi, String own, Set<Bridge> bridge) throws CompilationException {
         Set<String> processed = new HashSet<>();
         Set<String> clump = new TreeSet<>();
         //System.out.println("CLUMP start" +  a.myString()); // + " " + own);
@@ -598,6 +602,41 @@ public class OwnersRule {
                 }
             }
             //System.out.println("oneStep "+oneStep);
+ /*  nd -b!-{o1,o2}->xnd AND ndClump -b!-{o1}->xnd
+       then nd -- ndClump
+  */
+            for (AutomatonEdge ed : nd.getOutgoingEdges()) {
+                //System.out.println(ed.myString());
+                if (ed.getLabel().endsWith(Constant.BROADCASTSoutput) &&
+                    ed.getOptionalEdge() &&
+                    ed.getMarkedOwners().contains(own)) {  //not equal
+                    for (AutomatonEdge other: ed.getTo().getIncomingEdges()) {
+                       if (other.getLabel().equals(ed.getLabel())&&
+                           (!other.getOptionalEdge()))  {
+                           oneStep.add(other.getFrom().getId());
+                           Bridge b = new Bridge(ndId, other.getFrom().getId());
+                           bridge.add(b );
+                           //System.out.println("triangle bridge1 "+b.myString());
+                       }
+                    }
+                }
+
+                if (ed.getLabel().endsWith(Constant.BROADCASTSoutput) &&
+                    (!ed.getOptionalEdge()))  {
+                    for (AutomatonEdge other: ed.getTo().getIncomingEdges()) {
+                        if (other.getLabel().equals(ed.getLabel())&&
+                            other.getOptionalEdge() &&
+                            other.getMarkedOwners().contains(own)) {  //not equal
+
+                            oneStep.add(other.getFrom().getId());
+                            Bridge b = new Bridge(ndId, other.getFrom().getId());
+                            bridge.add(b );
+                            //System.out.println("triangle bridge2 "+b.myString());
+                        }
+                    }
+                }
+            }
+
 // below is just for broadcast processes.
             /*    ONE
              *  If  y
@@ -632,9 +671,8 @@ public class OwnersRule {
                                         //System.out.println("<-One bottom "+bottom.myString());
                                         if (!bottom.getEdgeOwners().contains(own)) {
                                             oneStep.add(bottom.getTo().getId());
-                                            bridge.put(ndId, bottom.getTo().getId());
+                                            bridge.add( new Bridge(ndId, bottom.getTo().getId()));
                                             //System.out.println("<-ONE Adding " + nd.getId() + " + " + bottom.getTo().myString());
-
                                         }
                                     }
                                 }
@@ -675,7 +713,7 @@ public class OwnersRule {
                                         if (cast.deTaggeEqualLabel(bcEdge) &&
                                             cast.getMarkedOwners().containsAll(top.getEdgeOwners())) {
                                             oneStep.add(cast.getTo().getId());
-                                            bridge.put(cast.getTo().getId(), ndId);
+                                            bridge.add( new Bridge(cast.getTo().getId(), ndId));
                                             //System.out.println("->ONE ADDing " + nd.getId() + " + " + cast.getTo().myString());
                                         }
                                     }
@@ -711,7 +749,9 @@ public class OwnersRule {
                                 if (top.getEdgeOwners().contains(own) &&
                                     top.deTaggeEqualLabel(bottom)) {
                                     oneStep.add(top.getTo().getId());
-                                    bridge.put(top.getTo().getId(), ndId);
+
+                                    //bridge.put(top.getTo().getId(), ndId);
+                                    bridge.add( new Bridge(top.getTo().getId(), ndId));
                                     //System.out.println("<-TWO Adding" + nd.getId() + " + " + top.getTo().getId());
                                 }
                             }
@@ -743,7 +783,8 @@ public class OwnersRule {
                                 if (bottom.getEdgeOwners().contains(own) &&
                                     bottom.deTaggeEqualLabel(top)) {
                                     oneStep.add(bottom.getTo().getId());
-                                    bridge.put(ndId, bottom.getTo().getId());
+                                    //bridge.put(ndId, bottom.getTo().getId());
+                                    bridge.add( new Bridge(ndId, bottom.getTo().getId()));
                                     //System.out.println("->TWO " + nd.getId() + " + " + bottom.getTo().getId());
                                 }
                             }
@@ -763,28 +804,36 @@ public class OwnersRule {
     }
 
 
-    private static class todoStack {
-        private Stack<AutomatonNode> stackit = new Stack<>();
-
-        public void todoPush(AutomatonNode nd) {
-            if (stackit.contains(nd)) {
-                //System.out.println("stackit Duplicate " + nd.myString());
-                return;
-            } else {
-                stackit.push(nd);
-            }
+    private static class Bridge implements Comparable{
+        private String first;
+        private String second;
+        public Bridge(String f, String s){
+            first = f;
+            second = s;
         }
 
-        public int todoSize() {
-            return stackit.size();
+        public String getFirst() {
+            return first;
+        }
+        public String getSecond() {
+            return second;
         }
 
-        public AutomatonNode todoPop() {
-            return stackit.pop();
+
+        public boolean equals(Object o) {
+          return  (o instanceof  Bridge)
+              && ((Bridge) o).getFirst().equals(first)
+              && ((Bridge) o).getSecond().equals(second);
+        }
+        public String myString(){
+            return "fst "+first+"  snd "+second;
         }
 
-        public boolean todoIsEmpty() {
-            return stackit.isEmpty();
+        @Override
+        public int compareTo(Object o) {
+            if (o instanceof Bridge)
+             return  compareTo(first+"**"+second);
+            else return -99;
         }
     }
 

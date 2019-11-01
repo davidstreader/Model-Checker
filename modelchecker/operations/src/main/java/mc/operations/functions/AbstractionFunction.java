@@ -111,7 +111,7 @@ public class AbstractionFunction implements IProcessFunction {
         Automaton startA = automata[0].reId("a"); // does the copy
 //int nodeLable
         boolean concurrent = flags.contains(Constant.CONCURRENT);
- System.out.println("***ABSTRACTION "+startA.getId() + " flags " + flags + " edges " + startA.getEdgeCount()+ " nodes "+startA.getNodeCount());
+ //System.out.println("***ABSTRACTION "+startA.getId() + " flags " + flags + " edges " + startA.getEdgeCount()+ " nodes "+startA.getNodeCount());
         MyAssert.validate(startA, "Abstraction input ");
 
         //reduce the state space and remove all loops - Tarjen

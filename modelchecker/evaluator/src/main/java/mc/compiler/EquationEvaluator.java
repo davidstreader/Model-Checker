@@ -85,7 +85,7 @@ public class EquationEvaluator {
  */
     //System.currentTimeMillis();
     Date start = new Date();
-    messageQueue.add(new LogMessage("    ##Equations  Starting##  "+start.toString(), true,
+    messageQueue.add(new LogMessage("    ##Equations  Starting##\n  "+start.toString(), true,
       false, null, -1, Thread.currentThread()));
     processes = processMap.values().stream().collect(Collectors.toList());
     //System.out.println("evaluateEquations processMap "+processMap.keySet());
