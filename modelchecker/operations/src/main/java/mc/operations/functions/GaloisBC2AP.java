@@ -11,6 +11,7 @@ import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.TokenRule;
+import mc.processmodels.conversion.TokenRulePureFunctions;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
@@ -137,7 +138,7 @@ public class GaloisBC2AP implements IProcessFunction {
    for (Multiset<PetriNetPlace> mark: markingToNode.keySet()){
      //System.out.println("** Marking "+Petrinet.marking2String(mark));
 //      find set of satisfied listening transitions
-     Set<String> trlist =TokenRule.satisfiedTransitions(mark).
+     Set<String> trlist = TokenRulePureFunctions.satisfiedTransitions(mark).
                                  stream().filter(x->!x.getLabel().endsWith("^")).
                                  map(x->x.getLabel()).collect(Collectors.toSet());
      //System.out.println("** trlist "+trlist);

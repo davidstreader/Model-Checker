@@ -30,7 +30,7 @@ public class AutomataLabeller {
       AutomatonNode from = labelled.getNode(label + ":" + edge.getFrom().getId());
       AutomatonNode to = labelled.getNode(label + ":" + edge.getTo().getId());
       labelled.addOwnersToEdge(
-          labelled.addEdge(label + "." + edge.getLabel(), from, to, edge.getGuard(),edge.getOptionalOwners(),edge.getOptionalEdge()),
+          labelled.addEdge(label + "." + edge.getLabel(), from, to, edge.getGuard(),edge.getOptionalOwners(),edge.getNotMaximalOwnedEdge()),
           edge.getEdgeOwners());
 
     }

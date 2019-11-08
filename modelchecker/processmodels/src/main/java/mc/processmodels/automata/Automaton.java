@@ -671,12 +671,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
       AutomatonEdge ed;
       if (!edge.getFrom().equals(oldNode)) {
-        ed = addEdge(edge.getLabel(), edge.getFrom(), newNode, newGuard, edge.getOptionalOwners(), edge.getOptionalEdge());
+        ed = addEdge(edge.getLabel(), edge.getFrom(), newNode, newGuard, edge.getOptionalOwners(), edge.getNotMaximalOwnedEdge());
       } else { // If the node links to itself
-        ed = addEdge(edge.getLabel(), newNode, newNode, newGuard, edge.getOptionalOwners(), edge.getOptionalEdge());
+        ed = addEdge(edge.getLabel(), newNode, newNode, newGuard, edge.getOptionalOwners(), edge.getNotMaximalOwnedEdge());
       }
       addOwnersToEdge(ed, edge.getEdgeOwners());
-      ed.setOptionalEdge(edge.getOptionalEdge());
+      ed.setNotMaximalOwnedEdge(edge.getNotMaximalOwnedEdge());
       ed.setMarkedOwners(edge.getMarkedOwners());
     }
 
@@ -688,12 +688,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
       AutomatonEdge ed;
       if (!e.getTo().equals(oldNode)) {
-        ed = addEdge(e.getLabel(), newNode, e.getTo(), newGuard, e.getOptionalOwners(), e.getOptionalEdge());
+        ed = addEdge(e.getLabel(), newNode, e.getTo(), newGuard, e.getOptionalOwners(), e.getNotMaximalOwnedEdge());
       } else { // If the node links to itself
-        ed = addEdge(e.getLabel(), newNode, newNode, newGuard, e.getOptionalOwners(), e.getOptionalEdge());
+        ed = addEdge(e.getLabel(), newNode, newNode, newGuard, e.getOptionalOwners(), e.getNotMaximalOwnedEdge());
       }
       addOwnersToEdge(ed, e.getEdgeOwners());
-      ed.setOptionalEdge(e.getOptionalEdge());
+      ed.setNotMaximalOwnedEdge(e.getNotMaximalOwnedEdge());
       ed.setMarkedOwners(e.getMarkedOwners());
 
     }
@@ -993,7 +993,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       addOwnerToEdge(edge, DEFAULT_OWNER);
     }
 
-    edge.setOptionalEdge(opt);
+    edge.setNotMaximalOwnedEdge(opt);
 
     return edge;
   }
@@ -1161,7 +1161,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       AutomatonNode from = reNode.get(edge.getFrom());
       AutomatonNode to = reNode.get(edge.getTo());
       addOwnersToEdge(
-        addEdge(edge.getLabel(), from, to, edge.getGuard(), edge.getOptionalOwners(), edge.getOptionalEdge()),
+        addEdge(edge.getLabel(), from, to, edge.getGuard(), edge.getOptionalOwners(), edge.getNotMaximalOwnedEdge()),
         edge.getEdgeOwners());
     }
     if (thisAutomataRoot.isEmpty()) {
@@ -1329,7 +1329,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         }
 
       AutomatonEdge xedge = reIded.addEdge(edge.getLabel(),
-        from, to, edge.getGuard(), newOpos, edge.getOptionalEdge());
+        from, to, edge.getGuard(), newOpos, edge.getNotMaximalOwnedEdge());
         xedge.setMarkedOwners(newOmrk);
    //System.out.println("  Added xedge "+xedge.myString());
       Set<String> os = edge.getEdgeOwners();

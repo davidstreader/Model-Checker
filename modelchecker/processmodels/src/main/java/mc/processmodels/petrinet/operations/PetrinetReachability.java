@@ -5,9 +5,11 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.TreeMultiset;
 import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.conversion.TokenRule;
+import mc.processmodels.conversion.TokenRulePureFunctions;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
@@ -32,8 +34,8 @@ public final class PetrinetReachability {
        /*System.out.println("    removeUnreachable " + pet.getId() +
             " trans~" + pet.getTransitions().size() +
             "  places~" + pet.getPlaces().size() +
-            "  edges~" + pet.getEdges().size()); */
-
+            "  edges~" + pet.getEdges().size());
+*/
         Petrinet petri = pet.copy();
         //System.out.println("removeUnreach CHECK  " +petri.myString("edge"));
         Stack<Set<PetriNetPlace>> toDo = new Stack<>();
@@ -59,7 +61,7 @@ public final class PetrinetReachability {
 
         while (!toDo.isEmpty()) {
             Set<PetriNetPlace> currentMarking = toDo.pop();
-            //System.out.println("Visited " + currentMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
+            //System.out.println("currentMarking " + currentMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
             visitedPlaces.addAll(currentMarking.stream().map(x->x.getId()).collect(Collectors.toSet()));
             //System.out.println("Visited PL= " + visitedPlaces);
             if (previouslyVisitedMarking.contains(currentMarking)) {
@@ -81,28 +83,14 @@ public final class PetrinetReachability {
                 visitedEdges.addAll(petri.usedEdgesSet(currentMarking, transition));
                 // new =  current - pre + post
                 if (transition.getLabel().equals(Constant.DEADLOCK)) continue;
-                Set<PetriNetPlace> newMarking = new HashSet<>(currentMarking);
 
-              /*  if (transition.getLabel().endsWith(Constant.BROADCASTSoutput)) {
-                    Set<PetriNetTransition> equNB = satisfiedPostTransitions.stream().filter(x -> transition.NonBlockingEqu(x)).collect(Collectors.toSet());
-                    if (equNB.size() > 1) {
-                        for (PetriNetTransition eqnb : equNB) {
-
-                            if (transition.pre().size() < eqnb.pre().size()) {
-                                System.out.println("ignore? " + transition.myString());
-                                //  continue;
-                            }
-                            //ignore transition as larger transition enabled
-                        }
-                    }
-
-                } */
-
-                newMarking = TokenRule.newMarking(currentMarking, transition);
+                List<Set<PetriNetPlace>>  newMarkings = TokenRulePureFunctions.newMarking(currentMarking, transition);
 
          //System.out.println("New Marking " + Petrinet.marking2String(newMarking));
-                if (!previouslyVisitedMarking.contains(newMarking)) {
-                    toDo.add(newMarking);
+                for (Set<PetriNetPlace> mk: newMarkings) {
+                    if (!previouslyVisitedMarking.contains(mk)) {
+                        toDo.add(mk);
+                    }
                 }
             }
       //System.out.println("Visited TR= "+visitedTransitions);
@@ -224,16 +212,12 @@ public final class PetrinetReachability {
     }
 
     /*
-        look at every transition connected to the input Marking
-          return every transition those transitions that are able to be executed
+        Use the reachability from Token Rule (with non blocking send its complex)
      */
     private static Set<PetriNetTransition> satisfiedTransitions(Set<PetriNetPlace> currentMarking) {
-        Set<PetriNetTransition> out = new HashSet<>();
-        for (PetriNetTransition tr : post(currentMarking)) {
-            //System.out.println("tr"+tr.getId()+" preNO "+tr.preNotOptional().stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-            if (currentMarking.containsAll(tr.preNotOptional())) out.add(tr);
-        }
-        //System.out.println("Satisfied "+out.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+        Set<PetriNetTransition> out;
+        Multiset<PetriNetPlace> cm = TreeMultiset.create(currentMarking);
+        out = TokenRulePureFunctions.satisfiedTransitions(cm);
         return out;
     }
 

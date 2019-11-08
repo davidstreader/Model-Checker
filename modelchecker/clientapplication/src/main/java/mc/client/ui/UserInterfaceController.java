@@ -687,7 +687,7 @@ public class UserInterfaceController implements Initializable, FontListener {
         compileButton.setText("Compile");
 
       } else {
-
+       // ModelView.getInstance().cleanData();  // try to fix data buildup 1/11/19
         compilerOutputDisplay.clear();
         compilerOutputDisplay.appendText("Starting build..." + "\n");
 

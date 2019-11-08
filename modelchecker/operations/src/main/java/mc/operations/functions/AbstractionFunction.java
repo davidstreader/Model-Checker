@@ -13,7 +13,6 @@ import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
-import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
@@ -338,7 +337,7 @@ public class AbstractionFunction implements IProcessFunction {
                     outGuard = hiddenGuard;
                 }
 
-                added = abstraction.addEdge(edge.getLabel(), from, to, outGuard, false, edge.getOptionalEdge());
+                added = abstraction.addEdge(edge.getLabel(), from, to, outGuard, false, edge.getNotMaximalOwnedEdge());
                 if (edge.isHidden()) {
                     abstraction.addOwnersToEdge(added, hiddenEdge.getEdgeOwners());
                     abstraction.addOwnersToEdge(added, edge.getEdgeOwners());
@@ -365,7 +364,7 @@ public class AbstractionFunction implements IProcessFunction {
                     //System.out.println("skiped");
                     continue;}
 
-                added = abstraction.addEdge(edge.getLabel(), from, to, null, false, edge.getOptionalEdge());
+                added = abstraction.addEdge(edge.getLabel(), from, to, null, false, edge.getNotMaximalOwnedEdge());
           //System.out.println("Added "+added.myString());
                 abstraction.addOwnersToEdge(added, hiddenEdge.getEdgeOwners());
                 abstraction.addOwnersToEdge(added, edge.getEdgeOwners());
@@ -375,7 +374,7 @@ public class AbstractionFunction implements IProcessFunction {
                 //System.out.println("Out ADDED "+added.myString());
                 // n->tau->m m-a->n n-tau->m one tau used twice!
                 if (from.getId().equals(to.getId()) && !edge.isHidden()) {
-                    added = abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false, edge.getOptionalEdge());
+                    added = abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false, edge.getNotMaximalOwnedEdge());
                     abstraction.addOwnersToEdge(added, hiddenEdge.getEdgeOwners());
                     abstraction.addOwnersToEdge(added, edge.getEdgeOwners());
                 }
@@ -426,7 +425,7 @@ public class AbstractionFunction implements IProcessFunction {
                 } else {
                     newAbstractionEdgeGuard = hiddenGuard;
                 }
-                added = abstraction.addEdge(edge.getLabel(), from, to, newAbstractionEdgeGuard, false, edge.getOptionalEdge());
+                added = abstraction.addEdge(edge.getLabel(), from, to, newAbstractionEdgeGuard, false, edge.getNotMaximalOwnedEdge());
                 abstraction.addOwnersToEdge(added, hiddenEdge.getEdgeOwners());
                 abstraction.addOwnersToEdge(added, edge.getEdgeOwners());
             } else {  // Atomic edge
@@ -446,7 +445,7 @@ public class AbstractionFunction implements IProcessFunction {
                 }
                 if (skip) continue;
 
-                added = abstraction.addEdge(edge.getLabel(), from, to, null, false, edge.getOptionalEdge());
+                added = abstraction.addEdge(edge.getLabel(), from, to, null, false, edge.getNotMaximalOwnedEdge());
                 //System.out.println("In ADDED "+added.myString());
                 if (added.isHidden()) {
                     abstraction.addOwnersToEdge(added, hiddenEdge.getEdgeOwners());
@@ -460,7 +459,7 @@ public class AbstractionFunction implements IProcessFunction {
 
                 // NOT REDUNDENT as  n->tau->m m-a->n n-tau->m one tau used twice!
                 if (from.getId().equals(to.getId()) && !edge.isHidden()) {
-                    added = abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false, edge.getOptionalEdge());
+                    added = abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false, edge.getNotMaximalOwnedEdge());
                     abstraction.addOwnersToEdge(added, hiddenEdge.getEdgeOwners());
                     abstraction.addOwnersToEdge(added, edge.getEdgeOwners());
 
@@ -537,7 +536,7 @@ public class AbstractionFunction implements IProcessFunction {
                         if (first.getFrom().equals(second.getTo())) continue; //do not add 1-loop
                         if (!second.isHidden()) continue;
                         AutomatonEdge ne = abstraction.addEdge(first.getLabel(), first.getFrom(), second.getTo(),
-                            cbGuards(first, second, context), false, first.getOptionalEdge());
+                            cbGuards(first, second, context), false, first.getNotMaximalOwnedEdge());
 
                         ne.setEdgeOwners(first.getEdgeOwners());
                         ne.addEdgeOwners(second.getEdgeOwners());
@@ -615,7 +614,7 @@ public class AbstractionFunction implements IProcessFunction {
                         for (AutomatonEdge first : n.getIncomingEdges()) {
                             if (first.getFrom().equals(second.getTo())) continue; //do not add 1-loop
                             AutomatonEdge ne = abstraction.addEdge(Constant.HIDDEN, first.getFrom(), second.getTo(),
-                                cbGuards(first, second, context), false, first.getOptionalEdge());
+                                cbGuards(first, second, context), false, first.getNotMaximalOwnedEdge());
                             //System.out.println("Prune adds " + ne.myString());
                         }
                     }

@@ -78,7 +78,7 @@ public class AutomatonEdge extends ProcessModelObject implements Comparable {
     /*Edge built from send event NOT synchronising with receive event
        when there exist receive events in parallel process
      */
-    private boolean optionalEdge = false;
+    private boolean notMaximalOwnedEdge = false;
     @Getter
     @Setter
     private String  fromTran = "";
@@ -114,12 +114,12 @@ public class AutomatonEdge extends ProcessModelObject implements Comparable {
         this.to = to;
     }
 
-    public boolean getOptionalEdge() {
-        return optionalEdge;
+    public boolean getNotMaximalOwnedEdge() {
+        return notMaximalOwnedEdge;
     }
 
-    public void setOptionalEdge(boolean b) {
-        optionalEdge = b;
+    public void setNotMaximalOwnedEdge(boolean b) {
+        notMaximalOwnedEdge = b;
     }
 
     public boolean isHidden() {
@@ -152,10 +152,11 @@ public class AutomatonEdge extends ProcessModelObject implements Comparable {
         String out = "";
         if (guard != null) {
             out = getId() + "  " + from.getId() + "-" + label + "->" + to.getId() + " " +
-                guard.myString() + " o= " + edgeOwners + " optional=" + optionalEdge+ "  markOwn "+ markedOwners;
+                guard.myString() + " o= " + edgeOwners + " notMaxOwn=" + notMaximalOwnedEdge + "  markOwn "+ markedOwners;
         } else {
             out = getId() + "  " + from.getId() + "-" + label + "->" + to.getId() +
-                " guard null " + " o= " + edgeOwners + " optional=" + optionalEdge + "  markOwn "+ markedOwners;
+                " guard null " + " o= " + edgeOwners + " notMaxOwn=" + notMaximalOwnedEdge
+                + "  markOwn "+ markedOwners + "  optionalOwn "+ optionalOwners;
         }
         return out;
     }

@@ -14,7 +14,6 @@ import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.PetrinetParallelFunction;
 import mc.processmodels.automata.operations.SequentialInfixFun;
 import mc.processmodels.petrinet.Petrinet;
-import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
@@ -52,12 +51,10 @@ public class OwnersRule {
      * 2. proceed as before
      * 3. remove S* to reveal the multiple start states.
      * <p>
-     * For synchronised broadcast events petri edges (each edge has unique owner)
-     * may be "optional"
-     * the automata edges built from them must have a list of optional owners
+     * For broadcast events petri edges (have unique owner) and may be "optional"
+     * the automata edges built from Transitions + Marking must have a list of optional owners
      * <p>
-     * automata events are marked as optional if they are to be ignored in
-     * by the ownerRule as a more general transition exists.
+     *
      * <p>
      * Broadcast - non blocking send amendment.
      * Owners rule works for handshake  with same name synchronisation +
@@ -73,8 +70,8 @@ public class OwnersRule {
      * Only the edges representing the executions of a transition from one of its
      * maximum markings are NOT optional.
      * <p>
-     * The owners rule can not ignore the optional edges of an automata.
-     * nodes linked by orthoganal edges form islands.
+     * The  o1-automaton edge is labeled with b? if o1 \in Opt(b) else label with b!
+     * <p>
      * Islands can be linked by bridges
      * Bridge nd--ndclump  (when mapping in the other direction nd--ndx)
      * <p>
@@ -83,20 +80,21 @@ public class OwnersRule {
      * * | b! own            \b! (own,Orth(own)
      * * |                     \
      * * z -x-Orth(own)->nd     ndClump
-     *                   |         |
-     *                   w         w
-     *                   |         |
-     *                  ndg1      ndg2
+     * |         |
+     * w         w
+     * |         |
+     * ndg1      ndg2
      * under the bridge are gaps  ndg1-- ndg2
      * gaps need to be filled by linking the island on each side of the gap
-     *
+     * <p>
      * A degenerate case exists when the b? event (owner o1) is
-     *  both the first to be executed and is not part of a loop
-     *  Can be recognised by ndf-b!-{01,o2}->nd AND  ndp-b!-{o2}->nd
-     *  I.E. both optional and non optional execution lead to the same node.
-     *                bridge = ndf - ndp
-     *  When ng1-x-{o2}->ndf and ng2-x-{o2}0>ndp then
-     *                 gap ng1 - ng2
+     * both the first to be executed and is not part of a loop
+     * Can be recognised by ndf-b!-{01,o2}->nd AND  ndp-b!-{o2}->nd
+     * I.E. both optional and non optional execution lead to the same node.
+     * bridge = ndf - ndp
+     * When ng1-x-{o2}->ndf and ng2-x-{o2}0>ndp then
+     * gap ng1 - ng2
+     *
      * @param ain The automaton to be converted
      * @return a petrinet representation fo the automaton
      * Map<String, ProcessModel> processMap
@@ -111,7 +109,7 @@ public class OwnersRule {
         //if (ain==null) //System.out.println("Owners null");
         //System.out.println("*********\n OwnersRule initial automata " + ain.myString() + "*START ");
         //Throwable t = new Throwable(); t.printStackTrace();
-        clean();
+
         //MyAssert.myAssert(ain.validateAutomaton("Owners Rule input "+ain.getId()+" vlaid = "), "Owners Rule Failure");
         MyAssert.validate(ain, "Owners Rule input ");
         //assert ain.validateAutomaton("Owners Automaton"): "Owners Rule precondition";
@@ -127,7 +125,7 @@ public class OwnersRule {
         /*System.out.println("edge cnt = "+autom.getEdges().size());
         for (AutomatonEdge ed : edgeToGo) { autom.removeEdge(ed);  }
         */
-        //System.out.println("\nOwners autom \n" + autom.myString()+"\n");
+        //System.out.println("\nOwners autom \n" + autom.myString() + "\n");
         //System.out.println("edge  \n" + autom.getEdges().stream().filter(x -> x.getLabel().endsWith(Constant.BROADCASTSoutput)).map(x -> x.myString() + ",\n").collect(Collectors.joining()));
         //filter ends
         autom.tagEvents();
@@ -186,7 +184,7 @@ public class OwnersRule {
                 /* Build a clump only once */
                 if (nd2Clump.containsKey(ndId)) continue;
                 Set<String> clump = clump(autom, ndId, own, bridges);
-                //System.out.println("PostClump "+ndId+ " -> " +clump+" br.size "+bridge.size());
+                //System.out.println("PostClump " + ndId + " -> " + clump + " br.size " + bridges.size());
                 //System.out.println("Clump " + clump.stream().map(x -> x.getId() + ", ").collect(Collectors.joining()));
                 for (String n : clump) {
                     nd2Clump.put(n, clump);
@@ -201,11 +199,11 @@ public class OwnersRule {
                 String ndId1 = bridge.getFirst();
                 String ndId2 = bridge.getSecond();
                 //System.out.println("Bridge " + ndId1 + "->" + ndId2);
-            /* find all gaps under a  bridge  both clumps and nd2Clump are changed */
-                gapFinder(ndId1,ndId2,clumps,autom,own,nd2Clump);
+                /* find all gaps under a  bridge  both clumps and nd2Clump are changed */
+                gapFinder(ndId1, ndId2, clumps, autom, own, nd2Clump);
             }
 
-            //System.out.println("CLUMPS after gap filling "+clumps);
+            //System.out.println("CLUMPS after gap filling " + clumps);
             //Build places for clumps
             for (Set<String> clmp : clumps) {
                 //System.out.println("building Places for " + clmp);
@@ -262,65 +260,50 @@ public class OwnersRule {
                 for (AutomatonEdge ed : nd.getOutgoingEdges()) {
                     if (ed.getLabel().equals(Constant.DEADLOCK)) continue;
                     toDo.push(ed.getTo().getId());
-                    String pNetFromId = nd2Pl.get(ed.getTo().getId()).getId();
-                    String pNetToId   = nd2Pl.get(ed.getFrom().getId()).getId();
+                    // if projected away only next node needed
+                    if (!ed.getEdgeOwners().contains(own)||
+                        (ed.getLabel().endsWith(Constant.BROADCASTSoutput) &&
+                            !ed.getMarkedOwners().contains(own)))  continue;
+
+                    String pNetToId = nd2Pl.get(ed.getTo().getId()).getId();
+                    String pNetFromId = nd2Pl.get(ed.getFrom().getId()).getId();
+                    // Do not add duplicates
+                    if (petri.tranExists(pNetFromId,pNetToId,ed.getLabel()))  continue;
+
+
                     //System.out.println("  Start 2 " + ed.myString() + " own " + own);
 
                     //System.out.println(pNetFromId + " -> " + pNetToId);
+                    boolean opt = false;
                     String lab = "";
                     if (ed.getLabel().endsWith(Constant.BROADCASTSoutput)) {
-                        if ((!ed.getOptionalEdge()) && ed.getEdgeOwners().contains(own)) {
+                        if (!ed.getOptionalOwners().contains(own)) {
                             lab = ed.getLabel();
+                            opt = false;
                             //     lab = ed.getLabel().substring(0, ed.getLabel().length() - 1) + Constant.OwnersFixed; //
-                        } else if (ed.getOptionalEdge() && ed.getMarkedOwners().contains(own)) {
-                            //System.out.println("dropped " + ed.myString());
-                            continue;
-
                         } else {
-                            lab = ed.getLabel() + "ERROR";
+                            lab = ed.getLabel().substring(0, ed.getLabel().length() - 1) + Constant.BROADCASTSinput;
+                            opt = false;
                         }
-                    }
-                    {
+                    } else {
                         lab = ed.getLabel();
                     }
 
-                    if ((!ed.getOptionalEdge()) && ed.getEdgeOwners().contains(own) ||
-                        ((ed.getOptionalEdge()) && ed.getMarkedOwners().contains(own))) {
-                        //System.out.println(petri.getTransitions().values().stream().map(x->x.myString()+"\n").collect(Collectors.joining()));
-                        boolean found = false;
-                        for (PetriNetTransition tr :petri.getTransitions().values() ) {
-                            if (tr.same(pNetToId,lab, pNetFromId )) {
-                                found = true;
-                                break;
-                            }
-                        }
-                        //System.out.println("found " + found);
-                        if (found) continue;
-                        //Do not add duplicates
-                        PetriNetTransition tran = petri.addTransition(lab);
 
-
-                        boolean opt = false;
-                        if (ed.getOptionalOwners().contains(own)) {
-                            // tran.setLabel( tran.getLabel().substring(0, tran.getLabel().length() - 2) + Constant.OwnersOpt );
-                            tran.setLabel(tran.getLabel().substring(0, tran.getLabel().length() - 1) + Constant.BROADCASTSinput); //
-                            opt = false;
-                        }
-                        //System.out.println("    " + ed.myString());
-                        //              to,  from
-                        petri.addEdge(tran, nd2Pl.get(ed.getFrom().getId()), opt);
-                        petri.addEdge(nd2Pl.get(ed.getTo().getId()), tran, opt);
-
-                        TreeSet<String> O = new TreeSet<>();
-                        O.add(own);
-                        tran.setOwners(O);
-                        //System.out.println("OwnersAdding "+tran.myString());
+                    PetriNetTransition tran = petri.addTransition(lab);
+                    //System.out.println("    " + ed.myString());
+                    //              to,  from
+                    petri.addEdge(tran, nd2Pl.get(ed.getFrom().getId()), opt);
+                    petri.addEdge(nd2Pl.get(ed.getTo().getId()), tran, opt);
+                    TreeSet<String> O = new TreeSet<>();
+                    O.add(own);
+                    tran.setOwners(O);
+                    //System.out.println("From "+ed.myString());
+                    //System.out.println("OwnersAdding "+tran.myString());
                       /*  if ((ed.getOptionalEdge()) && ed.getMarkedOwners().contains(own)) {
                             //System.out.println("    *Adding " + tran.myString());
                         }*/
-                    } else {
-                        //System.out.println("par edge " + ed.myString());
-                    }
+
                 }
             }
 
@@ -373,17 +356,19 @@ public class OwnersRule {
         MyAssert.validate(build, "Owners Rule output ");
         //assert build.validatePNet("Owners Net"): "Owners Rule Failure";
         //System.out.println("\n\n    Owners end with " + build.myString());
+        clean();
         return build;
     }
 
-    private static void gapFinder(String ndId1, String ndId2, List<Set<String>> clumps, Automaton autom, String own,Map<String, Set<String>> nd2Clump )
-        throws  CompilationException {
+    private static void gapFinder(String ndId1, String ndId2, List<Set<String>> clumps, Automaton autom, String own, Map<String, Set<String>> nd2Clump)
+        throws CompilationException {
         //System.out.println("GAP starting with "+clumps);
-      Map<String,String> found = new TreeMap<>();
-        gapFinder(ndId1,ndId2,clumps,autom,own,nd2Clump, found);
+        Map<String, String> found = new TreeMap<>();
+        gapFinder(ndId1, ndId2, clumps, autom, own, nd2Clump, found);
     }
-        private static void gapFinder(String ndId1, String ndId2, List<Set<String>> clumps, Automaton autom, String own,Map<String, Set<String>> nd2Clump, Map<String,String> oldGaps )
-    throws  CompilationException {
+
+    private static void gapFinder(String ndId1, String ndId2, List<Set<String>> clumps, Automaton autom, String own, Map<String, Set<String>> nd2Clump, Map<String, String> oldGaps)
+        throws CompilationException {
         //System.out.println("calling gapFinger on "+ndId1+" "+ndId2);
         /* Recersive call terminates when A cycles back to closed gap B no gap found*/
         for (AutomatonEdge g1ed : autom.getNode(ndId1).getOutgoingEdges()) {
@@ -396,13 +381,13 @@ public class OwnersRule {
                     (oldGaps.containsKey(g2) && oldGaps.get(g2).equals(g1))) {
                     continue;
                 }
-                oldGaps.put(g1,g2);
-               //System.out.println(g1ed.getTo().getId() + " -- " + g2ed.getTo().getId());
+                oldGaps.put(g1, g2);
+                //System.out.println(g1ed.getTo().getId() + " -- " + g2ed.getTo().getId());
                 if (g1ed.deTaggeEqualLabel(g2ed) &&
                     g1ed.getEdgeOwners().contains(own) &&
                     g2ed.getEdgeOwners().contains(own) &&
                     g1ed.getEdgeOwners().equals(g2ed.getEdgeOwners())) {
-                  //System.out.println("  gap = " + g1 + "-" + g2);
+                    //System.out.println("  gap = " + g1 + "-" + g2);
                     if (nd2Clump.get(g1).equals(nd2Clump.get(g2))) continue;  // skip duplicate gaps
                     /* glue together the islands on each side of the gap*/
                     Set<String> old = new TreeSet<>();
@@ -421,14 +406,15 @@ public class OwnersRule {
                         }
                     } /* remove clump now part of other clump*/
                     if (old.size() > 0) clumps.remove(old);
-                   //System.out.println("new clumps "+clumps);
-                    gapFinder(g1,g2,clumps,autom,own,nd2Clump, oldGaps);
+                    //System.out.println("new clumps "+clumps);
+                    gapFinder(g1, g2, clumps, autom, own, nd2Clump, oldGaps);
                 }
 
             }
         }
-            //System.out.println("Gaps ends with "+clumps);
+        //System.out.println("Gaps ends with "+clumps);
     }
+
     private static Petrinet stripStar(Petrinet pout) throws CompilationException {
         //System.out.println("\n Strip Star input " + pout.myString());
         if (pout.getRoots().size() != 1) {
@@ -557,7 +543,7 @@ public class OwnersRule {
     add additional nodes. Hence any element added to a clump must also be used to add
      further elements. This only stops when no new elements are added.
 
- OUTPUT both retunred clump AND updataed bridge
+ OUTPUT both returned clump AND updataed bridge
  */
     private static Set<String> clump(Automaton a, String ndi, String own, Set<Bridge> bridge) throws CompilationException {
         Set<String> processed = new HashSet<>();
@@ -569,8 +555,8 @@ public class OwnersRule {
         while (!sofar.isEmpty()) {
             String ndId = sofar.pop();
             //System.out.println("clump processing "+ndId+" by own "+own + " with remaining sofar "+sofar);
-            if (processed.contains(ndId)) continue;
-            Set<String> oneStep = new TreeSet<>();
+            if (processed.contains(ndId)) continue; // ONLY way to stop is to process all nodes in clu
+            Set<String> oneStep = new TreeSet<>();  // to be added to clump and sofar
             AutomatonNode nd = a.getNode(ndId);
             processed.add(ndId);
             clump.add(ndId);
@@ -578,7 +564,7 @@ public class OwnersRule {
             for (AutomatonEdge ed : nd.getOutgoingEdges()) {
                 //System.out.println(ed.myString());
                 if ((!ed.getEdgeOwners().contains(own)) ||
-                    (ed.getOptionalEdge() && !ed.getMarkedOwners().contains(own))) {
+                    (ed.getNotMaximalOwnedEdge() && !ed.getMarkedOwners().contains(own))) {
                     oneStep.add(ed.getTo().getId());
                 }
             }
@@ -597,7 +583,7 @@ public class OwnersRule {
             for (AutomatonEdge ed : nd.getIncomingEdges()) {
                 //System.out.println(ed.myString());
                 if ((!ed.getEdgeOwners().contains(own)) ||
-                    (ed.getOptionalEdge() && !ed.getMarkedOwners().contains(own))) {
+                    (ed.getNotMaximalOwnedEdge() && !ed.getMarkedOwners().contains(own))) {
                     oneStep.add(ed.getFrom().getId());
                 }
             }
@@ -608,29 +594,29 @@ public class OwnersRule {
             for (AutomatonEdge ed : nd.getOutgoingEdges()) {
                 //System.out.println(ed.myString());
                 if (ed.getLabel().endsWith(Constant.BROADCASTSoutput) &&
-                    ed.getOptionalEdge() &&
+                    ed.getNotMaximalOwnedEdge() &&
                     ed.getMarkedOwners().contains(own)) {  //not equal
-                    for (AutomatonEdge other: ed.getTo().getIncomingEdges()) {
-                       if (other.getLabel().equals(ed.getLabel())&&
-                           (!other.getOptionalEdge()))  {
-                           oneStep.add(other.getFrom().getId());
-                           Bridge b = new Bridge(ndId, other.getFrom().getId());
-                           bridge.add(b );
-                           //System.out.println("triangle bridge1 "+b.myString());
-                       }
+                    for (AutomatonEdge other : ed.getTo().getIncomingEdges()) {
+                        if (other.getLabel().equals(ed.getLabel()) &&
+                            (!other.getNotMaximalOwnedEdge())) {
+                            oneStep.add(other.getFrom().getId());
+                            Bridge b = new Bridge(ndId, other.getFrom().getId());
+                            bridge.add(b);
+                            //System.out.println("triangle bridge1 "+b.myString());
+                        }
                     }
                 }
 
                 if (ed.getLabel().endsWith(Constant.BROADCASTSoutput) &&
-                    (!ed.getOptionalEdge()))  {
-                    for (AutomatonEdge other: ed.getTo().getIncomingEdges()) {
-                        if (other.getLabel().equals(ed.getLabel())&&
-                            other.getOptionalEdge() &&
+                    (!ed.getNotMaximalOwnedEdge())) {
+                    for (AutomatonEdge other : ed.getTo().getIncomingEdges()) {
+                        if (other.getLabel().equals(ed.getLabel()) &&
+                            other.getNotMaximalOwnedEdge() &&
                             other.getMarkedOwners().contains(own)) {  //not equal
 
                             oneStep.add(other.getFrom().getId());
                             Bridge b = new Bridge(ndId, other.getFrom().getId());
-                            bridge.add(b );
+                            bridge.add(b);
                             //System.out.println("triangle bridge2 "+b.myString());
                         }
                     }
@@ -671,7 +657,7 @@ public class OwnersRule {
                                         //System.out.println("<-One bottom "+bottom.myString());
                                         if (!bottom.getEdgeOwners().contains(own)) {
                                             oneStep.add(bottom.getTo().getId());
-                                            bridge.add( new Bridge(ndId, bottom.getTo().getId()));
+                                            bridge.add(new Bridge(ndId, bottom.getTo().getId()));
                                             //System.out.println("<-ONE Adding " + nd.getId() + " + " + bottom.getTo().myString());
                                         }
                                     }
@@ -713,7 +699,7 @@ public class OwnersRule {
                                         if (cast.deTaggeEqualLabel(bcEdge) &&
                                             cast.getMarkedOwners().containsAll(top.getEdgeOwners())) {
                                             oneStep.add(cast.getTo().getId());
-                                            bridge.add( new Bridge(cast.getTo().getId(), ndId));
+                                            bridge.add(new Bridge(cast.getTo().getId(), ndId));
                                             //System.out.println("->ONE ADDing " + nd.getId() + " + " + cast.getTo().myString());
                                         }
                                     }
@@ -751,7 +737,7 @@ public class OwnersRule {
                                     oneStep.add(top.getTo().getId());
 
                                     //bridge.put(top.getTo().getId(), ndId);
-                                    bridge.add( new Bridge(top.getTo().getId(), ndId));
+                                    bridge.add(new Bridge(top.getTo().getId(), ndId));
                                     //System.out.println("<-TWO Adding" + nd.getId() + " + " + top.getTo().getId());
                                 }
                             }
@@ -784,7 +770,7 @@ public class OwnersRule {
                                     bottom.deTaggeEqualLabel(top)) {
                                     oneStep.add(bottom.getTo().getId());
                                     //bridge.put(ndId, bottom.getTo().getId());
-                                    bridge.add( new Bridge(ndId, bottom.getTo().getId()));
+                                    bridge.add(new Bridge(ndId, bottom.getTo().getId()));
                                     //System.out.println("->TWO " + nd.getId() + " + " + bottom.getTo().getId());
                                 }
                             }
@@ -804,10 +790,11 @@ public class OwnersRule {
     }
 
 
-    private static class Bridge implements Comparable{
+    private static class Bridge implements Comparable {
         private String first;
         private String second;
-        public Bridge(String f, String s){
+
+        public Bridge(String f, String s) {
             first = f;
             second = s;
         }
@@ -815,24 +802,26 @@ public class OwnersRule {
         public String getFirst() {
             return first;
         }
+
         public String getSecond() {
             return second;
         }
 
 
         public boolean equals(Object o) {
-          return  (o instanceof  Bridge)
-              && ((Bridge) o).getFirst().equals(first)
-              && ((Bridge) o).getSecond().equals(second);
+            return (o instanceof Bridge)
+                && ((Bridge) o).getFirst().equals(first)
+                && ((Bridge) o).getSecond().equals(second);
         }
-        public String myString(){
-            return "fst "+first+"  snd "+second;
+
+        public String myString() {
+            return "fst " + first + "  snd " + second;
         }
 
         @Override
         public int compareTo(Object o) {
             if (o instanceof Bridge)
-             return  compareTo(first+"**"+second);
+                return compareTo(first + "**" + second);
             else return -99;
         }
     }

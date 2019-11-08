@@ -494,10 +494,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     PetrinetInterpreter.indent = PetrinetInterpreter.indent.concat("-");
     String className = currentNode.getClass().getSimpleName();
   /*  if (currentNode.getReferences() != null) {
-      //System.out.println(">AST " + PetrinetInterpreter.indent + className +
+      System.out.println(">AST " + PetrinetInterpreter.indent + className +
         " refs " + currentNode.getReferences());
     } else {
-      //System.out.println(">AST " + PetrinetInterpreter.indent + className);
+      System.out.println(">AST " + PetrinetInterpreter.indent + className);
     } */
     //System.out.println(currentNode.myString());
 //
@@ -579,9 +579,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (PetrinetInterpreter.indent.length() > 0)
       PetrinetInterpreter.indent = PetrinetInterpreter.indent.substring(1);
     if (currentNode.getReferences() != null) {
- /*     //System.out.println("AST<" + PetrinetInterpreter.indent + className + " ref " +
+      /*System.out.println("AST<" + PetrinetInterpreter.indent + className + " ref " +
         currentNode.getReferences().toString() + " info " + info);
- */     //System.out.println(petri.myString());
+      System.out.println(petri.myString()); */
 
       for (PetriNetPlace pl : petri.getAllRoots()) {
         if (currentNode.getReferences().size() > 0) {
@@ -911,13 +911,14 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //NO self references allowed as functions need to be applied to automata built from
     // Net not From TREE
     selfRef = false;
- /*   if ( func.getFunction().equals("p2a2p")) {
-        System.out.println("interpret P2A2P");
+    /* used for debugging */
+    if ( func.getFunction().equals("p2a2p")) {
+        //System.out.println("interpret P2A2P");
          Automaton a = interpretAutIdentifier((IdentifierNode) ((FunctionNode) func).getProcesses().get(0));
-        System.out.println("\nOwners starting");
+        //System.out.println("\nOwners starting");
         processed = OwnersRule.ownersRule(a,processMap); // pass in the processMap for debugging
 
-    }else  */
+    }else
         if ( func.getFunction().equals("prune")) {
         System.out.println("interpret prune");
         processed = interpretIdentifier((IdentifierNode) ((FunctionNode) func).getProcesses().get(0));

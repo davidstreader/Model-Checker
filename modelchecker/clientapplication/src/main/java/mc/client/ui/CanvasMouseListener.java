@@ -14,6 +14,7 @@ import mc.processmodels.MappingNdMarking;
 import mc.processmodels.ProcessModelObject;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.TokenRule;
+import mc.processmodels.conversion.TokenRulePureFunctions;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 
@@ -173,8 +174,10 @@ public class CanvasMouseListener implements MouseListener {
                             //System.out.println("In Net " + pid + " From node " + pntClicked.getId() + " " + pntClicked.getLabel());
                             Multiset<PetriNetPlace> cm = CurrentMarkingsSeen.currentMarkingsSeen.get(processId);
                             Multiset<PetriNetPlace> newMarking;
+                          List<Multiset<PetriNetPlace>> newMarkings;
                             if (TokenRule.isSatisfied(cm, pntClicked)) {
-                                newMarking = TokenRule.newMarking(cm, pntClicked);
+                                newMarkings = TokenRulePureFunctions.newMarking(cm, pntClicked);
+                                newMarking = newMarkings.get(0);
                                 CurrentMarkingsSeen.currentMarkingsSeen.put(processId, newMarking);
 
                             //System.out.println(" ?mapping? "+thisMapping.n2m2String()) ;

@@ -201,10 +201,14 @@ Fx3  = a?->X, X= a?->X| b?->X|a?->STOP.
 
 
 }
+ } /*
+mc.exceptions.CompilationException: PetrinetException: PetrinetException: PetrinetException: Token Rule Failure exceeds size bound 10000 bound X:Test Lopa, 
+ globalOp (forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q (X:Test||[a!, y!, x!, b!]Z:Pro)) ==> (Y:Pro<qsf Z:Pro))
+ free Y:Pro Oab, Z:Pro Oab, 
 
-Zoo:{
+Zoo:{ 
 Next = next?->n!->STOP.
-Other = other?->o!->STOP.
+Other = other?->o!->STOP. 
 
 WR = (Twoax:Pro[]Other:Zoo)=>Next:Zoo.
 WL = (Twoq2:Pro[]Other:Zoo)=>Next:Zoo.
@@ -223,7 +227,7 @@ Twoq2 <qsf{cong} Twoax.
  <q{cong} ((Twoax:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!}Aab:Test.
 }
 
-
+*/
 equation {
 
 // BELOW Working  
@@ -266,6 +270,7 @@ Sat Jan 05 11:30:30 NZDT 2019**  ((Y:Pro<qsf Z:Pro) ==> forAll[X:Test]((X:Test||
         Simulations Passed  7744/7744 (implies short circuit ass/conc 6185/0) 
 **     ##Equations## 54208/54208 
 */
+
 
 
 

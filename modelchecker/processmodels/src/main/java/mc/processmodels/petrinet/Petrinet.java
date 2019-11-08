@@ -1095,6 +1095,30 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         //System.out.println("setEndFromPlace() END "+ ends);
     }
 
+    /*
+        input id of single pre ,post places + label
+        detag the label and see if a detged transition exists
+     */
+    public boolean tranExists(String pre,
+                              String post,
+                              String label) {
+        String lab = label.split("\\:")[0];
+        //System.out.println("tranExists, pre "+pre+" lab "+lab+" post "+ post);
+        Set<PetriNetPlace> preM = new TreeSet<>();
+        preM.add(this.getPlace(pre));
+        Set<PetriNetPlace> postM = new TreeSet<>();
+        postM.add(this.getPlace(post));
+        for (PetriNetTransition tr : this.getTransitions().values()) {
+            //System.out.println("Exists? "+tr.myString());
+            if (this.prePlaces(tr).equals(preM) &&
+                this.postPlaces(tr).equals(postM) &&
+                tr.getLabel().split("\\:")[0].equals(lab)) {
+                //System.out.println("found "+tr.myString());
+                return true;
+            }
+        }
+        return false;
+    }
     public boolean tranExists(Collection<PetriNetPlace> pre,
                               Collection<PetriNetPlace> post,
                               String label) {
@@ -1732,6 +1756,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
                     //System.out.println("edging " + transitionMap.get(edge.getTo()) + " " + places.get(edge.getFrom().getId() + tag));
                     PetriNetEdge e =
                         addEdge(transitionMap.get(edge.getTo()), places.get(edge.getFrom().getId() + tag), edge.getOptional());
+                         e.setOptionNum(edge.getOptionNum());
                     if (edge.getGuard() != null) e.setGuard(edge.getGuard());
 
                 }
@@ -1741,6 +1766,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
                     //    "  " + transitionMap.get(edge.getFrom()));
                     PetriNetEdge e =
                         addEdge(places.get(edge.getTo().getId() + tag), transitionMap.get(edge.getFrom()), edge.getOptional());
+                    e.setOptionNum(edge.getOptionNum());
                     if (edge.getGuard() != null) e.setGuard(edge.getGuard());
                 }
             }

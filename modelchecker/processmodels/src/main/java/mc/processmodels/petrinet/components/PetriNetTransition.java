@@ -29,7 +29,7 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
         Set<PetriNetEdge> out = new HashSet<>();
         for (PetriNetEdge ed : incoming) {
             //System.out.println("ed "+ed.myString());
-            out.add(ed);
+            out.add(ed.copy());
         }
         return out;
     }
@@ -39,11 +39,11 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
         Set<PetriNetEdge> out = new HashSet<>();
         for (PetriNetEdge ed : outgoing) {
             //System.out.println("ed "+ed.myString());
-            out.add(ed);
+            out.add(ed.copy());
         }
         return out;
     }
-
+ @Override
     public boolean equals(Object tr) {
         if (!(tr instanceof PetriNetTransition))
             return false;
@@ -226,7 +226,7 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
     }
 
 
-    public Set<String> optionalOwners() {  //TokenRule
+    public Set<String> getOptionalOwners() {  //TokenRule OwnersRule
         return incoming.stream()
             .filter(ed -> ed.getOptional())
             .map(PetriNetEdge::getFrom)
@@ -289,13 +289,15 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
         StringBuilder builder = new StringBuilder();
         builder.append(getId() + ", ");
         for (PetriNetEdge edge : getIncoming()) {
-            builder.append(edge.getFrom().getId() + "+" + edge.getOptional() + "-" + edge.getOptionNum() + " ");
+            builder.append("("+edge.getFrom().getId() + " "+((PetriNetPlace) edge.getFrom()).getOwners() +
+                     "+" + edge.getOptional() + "-" + edge.getOptionNum() + ") ");
             if (edge.getGuard() != null) builder.append(edge.getGuard().getGuardStr());
         }
         builder.append("-" + label + "->");
         for (PetriNetEdge edge : getOutgoing()) {
             if (edge.getGuard() != null) builder.append(edge.getGuard().getAssStr());
-            builder.append("+" + edge.getOptional() + "-" + edge.getOptionNum() + " " + edge.getTo().getId());
+            builder.append("("+edge.getTo().getId()+ " "+((PetriNetPlace) edge.getTo()).getOwners() +
+                     "+" + edge.getOptional() + "-" + edge.getOptionNum() + ") " );
         }
         builder.append(", own " + this.getOwners());
         return builder.toString();

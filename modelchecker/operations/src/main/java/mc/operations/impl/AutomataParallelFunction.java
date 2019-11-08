@@ -38,7 +38,9 @@ public class AutomataParallelFunction {
 
     this.automaton1 = automaton1;
     this.automaton2 = automaton2;
-    System.out.println( "Parallel  "+automaton1.getId()+"  "+ automaton2.getId());
+      throw new CompilationException(this.getClass(), "Should not be called " + id);
+      /*
+      System.out.println( "Parallel  "+automaton1.getId()+"  "+ automaton2.getId());
     // construct the parallel composition of the states from both automata
     setupNodes(automaton1.getNodes(), automaton2.getNodes());
     // find the synchronous and non-synchronous actions in both alphabet sets
@@ -54,7 +56,9 @@ public class AutomataParallelFunction {
     processSyncedActions(edges1, edges2);
 
     //System.out.println("Par END "+automaton.myString());
-    return automaton;
+
+
+    return automaton1; */
   }
 
 /*
@@ -230,7 +234,7 @@ private void processUnsyncedActions(List<AutomatonEdge> edges1, List<AutomatonEd
                   //name = name.substring(0,name.length() - 1)+"?";
                   System.out.println("  **2ed "+ed.myString() + " name= "+name);
                   if (ed.getLabel().equals(name)) {
-                    ed.setOptionalEdge(true);
+                    ed.setNotMaximalOwnedEdge(true);
                     System.out.println("|| Optional edge "+ed.myString());
                   }
                 }
@@ -246,7 +250,7 @@ private void processUnsyncedActions(List<AutomatonEdge> edges1, List<AutomatonEd
                   //name = name.substring(0,name.length() - 1)+"?";
                   System.out.println("  **2ed "+ed.myString() + " name= "+name);
                   if (ed.getLabel().equals(name)) {
-                    ed.setOptionalEdge(true);
+                    ed.setNotMaximalOwnedEdge(true);
                     System.out.println("|| Optional edge "+ed.myString());
                   }
                 }

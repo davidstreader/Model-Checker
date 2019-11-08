@@ -264,7 +264,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     return "Place "+this.getId()+
        " End "+this.getTerminal()+  " endnos "+ this.endNos +
       " Start "+ this.isStart()+ " "+this.startNos +
-      " Own="+ this.owners +
+      " Own="+ this.owners + this.getOwnersUid()+ " "+
       " col="+ this.getColour() +
       " ref "+references.toString()+" leafRef "+ leafRef.toString()+
       this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
@@ -315,7 +315,9 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   public TreeSet<String> getOwners() {
     return this.owners;
   }
-
+  public String getOwnersUid() {
+     return owners.stream().sorted().collect(Collectors.joining());
+  }
   public void setIncoming(Set<PetriNetEdge> incoming) {
     this.incoming = incoming;
   }

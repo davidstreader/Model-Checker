@@ -83,6 +83,15 @@ public class ModelView implements Observer, FontListener {
     //map from Id to TokenMapping
     private Map<String, MappingNdMarking> mappings = new HashMap<>();
 
+
+    public void cleanData(){
+       if (!(mappings == null)) mappings.clear();
+        if (!(placeId2GraphNode == null)) placeId2GraphNode.clear();
+        if (!(processModels == null)) processModels.clear();
+        if (!(visibleModels == null)) visibleModels.clear();
+        if (!(processModelsToDisplay == null)) processModelsToDisplay.clear();
+
+    }
     private VisualizationServer.Paintable boarder;
     private static Font sourceCodePro;
     private boolean fontListening = false;
@@ -375,13 +384,14 @@ public class ModelView implements Observer, FontListener {
                 bool = "";
                 ass = "";
             }
-            if (settings.isShowOwners()) {
-                label += " " + e.getEdgeOwners();
-            }
-            if (settings.isShowOptional()) {
-                if (e.getOptionalEdge())  bool += (" Opt "+e.getMarkedOwners());
+           // if (settings.isShowOwners()) {
+                label +=  e.getEdgeOwners();
+            //}
+            //if (settings.isShowOptional()) {
+                if (e.getMarkedOwners()!= null &&
+                    !e.getMarkedOwners().equals(e.getEdgeOwners()))  bool += (" mk"+e.getMarkedOwners());
 
-            }
+           // }
 
             graph.addEdge(new DirectedEdge(bool, label + "", ass, UUID.randomUUID().toString()), from, to);
         });

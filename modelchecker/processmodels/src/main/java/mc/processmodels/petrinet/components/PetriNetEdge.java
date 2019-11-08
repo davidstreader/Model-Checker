@@ -59,6 +59,25 @@ public class PetriNetEdge extends ProcessModelObject implements Comparable {
 
   }
 
+  public PetriNetEdge copy(){
+      PetriNetEdge ned;
+        if (getTo() instanceof  PetriNetPlace) {
+            ned = new PetriNetEdge(getId(),
+                                 ((PetriNetPlace) getTo()),
+                                 ((PetriNetTransition) getFrom()));
+        } else {
+            ned = new PetriNetEdge(getId(),
+                ((PetriNetTransition) getTo()),
+                ((PetriNetPlace) getFrom()));
+        }
+        ned.setOptionNum(getOptionNum());
+        ned.setOptional(getOptional());
+        ned.setGuard(getGuard());
+        ned.probDists = probDists;
+        ned.variables = variables;
+        return ned;
+  }
+
   public PetriNetEdge(String id, PetriNetTransition to, PetriNetPlace from) {
     super(id, "petrinetEdge");
     this.from = from;

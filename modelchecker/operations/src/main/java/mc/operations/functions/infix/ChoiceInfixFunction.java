@@ -131,7 +131,7 @@ public class ChoiceInfixFunction implements IProcessInfixFunction {
           for (AutomatonNode toNode : nodeMap.get(e.getTo().getId())) {
             writeAutomaton.addOwnersToEdge(
                 writeAutomaton.addEdge(e.getLabel(), fromNode, toNode, e.getGuard(),
-                    false,e.getOptionalEdge()), getEdgeOwnersFromProduct(e.getEdgeOwners(),edgeOwnersMap));
+                    false,e.getNotMaximalOwnedEdge()), getEdgeOwnersFromProduct(e.getEdgeOwners(),edgeOwnersMap));
           }
         }
       } catch (CompilationException e1) {

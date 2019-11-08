@@ -83,7 +83,7 @@ public class Interpreter {
     int i = 0;
       for (ProcessNode process : processes) { //BUILD ALL PROCESSES
         try {
-            //System.out.println("  Interpreter Building-"+i+" " + process.getIdentifier()); // + " ... "+ process.getType().toString());
+            System.out.println("  Interpreter Building-"+i+" " + process.myString()); // + " ... "+ process.getType().toString());
             ProcessModel model = null; i++;
             model = new MultiProcessModel(process.getIdentifier());
             model.setLocation(process.getLocation());  //location on screen
