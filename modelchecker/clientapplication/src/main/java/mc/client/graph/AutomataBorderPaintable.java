@@ -49,8 +49,10 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable {
          CompilationObject compiledResult_) {
         return single;
     }
-
+/* this is repeatedly called so just change the data  in automata_ */
     public void paint(Graphics g_) {
+        //System.out.println("border painting \n" +(new Throwable()).getStackTrace().toString());
+
         Graphics2D g = (Graphics2D) g_;
 
         Layout<GraphNode, DirectedEdge> layout = vv.getGraphLayout();
@@ -65,6 +67,7 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable {
             return;
         }
         for (String s : automata.keySet()) {
+            //System.out.println("  "+s);
             if (s == null) {
                 System.out.println("AutomataBorderPaintable  key = null");
                 return;
@@ -78,8 +81,8 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable {
         }
         // automata.asMap().forEach((key, value) -> {
         // BEWARE can throw null pointer exception
-        for (String key : automata.keySet()) {
-            Collection<GraphNode> value = automata.get(key);
+        for (String key : automata.keySet()) {                // All tha automata
+            Collection<GraphNode> value = automata.get(key);  // data for one automata
             Iterator<GraphNode> i = value.iterator();
             ProcessModel pmo;
             //Color fillColor = Color.decode("#808080");

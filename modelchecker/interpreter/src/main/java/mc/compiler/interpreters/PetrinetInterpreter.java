@@ -911,14 +911,16 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //NO self references allowed as functions need to be applied to automata built from
     // Net not From TREE
     selfRef = false;
-    /* used for debugging */
+    /* uncomented for debugging - allows the projection build by the owners rule
+       to be displaied.  -- In future find way to allow this with out this hack
+      as it may cause  false errors to be reported -- "..self loops.."
     if ( func.getFunction().equals("p2a2p")) {
         //System.out.println("interpret P2A2P");
          Automaton a = interpretAutIdentifier((IdentifierNode) ((FunctionNode) func).getProcesses().get(0));
         //System.out.println("\nOwners starting");
         processed = OwnersRule.ownersRule(a,processMap); // pass in the processMap for debugging
 
-    }else
+    }else */
         if ( func.getFunction().equals("prune")) {
         System.out.println("interpret prune");
         processed = interpretIdentifier((IdentifierNode) ((FunctionNode) func).getProcesses().get(0));

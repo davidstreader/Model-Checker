@@ -6,6 +6,7 @@ import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.picking.PickedState;
+import javafx.scene.input.KeyCode;
 import mc.Constant;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
@@ -18,6 +19,7 @@ import mc.processmodels.conversion.TokenRulePureFunctions;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
@@ -35,7 +37,7 @@ public class CanvasMouseListener implements MouseListener {
     String automataIDofNet = null;
     private Map<GraphNode, NodeStates> currentlyColored = new HashMap<>();
     //private Map<String, Multiset<PetriNetPlace>> currentMarkingsSeen = new TreeMap<>();
-
+    //private Boolean xKeyPressed = false;
 
     private String markingToString(Set<PetriNetPlace> m) {
         StringBuilder sb = new StringBuilder();
@@ -44,10 +46,12 @@ public class CanvasMouseListener implements MouseListener {
     }
 
     public CanvasMouseListener(Multimap<String, GraphNode> processModelVertexes_, VisualizationViewer<GraphNode, DirectedEdge> vv_,
-                               Map<String, MappingNdMarking> nodeAndMarkingMappings) {
+                               Map<String, MappingNdMarking> nodeAndMarkingMappings,
+                               boolean xKey) {
         processModelVertexes = processModelVertexes_;
         vv = vv_;
         mappings = nodeAndMarkingMappings;
+
     }
 
     public void updateProcessModelList(Multimap<String, GraphNode> processModels) {
@@ -72,8 +76,9 @@ public class CanvasMouseListener implements MouseListener {
 
         GraphNode currentNodeClicked = getVertex(e.getPoint());
         DirectedEdge currentDirectedEdge = getEdge(e.getPoint());
-        if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) == 0) {
+        if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) == 0) { // NOT shift
             //System.out.println("not SHIFT mouseClick");
+
             if (currentNodeClicked != null) {
                 String pid = currentNodeClicked.getProcessModelId();
                 if (processModelVertexes.containsKey(pid)) {
@@ -88,9 +93,19 @@ public class CanvasMouseListener implements MouseListener {
                 //System.out.println("Clicked on Edge "+currentDirectedEdge.getLabel());
             }
         } else {
-            //System.out.println("SHIFT mouseClick");
             //System.out.println(mappings.keySet().stream().map(x -> x + "-- " + mappings.get(x).toString()).collect(Collectors.joining(", ")));
             //System.out.println("pMV " + processModelVertexes.keySet().stream().map(x -> x + processModelVertexes.get(x).stream().map(y -> y.getNodeId()).collect(Collectors.joining(", "))).collect(Collectors.joining("\n ")));
+
+
+            if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
+                 System.out.println("shift + ctrl" );
+                 if (currentNodeClicked != null) {
+                     String pid = currentNodeClicked.getProcessModelId();
+                     System.out.println("Process to delete "+pid);
+                 }
+             }
+            //KeyCode.getKeyCode(KeyEvent.VK_A)
+
             MappingNdMarking thisMapping;
             if (currentNodeClicked != null) {
                 String processId = currentNodeClicked.getProcessModelId();

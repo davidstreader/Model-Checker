@@ -26,6 +26,7 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -68,10 +69,11 @@ public class ModelView implements Observer, FontListener {
     private Bounds windowSize;
 
     private CanvasMouseListener canvasML;
+    private Keylisten keyl;
    // private CanvasMouseMotionListener cml;
     private Set<String> processModelsToDisplay;
-    private SortedSet<String> visibleModels; // Processes that are in the modelsList combox
-    private Multimap<String, GraphNode> processModels; //in the list
+    private SortedSet<String> modelsInList; // Processes that are in the modelsList combox
+    private Multimap<String, GraphNode> processModelsOnScreen; //process on the screen
     // Play places token on current Marking
     //private CurrentMarkingsSeen currentMarkingsSeen = new CurrentMarkingsSeen();
     // from PetriNetPlace find Graph visualisation
@@ -87,8 +89,8 @@ public class ModelView implements Observer, FontListener {
     public void cleanData(){
        if (!(mappings == null)) mappings.clear();
         if (!(placeId2GraphNode == null)) placeId2GraphNode.clear();
-        if (!(processModels == null)) processModels.clear();
-        if (!(visibleModels == null)) visibleModels.clear();
+        if (!(processModelsOnScreen == null)) processModelsOnScreen.clear();
+        if (!(modelsInList == null)) modelsInList.clear();
         if (!(processModelsToDisplay == null)) processModelsToDisplay.clear();
 
     }
@@ -120,7 +122,10 @@ public class ModelView implements Observer, FontListener {
         return compiledResult.getProcessMap().get(id);
     }
     public void removeProcess(String id) {
-         compiledResult.getProcessMap().remove(id);
+
+        compiledResult.getProcessMap().remove(id);
+      //  boarder.paint();
+
     }
     /**
      * This method is called whenever the observed object is changed. An
@@ -188,25 +193,25 @@ public class ModelView implements Observer, FontListener {
         String dispType = settings.getDisplayType();
         //System.out.println("\n >>>>>"+dispType+"<<<<<\n");
         if (dispType.equals("All")) {
-            visibleModels = getProcessMap().entrySet().stream()
+            modelsInList = getProcessMap().entrySet().stream()
                 .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
                     ((Automaton) e.getValue()).getNodes().size() <= settings.getMaxNodes())
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toCollection(TreeSet::new));
         } else if (dispType.equals(Constant.AUTOMATA)) {
-            visibleModels = getProcessMap().entrySet().stream()
+            modelsInList = getProcessMap().entrySet().stream()
                 .filter(e -> e.getValue().getProcessType() == ProcessType.AUTOMATA &&
                     ((Automaton) e.getValue()).getNodes().size() <= settings.getMaxNodes())
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toCollection(TreeSet::new));
         } else {
-            visibleModels = getProcessMap().entrySet().stream()
+            modelsInList = getProcessMap().entrySet().stream()
                 .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toCollection(TreeSet::new));
         }
         //remove processes marked at skipped and too large models to display
-        listOfAutomataUpdater.accept(visibleModels);
+        listOfAutomataUpdater.accept(modelsInList);
 
         //Calls the function(Consumer) attached to the updateLog
         //updateLog.accept(compiledResult.getOperationResults(), compiledResult.getEquationResults());
@@ -217,6 +222,7 @@ public class ModelView implements Observer, FontListener {
     public VisualizationViewer<GraphNode, DirectedEdge> removeBorder(SwingNode s) {
         if (boarder != null) { // must remove old background
             vv.removePreRenderPaintable(boarder);
+
         }
         return vv;
     }
@@ -243,7 +249,7 @@ public class ModelView implements Observer, FontListener {
             .filter(Objects::nonNull)
             .forEach(this::addProcess);
 
-        canvasML.updateProcessModelList(processModels);
+        canvasML.updateProcessModelList(processModelsOnScreen);
 
         if (windowSize == null || !windowSize.equals(s.getBoundsInParent())) {
             windowSize = s.getBoundsInParent();
@@ -270,10 +276,13 @@ public class ModelView implements Observer, FontListener {
         if (boarder != null) { // must remove old background
             vv.removePreRenderPaintable(boarder);
         }
-        boarder = new AutomataBorderPaintable(vv, this.processModels, compiledResult);
-        //This draws the boxes around the automata
+        /* looks like one paintable added for all graphs But vv has a list of preRender paintables
+        *  So could add a one for each automata and then delete one at a time
+        *  */
+        boarder = new AutomataBorderPaintable(vv, this.processModelsOnScreen, compiledResult);
+        //This draws the boxes around the automata in the compiledResult
         vv.addPreRenderPaintable(boarder);
-        vv.addPostRenderPaintable(new PetriMarkingPaintable(vv, this.processModels));
+        vv.addPostRenderPaintable(new PetriMarkingPaintable(vv, this.processModelsOnScreen));
         processesChanged.clear();
         if (!fontListening) {
             settings.addFontListener(this);
@@ -301,13 +310,13 @@ public class ModelView implements Observer, FontListener {
     private void addAutomata(Automaton automaton) {
         //System.out.println("ModelView addAutomata");
         //make a new "parent" object for the children to be parents of
-        if (processModels.containsKey(automaton.getId())) {
+        if (processModelsOnScreen.containsKey(automaton.getId())) {
             // If the automaton is already displayed, but modified.
             // Remove all vertexes that are part of it
-            for (GraphNode n : processModels.get(automaton.getId())) {
+            for (GraphNode n : processModelsOnScreen.get(automaton.getId())) {
                 graph.removeVertex(n);
             }
-            processModels.removeAll(automaton.getId());
+            processModelsOnScreen.removeAll(automaton.getId());
         }
 
         Map<String, GraphNode> nodeMap = new HashMap<>();
@@ -396,7 +405,7 @@ public class ModelView implements Observer, FontListener {
             graph.addEdge(new DirectedEdge(bool, label + "", ass, UUID.randomUUID().toString()), from, to);
         });
 
-        this.processModels.replaceValues(automaton.getId(), nodeMap.values());
+        this.processModelsOnScreen.replaceValues(automaton.getId(), nodeMap.values());
 
 //System.out.println("ModelView \n "+ automaton.myString());
     }
@@ -410,15 +419,15 @@ public class ModelView implements Observer, FontListener {
     private void addPetrinet(Petrinet petri) {
 
         //make a new "parent" object for the children to be parents of
-        if (processModels.containsKey(petri.getId())) {
+        if (processModelsOnScreen.containsKey(petri.getId())) {
             // If the automaton is already displayed, but modified.
             // Remove all vertexes that are part of it
-            for (GraphNode n : processModels.get(petri.getId())) {
+            for (GraphNode n : processModelsOnScreen.get(petri.getId())) {
                 placeId2GraphNode.remove(n.getNodeId()); //not sure what this dose
                 graph.removeVertex(n);
             }
 
-            processModels.removeAll(petri.getId());
+            processModelsOnScreen.removeAll(petri.getId());
         }
 
         Map<String, GraphNode> nodeMap = new HashMap<>();
@@ -573,7 +582,7 @@ public class ModelView implements Observer, FontListener {
 
     }); */
 
-        this.processModels.replaceValues(petri.getId(), nodeMap.values());
+        this.processModelsOnScreen.replaceValues(petri.getId(), nodeMap.values());
 
     }
 
@@ -582,13 +591,21 @@ public class ModelView implements Observer, FontListener {
      */
     public void addDisplayedModel(String modelLabel) {
         assert compiledResult.getProcessMap().containsKey(modelLabel);
-        assert visibleModels.contains(modelLabel);
+        assert modelsInList.contains(modelLabel);
 
         processesChanged.add(modelLabel);
         processModelsToDisplay.add(modelLabel);
         //  canvasML. refreshtransitionColor();
     }
+    /* Guesing  dstr */
+    public void removeDisplayedModel(String modelLabel) {
+        assert compiledResult.getProcessMap().containsKey(modelLabel);
+        assert modelsInList.contains(modelLabel);
 
+        processesChanged.add(modelLabel);
+        processModelsToDisplay.remove(modelLabel);
+        //  canvasML. refreshtransitionColor();
+    }
     public void clearDisplayed() {
         processModelsToDisplay.clear();
         initalise();
@@ -598,8 +615,8 @@ public class ModelView implements Observer, FontListener {
         processModelsToDisplay.clear();
         processesChanged.addAll(compiledResult.getProcessMap().keySet());
 
-        if (visibleModels != null) {
-            processModelsToDisplay.addAll(visibleModels);
+        if (modelsInList != null) {
+            processModelsToDisplay.addAll(modelsInList);
         }
         // canvasML. refreshtransitionColor();
     }
@@ -610,8 +627,8 @@ public class ModelView implements Observer, FontListener {
      */
     public void freezeAllCurrentlyDisplayed() {
         if (layout != null) {
-            for (String processModeName : processModels.keySet()) {
-                for (GraphNode vertexToLock : processModels.get(processModeName)) {
+            for (String processModeName : processModelsOnScreen.keySet()) {
+                for (GraphNode vertexToLock : processModelsOnScreen.get(processModeName)) {
                     layout.lock(vertexToLock, true);
 
                 }
@@ -621,8 +638,8 @@ public class ModelView implements Observer, FontListener {
 
     public void unfreezeAllCurrentlyDisplayed() {
         if (layout != null) {
-            for (String processModeName : processModels.keySet()) {
-                for (GraphNode vertexToLock : processModels.get(processModeName)) {
+            for (String processModeName : processModelsOnScreen.keySet()) {
+                for (GraphNode vertexToLock : processModelsOnScreen.get(processModeName)) {
                     layout.lock(vertexToLock, false);
 
                 }
@@ -634,28 +651,29 @@ public class ModelView implements Observer, FontListener {
 
         if (layout != null && automataLabel != null && processModelsToDisplay.contains(automataLabel)) {
 
-            for (GraphNode vertexToLock : processModels.get(automataLabel)) {
+            for (GraphNode vertexToLock : processModelsOnScreen.get(automataLabel)) {
                 layout.lock(vertexToLock, true);
             }
         }
     }
 
     public void removeProcessModel(String automataLabel) {
-
+// fails to remove boarder Not sure wher this is
         if (layout != null && automataLabel != null && processModelsToDisplay.contains(automataLabel)) {
             processModelsToDisplay.remove(automataLabel);
             processesChanged.remove(automataLabel);
-            visibleModels.remove(automataLabel);
-            for (GraphNode vertex : processModels.get(automataLabel)) {
+            modelsInList.remove(automataLabel);
+            for (GraphNode vertex : processModelsOnScreen.get(automataLabel)) {
                 graph.removeVertex(vertex);
             }
-
+            processModelsOnScreen.removeAll(automataLabel);  // hope to remove the background
+          // boarder.
         }
     }
 
     public void unfreezeProcessModel(String automataLabel) {
         if (layout != null && automataLabel != null && processModelsToDisplay.contains(automataLabel)) {
-            for (GraphNode vertexToLock : processModels.get(automataLabel)) {
+            for (GraphNode vertexToLock : processModelsOnScreen.get(automataLabel)) {
                 layout.lock(vertexToLock, false);
             }
         }
@@ -710,9 +728,15 @@ public class ModelView implements Observer, FontListener {
 
         vv.setGraphMouse(gm);
 
-        canvasML = new CanvasMouseListener(processModels, vv, mappings);
+
+
+        Boolean keyX = false;
+        keyl = new Keylisten(keyX);
+        vv.addKeyListener(keyl);
+        canvasML = new CanvasMouseListener(processModelsOnScreen, vv, mappings,keyX);
         // cml = new CanvasMouseMotionListener(vv);
         vv.addMouseListener(canvasML);
+
         // vv.addMouseMotionListener(cml);
         //System.out.println();
 
@@ -730,11 +754,14 @@ public class ModelView implements Observer, FontListener {
         // Sets edges as lines
         vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.mixedLineCurve(graph));
         // vv.getRenderContext().getEdgeLabelTransformer().;
-        processModels = MultimapBuilder.hashKeys().hashSetValues().build();
+        processModelsOnScreen = MultimapBuilder.hashKeys().hashSetValues().build();
         //  settings.addFontListener(this); can NOY be done here ?!?
     }
 
-
+/*
+     This seems to work - methods are not static and the constructor is private
+     To call foo() you have to call ModelView.getInstance.foo()
+ */
     @Getter
     private static ModelView instance = new ModelView();
 

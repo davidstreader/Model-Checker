@@ -78,6 +78,8 @@ public class UserInterfaceController implements Initializable, FontListener {
     private Button frzBtn;
     @FXML
     private Button unfrzBtn;
+    @FXML
+    private Button removeBtn;
 
     // for keep updating the file that has already been saved.
   private File currentOpenFile = null;
@@ -112,7 +114,7 @@ public class UserInterfaceController implements Initializable, FontListener {
         addBtn.setStyle("-fx-background-color: "+col);
         frzBtn.setStyle("-fx-background-color: "+col);
         unfrzBtn.setStyle("-fx-background-color: "+col);
-     //   removeBtn.setStyle("-fx-background-color: "+col);
+        removeBtn.setStyle("-fx-background-color: "+col);
         modelsList.setStyle("-fx-background-color: "+col);
         //Load recent files
       BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("recentfiles.conf")));
@@ -607,7 +609,16 @@ public class UserInterfaceController implements Initializable, FontListener {
 
     }
 **/
+    @FXML
+    public void handleClear(ActionEvent actionEvent) {
+      //  ModelView.getInstance().clearDisplayed();
+        String selecteditem = modelsList.getSelectionModel().getSelectedItem();
+        if (selecteditem != null) {
+             ModelView.getInstance().removeProcessModel(selecteditem);
+        }
+     //   SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
 
+    }
   @FXML
   private void handleFreeze(ActionEvent event) {
     String selecteditem = modelsList.getSelectionModel().getSelectedItem();
@@ -687,7 +698,7 @@ public class UserInterfaceController implements Initializable, FontListener {
         compileButton.setText("Compile");
 
       } else {
-       // ModelView.getInstance().cleanData();  // try to fix data buildup 1/11/19
+       // ModelView.getInstance().cleanData();  // dstr try to fix data buildup 1/11/19
         compilerOutputDisplay.clear();
         compilerOutputDisplay.appendText("Starting build..." + "\n");
 
@@ -729,7 +740,7 @@ public class UserInterfaceController implements Initializable, FontListener {
             Platform.runLater(() -> {
               CompilationObservable.getInstance().updateClient(compilerOutput);
               // If this is run outside the fx ctx then exceptions occur and weirdness with threads updating combox box and whatnot
-              compilerOutputDisplay.appendText("Compiling completed!\n" + new Date().toString());
+              compilerOutputDisplay.appendText("Compiling completed!\n" + new Date().toString()+"\n");
             });
             //logThread.stop();
 
@@ -840,4 +851,6 @@ public class UserInterfaceController implements Initializable, FontListener {
   public ArrayDeque<String> getRecentFilePaths() {
     return this.recentFilePaths;
   }
+
+
 }

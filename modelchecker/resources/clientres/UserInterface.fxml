@@ -72,11 +72,11 @@
                                                 <Button fx:id="addBtn" layoutX="285.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddSelectedModel" text="Add"   />
                                                 <Button fx:id="frzBtn" layoutX="330.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreeze" text="Freeze" />
                                                 <Button fx:id="unfrzBtn" layoutX="395.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreeze" text="Unfreeze" />
-                                                <!--        <Button fx:id="removeBtn" layoutX="475.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClear" text="Clear" /> -->
+                                                <Button fx:id="removeBtn" layoutX="475.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClear" text="Clear" />
                                                         <Button layoutX="600.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddallModels" text="Add all" />
                                                         <Button layoutX="665.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreezeAll" text="Freeze all" />
                                                         <Button layoutX="750.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreezeAll" text="Unfreeze all" />
-                                                        <Button layoutX="860.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearGraph" text="Clear" />
+                                                        <Button layoutX="860.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearGraph" text="Clear all" />
 
                                                     </children>
 
