@@ -704,14 +704,27 @@ public class UserInterfaceController implements Initializable, FontListener {
 
         modelsList.getItems().clear();
 
-
+/*
+     buildThread  runs in seerate thread and creats a  second Thread  to
+     process message logging. This inturn
+     uses - runLater to append to the javaFX event Queue  text to the display
+ */
         buildThread = new Thread(() -> {
+            //can be used by multiple produces and multiple consumers
+            // log message for progress and  thread name
           BlockingQueue<Object> messageLog = new LinkedBlockingQueue<>();
           try {
             // This follows the observer pattern.
             // Within the compile function the code is then told to update an observer
             Compiler codeCompiler = new Compiler();
 
+              //Try useing blocking queue to wait indefinately and
+              // use interupt to terminate
+              // OR use Executor with built in thread pool
+              // ExecutorService  Executors.newWorkStealingPool() - one thread per core
+              // CRAP   the evaluation of different equations should not interfere with each other
+              // hence work stealing (one queue per thread -to avoid contention) + stealin work
+              // when finished.
             Thread logThread = new Thread(() -> {
               while (true) { // Realitively expensive spinning lock
 
@@ -728,7 +741,10 @@ public class UserInterfaceController implements Initializable, FontListener {
                 }
               }
             });
-
+// Daemon threads can keep working after program terminates
+// Processing Equations can take many minuites so we have a need to both
+//    record the progress and
+//    be able terminate long running builds
             logThread.setDaemon(true); // Means the ctx doesnt hang the appication on close
             logThread.start();
 
@@ -765,7 +781,7 @@ public class UserInterfaceController implements Initializable, FontListener {
           });
 
 
-        });
+        });  // End of buildThead
 
         buildThread.setDaemon(true);
         buildThread.start();

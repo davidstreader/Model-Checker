@@ -182,10 +182,14 @@ public class TokenRulePureFunctions {
         Set<PetriNetTransition> out = post(currentMarking).stream() //88
             //  .filter(transition -> currentMarking.containsAll(transition.pre()))
             .filter(tr -> (!tr.getLabel().equals(Constant.DEADLOCK)))
-            .filter(transition -> currentMarking.containsAll(transition.preNotOptional())) // drops the optional preplaces
-            .distinct()
+            .filter(transition -> (currentMarking.containsAll(transition.preNotOptional()))
+                //  ) // broadcast input only needs one place marked
+            ).distinct()
             .collect(Collectors.toSet());
         //System.out.println("satisfied \n" + out.stream().map(x -> x.myString() + "\n ").collect(Collectors.joining()));
+
+
+
         return out;
     }
 

@@ -393,14 +393,14 @@ public class ModelView implements Observer, FontListener {
                 bool = "";
                 ass = "";
             }
-           // if (settings.isShowOwners()) {
+            if (settings.isShowOwners()) {
                 label +=  e.getEdgeOwners();
-            //}
-            //if (settings.isShowOptional()) {
-                if (e.getMarkedOwners()!= null &&
+            }
+            if (settings.isShowOptional()) {
+                if (e.getMarkedOwners()!= null && e.getMarkedOwners().size() > 0 &&
                     !e.getMarkedOwners().equals(e.getEdgeOwners()))  bool += (" mk"+e.getMarkedOwners());
 
-           // }
+            }
 
             graph.addEdge(new DirectedEdge(bool, label + "", ass, UUID.randomUUID().toString()), from, to);
         });

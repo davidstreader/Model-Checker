@@ -135,10 +135,12 @@ public class Compiler {
                   interpreter.getpetrinetInterpreter(), code, z3Context, messageQueue, alpha);
               //System.out.println("     **COMPILER** before equation evaluation "+processMap.keySet());
 
-              // still has memory problem with many permutations
+              // HEAVY LIFTING need thread pool
               this.eqEvaluator = new EquationEvaluator(); // need to reset equationEvaluator else !!!!
               eqResults = eqEvaluator.evaluateEquations(
-                  pmf.getProcessMap(), interpreter.getpetrinetInterpreter(), ast.getEquations(),
+                  pmf.getProcessMap(),
+                  interpreter.getpetrinetInterpreter(),
+                  ast.getEquations(),  // one entry per equation
                   code, z3Context, messageQueue, alpha);
           }
 

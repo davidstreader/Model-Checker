@@ -34,7 +34,7 @@ public class AcceptanceGraph {
     throws CompilationException {
     node2AcceptanceSets =  new HashMap<>();
     Automaton nfa = nfain.copy();  // must copy
-    System.out.println("Acceptance! " + nfa.myString());
+    //System.out.println("Acceptance! " + nfa.myString());
     if (cong) addStartAndSTOP(nfa);
     //System.out.println("Starting Accept input " + nfa.myString() + "\n");
     Map<AutomatonNode, List<Set<String>>> dfaNode2ASet =
@@ -128,7 +128,7 @@ public class AcceptanceGraph {
     dfa.getNodes().stream()
       .filter(nodex -> nodex.getOutgoingEdges().isEmpty())
       .forEach(nodey -> nodey.setStopNode(true));
-    System.out.println("So far "+dfa.myString());
+    //System.out.println("So far "+dfa.myString());
     //printnode2AcceptanceSets(dfaNode2ASet, nfaNode2A);
     Map<AutomatonNode, List<Set<String>>> dfaNode2ASetNew = activeActionCorrection(dfaNode2ASet);
     //System.out.println("Next");
@@ -138,7 +138,7 @@ public class AcceptanceGraph {
     this.setA(dfa);
     this.setNode2AcceptanceSets(dfaNode2ASetNew);
 
-    System.out.println("Ending AcceptanceGraph Constructor " + dfa.myString());
+    //System.out.println("Ending AcceptanceGraph Constructor " + dfa.myString());
   }
 
   /*
@@ -168,9 +168,9 @@ public class AcceptanceGraph {
 
   // [{a,b^},{c^}] ==> [{a,b^},{c^},{b^}]
   private Map<AutomatonNode, List<Set<String>>> activeActionCorrection(Map<AutomatonNode, List<Set<String>>> nd2Ac) {
-    System.out.println("activeActionCorrection input "+
+   /*System.out.println("activeActionCorrection input "+
       nd2Ac.keySet().stream().map(x->x.getId()+"->"+nd2Ac.get(x)+"\n").collect(Collectors.joining()));
-
+*/
     Map<AutomatonNode, List<Set<String>>> out = new HashMap<>();
     for (AutomatonNode nd : nd2Ac.keySet()) {
 
@@ -188,7 +188,7 @@ public class AcceptanceGraph {
         asout.add(as);
       }*/
       out.put(nd,correction(nd2Ac.get(nd)));
-      System.out.println("Active Corection "+nd.getId()+"->"+correction(nd2Ac.get(nd)));
+      //System.out.println("Active Corection "+nd.getId()+"->"+correction(nd2Ac.get(nd)));
     }
 
     return out;

@@ -131,6 +131,15 @@ public class PetriNetTransition extends ProcessModelObject implements Comparable
         }
         return null;
     }
+    public boolean preHasOne(Multiset<PetriNetPlace> mrk) {
+        //System.out.println(incoming.size());
+        for (PetriNetEdge ed : incoming) {
+            if (mrk.contains( ed.getFrom())){
+                return true;
+            }
+        }
+        return false;
+    }
     private String postOne() {
         //System.out.println(incoming.size());
         if (outgoing.size() != 1) return null;
