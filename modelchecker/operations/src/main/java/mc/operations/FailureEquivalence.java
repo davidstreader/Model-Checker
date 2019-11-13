@@ -111,10 +111,10 @@ public class FailureEquivalence implements IOperationInfixFunction {
                 //System.out.println("Start copy "+ a.toString());
                 // build nfa and then dfa for second parameter "a"
                 AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a,cong);
-        System.out.println("Start ag "+equ + ag.toString());
+        //System.out.println("Start ag "+equ + ag.toString());
                 //Color the acceptance graph - result in cmap
                 color = ag.colorNodes(cmap, ag.getNode2AcceptanceSets(), color, equ); //reuse of color map essential
-         System.out.println("Just colored acceptance"+ ag.getA().myString());
+         //System.out.println("Just colored acceptance"+ ag.getA().myString());
 
                 //  this.printColorMap(cmap);
                 // construct the initial coloring for the bisimulation
@@ -122,7 +122,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
                 for (AutomatonNode nd : ag.getA().getNodes()) {
                     initialColour.put(nd, nd.getColour());
                 }
-                System.out.println("X"+ag.toString());
+                //System.out.println("X"+ag.toString());
             }
             // //System.out.println("Failure initial color end");
 

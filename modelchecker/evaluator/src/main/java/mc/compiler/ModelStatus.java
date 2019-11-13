@@ -1,6 +1,8 @@
 package mc.compiler;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class ModelStatus {
   private static int sid = 1;
@@ -12,7 +14,8 @@ public class ModelStatus {
   int id;
   int doneCount;
   long timeStamp;
-    List<String> failures;
+    List<String> failures = new ArrayList<>();
+    Stack<String> trace = new Stack<>();
 
   public String myString() {
     return "ModelStatus id " + id + " pass " + passCount +
@@ -26,7 +29,11 @@ public class ModelStatus {
   }
 
   public List<String> getFailures() {return failures;}
-  public void setFailures(List<String> f) { failures = f;}
+    public void setFailures(List<String> f) { failures = f;}
+    public void addFailure(String f) { failures.add(f);}
+    public Stack<String> getTrace(){return trace;}
+  public void setTrace(Stack<String> t){trace = t;}
+  public void clearTrace() {trace = new Stack<>();}
   public int getPassCount() {
     return this.passCount;
   }
