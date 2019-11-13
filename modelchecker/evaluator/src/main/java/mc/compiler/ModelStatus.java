@@ -1,5 +1,7 @@
 package mc.compiler;
 
+import java.util.List;
+
 public class ModelStatus {
   private static int sid = 1;
 
@@ -10,6 +12,7 @@ public class ModelStatus {
   int id;
   int doneCount;
   long timeStamp;
+    List<String> failures;
 
   public String myString() {
     return "ModelStatus id " + id + " pass " + passCount +
@@ -22,6 +25,8 @@ public class ModelStatus {
     id = sid++;
   }
 
+  public List<String> getFailures() {return failures;}
+  public void setFailures(List<String> f) { failures = f;}
   public int getPassCount() {
     return this.passCount;
   }

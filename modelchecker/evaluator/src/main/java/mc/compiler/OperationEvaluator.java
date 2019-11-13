@@ -186,7 +186,6 @@ public class OperationEvaluator {
         Automaton.tagid =0; Petrinet.netId =0;
         List<ProcessModel> processModels = new ArrayList<>();
         Set<String> flags = operation.getFlags();
-        //trace = new Stack<>();
         boolean r = false;
         //System.out.println("***evalOp "+alpha+"  "+operation.myString());
         /*System.out.println("evalOp "+operation.myString());
