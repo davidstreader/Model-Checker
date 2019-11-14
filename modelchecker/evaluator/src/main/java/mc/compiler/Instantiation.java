@@ -17,7 +17,7 @@ class Instantiate {
          next update the indexes and then returns peek()
        */
 
-      private static  Map<String, List<ProcessModel>> domains = new TreeMap<>(); //map Domain to list of processes
+    private static Map<String, List<ProcessModel>> domains = new TreeMap<>(); //map Domain to list of processes
 
     public static boolean validateDomains(List<String> globlFreeVariables) {
         for (String varDom : globlFreeVariables) {
@@ -49,9 +49,11 @@ class Instantiate {
         }
         //System.out.println("buildFreshDaomains "+domains2String());
     }
+
+    /* END od static definitions */
     //One Instantion object holds the  Global  variables
     //Another object is used to hold the Local variables in forAll
-     private Map<String, Integer> indexes = new TreeMap<>();  //Map variable 2 Domain 2 index
+    private Map<String, Integer> indexes = new TreeMap<>();  //Map variable 2 Domain 2 index
 
     public static String domains2String() {
         StringBuilder sb = new StringBuilder();
@@ -63,23 +65,22 @@ class Instantiate {
         });
         return sb.toString();
     }
-
+    public static List<ProcessModel> getDomain(String dom) {
+        return domains.get(dom);
+    }
     /**
      * For  Variables with different Domains!
      * provides the next() variable instantiation and
      * end() to indicate that all instantiations given
+     * <p>
+     * //   * @param processMap    Conceptually processes and variables are disjoint but
      *
-     //   * @param processMap    Conceptually processes and variables are disjoint but
      * @param freeVariables pragmatically they overlap
-    //   * @param allVariables  needed to prevent domains holding variables
+     *                      //   * @param allVariables  needed to prevent domains holding variables
      * @throws CompilationException
      */
-    public Instantiate( List<String> freeVariables
-                       //REF  ,List<String> allVariables
-    ) throws CompilationException {
-
+    public Instantiate(List<String> freeVariables) throws CompilationException {
         //System.out.println("*****Instantiate allVars "+allVariables+" free "+freeVariables);
-
         if (freeVariables.size() == 0) {
             throw new CompilationException(getClass(), "Empty Variable List");
         }
@@ -87,16 +88,11 @@ class Instantiate {
         for (String var : freeVariables) {
             indexes.put(var, (Integer) 0);
         }
-
-        //System.out.println("***Instantiate "+ PetrinetInterpreter.asString(processMap));
-        //System.out.println("***inst " +asString(peek()));
-        //REF     this.processMap = processMap;
-        //System.out.println(" constructor "+this.myString());
     }
 
-/*
-  peek returns the current instantiation
- */
+    /*
+      peek returns the current instantiation
+     */
     public Map<String, ProcessModel> peek() {
         Map<String, ProcessModel> currentInstantiation = new TreeMap<>();
         //System.out.print("PEEK ");
@@ -113,9 +109,7 @@ class Instantiate {
         return currentInstantiation;
     }
 
-    /**
-     * at end do nothing So check for end prior to use!
-     */
+
     public Map<String, ProcessModel> next() {
         for (String var : indexes.keySet()) {
             String[] parts = StringUtils.split(var, ':');
@@ -130,7 +124,9 @@ class Instantiate {
         //System.out.println("**next " +asString(peek()));
         return peek();
     }
-
+    /**
+     * at end do nothing So check for end prior to use!
+     */
     public boolean end() {
         for (String var : indexes.keySet()) {
             String[] parts = StringUtils.split(var, ':');
@@ -164,13 +160,10 @@ class Instantiate {
             sb.append("  " + x + "->" + indexes.get(x));
 
         });
-
-
         Map<String, ProcessModel> currentInstantiation = peek();
         sb.append("\n  currentInstantiation ");
         currentInstantiation.keySet().stream().forEach(x -> {
             sb.append("  " + x + "->" + currentInstantiation.get(x).getId());
-
         });
         return sb.toString();
     }

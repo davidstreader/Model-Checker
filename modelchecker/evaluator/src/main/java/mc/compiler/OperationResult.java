@@ -16,24 +16,15 @@ import java.util.List;
 public class OperationResult extends Result {
 
   private OperationNode op;
-  //private OperationProcess process1;
-  //private OperationProcess process2;
-  //private String operation;
   private String result;
   private boolean res;
   private String extra;
   private List<String> failures;
 
-  public OperationResult(//ASTNode process1, ASTNode process2, String ident1, String ident2,
-                         //String operation,
-                         List<String> failedOps,
+  public OperationResult(List<String> failedOps,
                          boolean result, String extra,OperationNode op)
     throws CompilationException {
-    //System.out.println("OperationResult "+ failures+" "+ op.myString()+ " "+result);
-    //this.process1 = new OperationProcess(ident1, process1.getLocation());
-    //this.process2 = new OperationProcess(ident2, process2.getLocation());
-    //this.operation = (negated ? "!" : "") + operation;
-    this.result = result + "";
+     this.result = result + "";
     res = result;
     this.extra = extra;
     this.failures = failedOps;

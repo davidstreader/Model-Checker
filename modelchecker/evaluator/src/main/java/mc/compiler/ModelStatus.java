@@ -7,12 +7,12 @@ import java.util.Stack;
 public class ModelStatus {
   private static int sid = 1;
 
-  int passCount;
-  int failCount;
-  int impliesConclusionTrue;
-  int impliesAssumptionFalse;
+  int passCount = 0;
+  int failCount = 0;
+  int impliesConclusionTrue = 0;
+  int impliesAssumptionFalse = 0;
   int id;
-  int doneCount;
+  int doneCount = 0;
   long timeStamp;
     List<String> failures = new ArrayList<>();
     Stack<String> trace = new Stack<>();
@@ -21,8 +21,8 @@ public class ModelStatus {
     return "ModelStatus id " + id + " pass " + passCount +
            " fail " + failCount +
            " done " + doneCount +
-           " impliesShort "+ impliesAssumptionFalse +
-           "/"+impliesConclusionTrue+" ";
+           " ("+ impliesAssumptionFalse +
+           "/"+impliesConclusionTrue+") ";
   }
   public ModelStatus() {
     id = sid++;

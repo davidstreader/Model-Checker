@@ -141,7 +141,7 @@ public class Compiler {
                   pmf.getProcessMap(),
                   interpreter.getpetrinetInterpreter(),
                   ast.getEquations(),  // one entry per equation
-                  code, z3Context, messageQueue, alpha);
+                   z3Context, messageQueue, alpha);
           }
 
 

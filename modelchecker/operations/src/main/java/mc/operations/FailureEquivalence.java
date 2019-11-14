@@ -78,10 +78,10 @@ public class FailureEquivalence implements IOperationInfixFunction {
           throws CompilationException {
             int ii = 0; String firstId = "";
             for (ProcessModel pm : processModels) {
-                System.out.println("  Fail "+ii+"  "+pm.getId());
+                //System.out.println("  Fail "+ii+"  "+pm.getId());
                 if (ii==0) firstId = pm.getId();
                 else if (firstId.equals(pm.getId())) {
-                    System.out.println("automata Fail same ids "+firstId);
+                    //System.out.println("automata Fail same ids "+firstId);
                     return true;
                 }
                 ii++; //Need this check
