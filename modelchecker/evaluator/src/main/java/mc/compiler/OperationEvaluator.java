@@ -15,6 +15,7 @@ import mc.util.LogMessage;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 
 import static mc.util.Utils.instantiateClass;
 
@@ -47,7 +48,7 @@ public class OperationEvaluator {
                                                     PetrinetInterpreter interpreter,
                                                     String code, Context context,
                                                     BlockingQueue<Object> messageQueue, Set<String> alpha)
-            throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
         reset();
         messageQueue.add(new LogMessage("     ##Operations  Starting##",  true,
           false,
@@ -88,7 +89,7 @@ public class OperationEvaluator {
                                     String code,
                                     Context context,
                                     BlockingQueue<Object> messageQueue,
-                                     Set<String> alpha) throws CompilationException, InterruptedException {
+                                     Set<String> alpha) throws CompilationException, InterruptedException, ExecutionException {
 
         //System.out.println("evaluateOperation op"+operation.myString() + " processMap "+processMap.keySet());
         Result or;
@@ -129,7 +130,7 @@ public class OperationEvaluator {
                                       String code,
                                       Context context,
                                       BlockingQueue<Object> messageQueue,
-                                       Set<String> alpha) throws CompilationException, InterruptedException {
+                                       Set<String> alpha) throws CompilationException, InterruptedException, ExecutionException {
 
             //input  from AST
         boolean r = false;
@@ -181,7 +182,7 @@ public class OperationEvaluator {
                           Context context,
                           Set<String> alpha,
                           Stack<String> trace)
-            throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
         interpreter.setProcessMap(processMap);  //need Variable from EquationExpander
         Automaton.tagid =0; Petrinet.netId =0;
         List<ProcessModel> processModels = new ArrayList<>();

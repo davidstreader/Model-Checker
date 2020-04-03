@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -601,7 +602,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return true;
   }
 
-  public Set<AutomatonNode> combineNondeterministic(AutomatonNode node1, Set<AutomatonNode> nodes2, Context context) throws CompilationException, InterruptedException {
+  public Set<AutomatonNode> combineNondeterministic(AutomatonNode node1, Set<AutomatonNode> nodes2, Context context) throws CompilationException, InterruptedException, ExecutionException {
 
     if (!nodeMap.containsKey(node1.getId())) {
       throw new CompilationException(getClass(), node1.getId() + "(node1) was not found in the automaton " + getId(), this.getLocation());
@@ -734,12 +735,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
    * @throws CompilationException
    * @throws InterruptedException
    */
-  public void mergeAutNodes( AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
+  public void mergeAutNodes( AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException, ExecutionException {
      mergeAutNodes( node1, node2, context, false);
      return;
   }
 
-  public void mergeAutNodes( AutomatonNode node1, AutomatonNode node2, Context context, boolean force) throws CompilationException, InterruptedException {
+  public void mergeAutNodes( AutomatonNode node1, AutomatonNode node2, Context context, boolean force) throws CompilationException, InterruptedException, ExecutionException {
     Automaton ain = this;
     if (!nodeMap.containsKey(node1.getId())) {
       throw new CompilationException(getClass(), node1.getId() + "test3 was not found in the automaton " + getId(), this.getLocation());
@@ -789,7 +790,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   /*
 
    */
-  private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2, Context context) throws CompilationException, InterruptedException {
+  private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2, Context context) throws CompilationException, InterruptedException, ExecutionException {
     if (edge1.getLabel().equals(edge2.getLabel()) && edge1.getGuard() != null && edge2.getGuard() != null) {
       Guard guard1 = edge1.getGuard();
       Guard guard2 = edge2.getGuard();

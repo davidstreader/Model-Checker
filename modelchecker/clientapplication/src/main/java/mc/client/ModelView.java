@@ -146,7 +146,9 @@ public class ModelView implements Observer, FontListener {
         processesChanged.clear();
         compiledResult = (CompilationObject) arg;
 
+        System.out.println("CR1: " + compiledResult.getProcessMap());
 
+        //Extracts set of ProcessModle maps and converts into set of Multiprocess maps
         // UG Map.Entry  collection of Key,Value pairs
         Set<Map.Entry<String, MultiProcessModel>> toExpand = compiledResult.getProcessMap().entrySet()
             .stream()
@@ -172,19 +174,24 @@ public class ModelView implements Observer, FontListener {
 //  printing (automata) and (petrinet)
         mappings.clear();
         for (Map.Entry<String, MultiProcessModel> mpm : toExpand) {
-            //System.out.println("mpmKey "+ mpm.getKey());
+            System.out.println("mpmKey "+ mpm.getKey());
+            System.out.println("mpmValue "+ mpm.getKey());
             if (!mpm.getKey().endsWith(":*")) continue; //Only off processes in Domain * - prevents duplicates
             for (ProcessType pt : ProcessType.values()) {
                 if (mpm.getValue().hasProcess(pt)) {
                     String name = mpm.getKey() + " (" + pt.name().toLowerCase() + ")";
                     mpm.getValue().getProcess(pt).setId(name);
-                    mappings.put(name, mpm.getValue().getProcessNodesMapping());
+                    //mappings.put(name, mpm.getValue().getProcessNodesMapping()); Removed
                     compiledResult.getProcessMap().put(name, mpm.getValue().getProcess(pt));
                 }
             }
         }
 
+        System.out.println("ToExpand:vcbvbdghhsahgjdkgfhjrdffgjhk " );
+
         toExpand.stream().map(Map.Entry::getKey).forEach(compiledResult.getProcessMap()::remove);
+
+        System.out.println("CR2: " + compiledResult.getProcessMap());
 
     /*System.out.print("\nKeys ");
     getProcessMap().entrySet().stream().forEach(x->{
@@ -309,6 +316,7 @@ public class ModelView implements Observer, FontListener {
      */
     private void addAutomata(Automaton automaton) {
         //System.out.println("ModelView addAutomata");
+        //System.out.println(automaton.toString());
         //make a new "parent" object for the children to be parents of
         if (processModelsOnScreen.containsKey(automaton.getId())) {
             // If the automaton is already displayed, but modified.

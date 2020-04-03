@@ -16,6 +16,7 @@ import mc.util.expr.VariableCollector;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -55,7 +56,7 @@ public class Expander {
    ONLY starting point
  */
     public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue, Context context)
-        throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
         globalVariableMap = ast.getVariableMap();
 //expand each process
         List<ProcessNode> processes = ast.getProcesses();
@@ -104,7 +105,7 @@ public class Expander {
      * @throws InterruptedException
      */
     private ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context)
-        throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
         // symbolicStore.put(process.getIdentifier(), (ProcessNode) process.copy()); // deep clone!
         //System.out.println("symbolic "+ process.getIdentifier()+"->"+  symbolicStore.get(process.getIdentifier()).myString());
 
@@ -183,7 +184,7 @@ public class Expander {
                                                         Map<String, Object> variableMap,
                                                         Context context,
                                                         boolean forAll)
-        throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("expandLocalProcesses forAll " + forAll);
         List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
         for (LocalProcessNode localProcess : localProcesses) {
@@ -224,7 +225,7 @@ public class Expander {
                                                          Map<String, Object> variableMap,
                                                          List<IndexExpNode> ranges, int index,
                                                          Context context)
-        throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("expandLocalProcesse_5 " + localProcess.myString() + "\n   index " + index + "  ranges " + ranges.stream().map(x -> x.myString()).collect(Collectors.joining(",   ")));
         /*System.out.println("expandLocalProcesse_5 " + variableMap.keySet().
             stream().map(x -> x + "->" + variableMap.get(x)).
@@ -295,7 +296,7 @@ public class Expander {
       need to pass If guard in to evaluate  for each  IndexExpNode
      */
     private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap, Context context)
-        throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("**** epanding ASTNode " + astNode.myString() + " " + astNode.getClass().getSimpleName());
         //System.out.println("expand vMap " + variableMap.keySet().stream().map(x -> x + "->" + variableMap.get(x).toString()).collect(Collectors.joining(", ")));
 
@@ -336,7 +337,7 @@ public class Expander {
         return astNode;
     }
 
-    private ASTNode expand(ProcessRootNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    private ASTNode expand(ProcessRootNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         if (astNode.hasLabel()) {
             astNode.setLabel(processVariables(astNode.getLabel(), variableMap, astNode.getLocation(), context));
         }
@@ -358,7 +359,7 @@ public class Expander {
         return astNode;
     }
 
-    private ActionLabelNode expand(ActionLabelNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    private ActionLabelNode expand(ActionLabelNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         String action = processVariables(astNode.getAction(), variableMap, astNode.getLocation(), context);
         astNode.setAction(action);
         return astNode;
@@ -369,7 +370,7 @@ public class Expander {
       change to variableMap  alters error detection! (local scope)
       Need to evaluate when guard for each iteration
      */
-    private ASTNode expand(IndexExpNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    private ASTNode expand(IndexExpNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         IndexIterator iterator = IndexIterator.construct(expand(astNode, context));
         Stack<ASTNode> iterations = new Stack<>();
         //System.out.println("var " + astNode.getVariable());
@@ -395,7 +396,7 @@ public class Expander {
         return node;
     }
 
-    private ASTNode expand(IndexExpNode astNode, Context context) throws CompilationException, InterruptedException {
+    private ASTNode expand(IndexExpNode astNode, Context context) throws CompilationException, InterruptedException, ExecutionException {
         // expand out nested indices
         ASTNode range = astNode;
         while (range instanceof IndexExpNode) {
@@ -413,7 +414,7 @@ public class Expander {
     private SequenceNode expand(SequenceNode astNode,
                                 Map<String, Object> variableMap,
                                 Context context)
-        throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
         //add a guard to every sequenceNode. This will only contain next data.
         //System.out.println("Sequence getTo "+astNode.getTo().myString());
 
@@ -447,7 +448,7 @@ public class Expander {
         return astNode;
     }
 
-    private ASTNode expand(ChoiceNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    private ASTNode expand(ChoiceNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         ASTNode process1 = expand(astNode.getFirstProcess(), variableMap, context);
         ASTNode process2 = expand(astNode.getSecondProcess(), variableMap, context);
 
@@ -475,7 +476,7 @@ public class Expander {
         return astNode;
     }
 
-    private ASTNode expand(CompositeNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    private ASTNode expand(CompositeNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         ASTNode process1 = expand(astNode.getFirstProcess(), variableMap, context);
         ASTNode process2 = expand(astNode.getSecondProcess(), variableMap, context);
         //System.out.println("Composite Composite "+astNode.myString());
@@ -502,7 +503,7 @@ public class Expander {
         return astNode;
     }
 
-    private ASTNode expand(IfStatementExpNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    private ASTNode expand(IfStatementExpNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("\nIfStatementExpNode");
         holdCondition = astNode.getCondition(); // condition used in  expansion
         VariableCollector collector = new VariableCollector();
@@ -580,7 +581,7 @@ public class Expander {
         return new TerminalNode("ERROR",astNode.getLocation());
     }
 */
-    private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         List<ASTNode> processes = astNode.getProcesses();
         //System.out.println("expand function "+ astNode.myString());
         for (int i = 0; i < processes.size(); i++) {
@@ -611,7 +612,7 @@ public class Expander {
     }
 
 
-    private IdentifierNode expand(IdentifierNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    private IdentifierNode expand(IdentifierNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         String identifier = processVariables(astNode.getIdentifier(), variableMap, astNode.getLocation(), context);
         astNode.setIdentifier(identifier);
         return astNode;
@@ -621,7 +622,7 @@ public class Expander {
         return lt.stream().map(n -> n.myString()).collect(Collectors.joining(", "));
     }
 
-    private ASTNode expand(ForAllStatementNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    private ASTNode expand(ForAllStatementNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("    EXPANDER Z0 ForAllStatementNode " + forAllId + "\n   " + astNode.myString());
         CompositeNode out = null;  // is the global process Ping[1]||Ping[2].....
         IdentifierNode idn = null;
@@ -721,7 +722,7 @@ public class Expander {
              later to be expanded
      */
     private Map<Integer, ASTNode> expand4All(ASTNode process, Map<String, Object> variableMap,
-                                             List<IndexExpNode> ranges, Context context) throws CompilationException, InterruptedException {
+                                             List<IndexExpNode> ranges, Context context) throws CompilationException, InterruptedException, ExecutionException {
         Map<Integer, ASTNode> nodes = new TreeMap<>();
         ASTNode ps = process.copy();
         //System.out.println("EXPAND 4all  process " + ps.myString());
@@ -758,7 +759,7 @@ public class Expander {
 
     /*  HOLD */
     private Map<Integer, ASTNode> expand(ASTNode process, Map<String, Object> variableMap,
-                                         List<IndexExpNode> ranges, Context context) throws CompilationException, InterruptedException {
+                                         List<IndexExpNode> ranges, Context context) throws CompilationException, InterruptedException, ExecutionException {
         Map<Integer, ASTNode> nodes = new TreeMap<>();
         ASTNode ps = process.copy();
         //System.out.println("EXPAND 4all  process " + process.myString());
@@ -787,7 +788,7 @@ public class Expander {
     }
 
     // Relable events replacing "delta"
-    private RelabelNode expand(RelabelNode relabel, Context context) throws CompilationException, InterruptedException {
+    private RelabelNode expand(RelabelNode relabel, Context context) throws CompilationException, InterruptedException, ExecutionException {
         List<RelabelElementNode> relabels = new ArrayList<>();
         System.out.println("Pong " + relabel.myString());
         System.out.println(new Throwable().getStackTrace().toString());
@@ -821,7 +822,7 @@ public class Expander {
     private List<RelabelElementNode> expand(RelabelElementNode element,
                                             Map<String, Object> variableMap, List<IndexExpNode> ranges,
                                             int index, Context context)
-        throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
         List<RelabelElementNode> elements = new ArrayList<>();
 
         if (index < ranges.size()) {
@@ -844,7 +845,7 @@ public class Expander {
         return elements;
     }
 
-    private SetNode expand(SetNode set, Context context) throws CompilationException, InterruptedException {
+    private SetNode expand(SetNode set, Context context) throws CompilationException, InterruptedException, ExecutionException {
         // check if any ranges were defined for this set
         Map<Integer, RangesNode> rangeMap = set.getRangeMap();
         if (rangeMap.isEmpty()) {
@@ -869,7 +870,7 @@ public class Expander {
        Processes multiple ranges!
      */
     private List<String> expand(String action, Map<String, Object> variableMap, List<IndexExpNode> ranges, int index, Context context)
-        throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
         List<String> actions = new ArrayList<>();
         if (index < ranges.size()) {
             IndexExpNode node = ranges.get(index);
@@ -896,7 +897,7 @@ public class Expander {
         return new Location(start.getLineStart(), start.getColStart(), end.getLineEnd(), end.getColEnd(), start.getStartIndex(), end.getEndIndex());
     }
 
-    private boolean evaluateCondition(BoolExpr condition, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    private boolean evaluateCondition(BoolExpr condition, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         Map<String, Integer> variables = new HashMap<>();
         for (Map.Entry<String, Object> entry : variableMap.entrySet()) {
             if (entry.getValue() instanceof Integer) {
@@ -913,7 +914,7 @@ public class Expander {
       called when expanding Identifier  and an event name v$ -> i$ < 2
                      DOES ALL THE CHANGEING
      */
-    private String processVariables(String string, Map<String, Object> variableMap, Location location, Context context) throws CompilationException, InterruptedException {
+    private String processVariables(String string, Map<String, Object> variableMap, Location location, Context context) throws CompilationException, InterruptedException, ExecutionException {
         Map<String, Integer> integerMap = constructIntegerMap(variableMap);
         //System.out.println("integer Map "+integerMap.entrySet().stream().map(x->x.getKey()+"->"+x.getValue()+", ").collect(Collectors.joining()));
         //Construct a pattern with all hidden variables removed.

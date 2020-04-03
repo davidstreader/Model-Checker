@@ -29,6 +29,7 @@ import mc.processmodels.petrinet.utils.PetrinetLabeller;
 import mc.util.expr.ExpressionPrinter;
 //import mc.operations.functions.AbstractionFunction;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static mc.util.Utils.instantiateClass;
@@ -129,7 +130,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
                                 Set<String> alpha,
                                 Map<String, Expr> globalVarMap,  //needed for symbolic
                                 boolean symb)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
       if (processNode.getIdentifier().equals(Constant.CRASHME)) {
           throw new
            CompilationException(processNode.getClass(), " debugging CRASHME",processNode.getLocation());
@@ -229,7 +230,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
                                       Context context,
                                       Set<String> alpha)
 
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     reset();
 
     //System.out.println("interpret YY START "+identifier+" pMap "+ processMap.keySet());
@@ -270,7 +271,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   private Petrinet interpretProcess(ASTNode astNode,
                                     String identifier, //Root id
                                     boolean symb, Map<String, Petrinet> localProcesses)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //prity print AST
     //System.out.println("   interpretProcess (PN) astNode IS " + astNode.myString());
     //System.out.println("289 "+asString(processMap));
@@ -466,7 +467,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   //only used to add a fake Id
   private Petrinet interpretASTNode(ASTNode currentNode)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     Petrinet pn = interpretASTNode(currentNode, "fake");
     //System.out.println("Fake");
     return pn;
@@ -481,7 +482,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
    */
   public Petrinet interpretASTNode(ASTNode currentNode, String petriId)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("Interpreter ASTNode " + petriId + " " + currentNode.myString());
 
     if (Thread.currentThread().isInterrupted()) {
@@ -602,7 +603,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
 
   private Petrinet interpretIndexExp(IndexExpNode ien)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("With IndexExpNode  " + ien.myString());
     Petrinet pn = interpretASTNode(ien.getProcess());
     //System.out.println("IndexExpNode net " + pn.myString("edge"));
@@ -610,7 +611,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   }
 
   private Petrinet interpretIfStatementExp(IfStatementExpNode ifn)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("With interpretIfStatementExp  " + ifn.myString());
 
 
@@ -660,7 +661,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     for symbolic processes  this resids undet a ProcessNode
    */
   private Petrinet interpretLocalProcess(LocalProcessNode lpr, String petriId)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("what to do with local Process " + lpr.myString());
     Petrinet pn = interpretASTNode(lpr.getProcess(), petriId);
     //System.out.println("Local net " + pn.myString());
@@ -685,7 +686,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    * @returns a new petrinet
    */
   private Petrinet interpretChoice(ChoiceNode choice)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("Choice first AST " + choice.getFirstProcess().myString());
     Petrinet op1 = interpretASTNode(choice.getFirstProcess());
     //System.out.println("Choice input petri net 1 " + op1.myString());
@@ -702,7 +703,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   private Petrinet interpretProcessRoot(ProcessRootNode processRoot,
                                         String petriId, Context context)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("\n               INTERPRETING Root 521 \n");
     //System.out.println("petri Root INput "+petri.myString());
     //  currentPlace = petri.getPlaces().get(currentPlace.getId());//only match on "id"
@@ -731,7 +732,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    * @throws InterruptedException
    */
   private Petrinet interpretSequence(SequenceNode seq)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("Sequence start " + seq.myString());
     String lab = seq.getEventLabel().getAction(); // Now unique see Petrinet.netId
     Petrinet start = Petrinet.oneEventNet(lab);
@@ -870,7 +871,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    */
 
   private Petrinet interpretComposite(CompositeNode composite, String petriId)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
 
     //System.out.println("interpret COMPOSITE "+composite.myString());
     //System.out.println(asString(processMap));
@@ -906,7 +907,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   VOID VOID
    */
   private Petrinet interpretFunction(FunctionNode func, String petriId, Set<String> alpha)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     Petrinet processed;
     //NO self references allowed as functions need to be applied to automata built from
     // Net not From TREE
@@ -949,7 +950,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   Works for OwnersRule
    */
   private Petrinet interpretConversion(ConversionNode conv, String petriId)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //  currentPlace = petri.getPlaces().get(currentPlace.getId());//only match on "id"
 
     //System.out.println("interpretConversion P->A start "+petri.myString());
@@ -1109,7 +1110,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
                                 Interpreter interpreter,
                                 Context context,
                                 Set<String> alpha,
-                                ASTNode ast) throws CompilationException, InterruptedException {
+                                ASTNode ast) throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("getAutomaton "+ ast.getName());
     Automaton NewAutomata;
     if (ast instanceof FunctionNode) {  //first time NOT allways true
@@ -1157,7 +1158,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    */
   public Automaton getLocalAutomaton(Context context,
                                      Set<String> alpha,
-                                     ASTNode ast) throws CompilationException, InterruptedException {
+                                     ASTNode ast) throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("getLocalAutomaton "+ ast.getName());
     //System.out.println("getLocalAutomaton "+ processMap.keySet());
     Automaton a;

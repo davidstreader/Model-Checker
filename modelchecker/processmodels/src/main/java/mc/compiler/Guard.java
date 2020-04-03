@@ -14,6 +14,7 @@ import mc.util.expr.VariableCollector;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -296,7 +297,7 @@ System.out.print("parseNext "+ myString()+"\n"); */
   }
 
   public boolean equals(Object o, Map<String, Expr> replacements, AutomatonNode first,
-                        AutomatonNode second, Context context) {
+                        AutomatonNode second, Context context) throws ExecutionException, InterruptedException {
     if (this == o) {
       return true;
     }
@@ -311,12 +312,48 @@ System.out.print("parseNext "+ myString()+"\n"); */
     Expr exp2 = substitute(guard1.guard, replacements, context);
     return NodeUtils.findLoopsAndPathToRoot(first)
         .map(edges -> NodeUtils.collectVariables(edges, context))
-        .map(s -> substitute(exp1, s, context))
-        .allMatch(s -> isSolvable((BoolExpr) s, Collections.emptyMap(), context))
+        .map(s -> {
+            try {
+                return substitute(exp1, s, context);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        })
+        .allMatch(s -> {
+            try {
+                return isSolvable((BoolExpr) s, Collections.emptyMap(), context);
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (CompilationException e) {
+                e.printStackTrace();
+            }
+            return false;
+        })
         && NodeUtils.findLoopsAndPathToRoot(second)
         .map(edges -> NodeUtils.collectVariables(edges, context))
-        .map(s -> substitute(exp2, s, context))
-        .allMatch(s -> isSolvable((BoolExpr) s, Collections.emptyMap(), context))
+        .map(s -> {
+            try {
+                return substitute(exp2, s, context);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        })
+        .allMatch(s -> {
+            try {
+                return isSolvable((BoolExpr) s, Collections.emptyMap(), context);
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (CompilationException e) {
+                e.printStackTrace();
+            }
+            return false;
+        })
         && equate(this, guard1, context);
   }
 

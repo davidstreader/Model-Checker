@@ -34,10 +34,7 @@ import java.io.*;
 import java.net.URL;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
@@ -774,9 +771,11 @@ public class UserInterfaceController implements Initializable, FontListener {
                   userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
               }
             });
+          } catch (ExecutionException e) {
+              e.printStackTrace();
           }
 
-          Platform.runLater(() -> {
+            Platform.runLater(() -> {
             compileButton.setText("Compile");
           });
 

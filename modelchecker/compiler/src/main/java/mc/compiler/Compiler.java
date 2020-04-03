@@ -11,6 +11,7 @@ import mc.util.LogMessage;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -52,14 +53,14 @@ public class Compiler {
   public CompilationObject compile(String code,
                                    com.microsoft.z3.Context z3Context,
                                    BlockingQueue<Object> messageQueue, Supplier<Boolean> symb)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //LEX ->PARSE->COMPILE
     List<Token> codeInput = lexer.tokenise(code);
     AbstractSyntaxTree ast = parser.parse(codeInput, z3Context);
       messageQueue.add(new LogMessage(Runtime.class.getPackage().getImplementationVersion()+ " XXXXXXXXX "));
       messageQueue.add(new LogMessage("Compile  starting  symbolic "+symb.get()));
       System.out.println(Runtime.class.getPackage().getImplementationVersion());
-    //System.out.println("Compiler called parse that output " + ast.myString());
+    System.out.println("Compiler called parse that output " + ast.myString());
     return compile(ast, code,  z3Context, messageQueue,symb);
   }
 
@@ -78,7 +79,7 @@ public class Compiler {
                                     com.microsoft.z3.Context z3Context,
                                     BlockingQueue<Object> messageQueue,
                                     Supplier< Boolean> symb)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
       HashMap<String, ProcessNode> processNodeMap = new HashMap<>();
       //  HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
 
@@ -152,7 +153,7 @@ public class Compiler {
 private AbstractSyntaxTree processAtomicAST(AbstractSyntaxTree ast,
                                             com.microsoft.z3.Context z3Context,
                                             BlockingQueue<Object> messageQueue )
-  throws CompilationException, InterruptedException {
+    throws CompilationException, InterruptedException, ExecutionException {
     /*
    Expand the non hidden variables (indexes) and return an ast
    NOTE changes the ast in undefined way BUT this is required for the replacer to work

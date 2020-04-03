@@ -15,6 +15,7 @@ import mc.processmodels.petrinet.operations.PetrinetSimp;
 import mc.util.expr.MyAssert;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class SimpFunction implements IProcessFunction {
@@ -211,7 +212,7 @@ public class SimpFunction implements IProcessFunction {
             //combineNodes will remove mergedNode and return  new merged node
             ain.mergeAutNodes(selectedNode, automatonNode, context);
             //System.out.println("   Merged result " + ain.myString());
-          } catch (InterruptedException ignored) {
+          } catch (InterruptedException | ExecutionException ignored) {
             throw new CompilationException(getClass(), "INTERRUPTED EXCEPTION");
           }
         }
