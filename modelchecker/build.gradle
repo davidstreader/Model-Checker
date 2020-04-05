@@ -70,6 +70,7 @@ subprojects {
         compile     'com.google.guava:guava:21.0'
         compile     'org.apache.commons:commons-lang3:3.5'
         compile     'commons-io:commons-io:2.5'
+        runtime fileTree(dir: 'libs', include: '*.jar')
     }
 
     sourceCompatibility = 1.8

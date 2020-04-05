@@ -19,10 +19,7 @@ import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
@@ -50,6 +47,19 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
+import org.graphstream.graph.implementations.MultiGraph;
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.stream.ProxyPipe;
+import org.graphstream.stream.Source;
+import org.graphstream.ui.graphicGraph.GraphicGraph;
+import org.graphstream.ui.view.View;
+import org.graphstream.ui.view.Viewer;
+
+import javax.swing.*;
+
+import org.graphstream.graph.*;
+import org.graphstream.graph.implementations.*;
+
 
 /**
  * Created by bealjaco on 29/11/17.
@@ -84,6 +94,8 @@ public class ModelView implements Observer, FontListener {
 
     //map from Id to TokenMapping
     private Map<String, MappingNdMarking> mappings = new HashMap<>();
+
+    private MultiGraph workingCanvasArea;
 
 
     public void cleanData(){
@@ -146,9 +158,9 @@ public class ModelView implements Observer, FontListener {
         processesChanged.clear();
         compiledResult = (CompilationObject) arg;
 
-        System.out.println("CR1: " + compiledResult.getProcessMap());
 
-        //Extracts set of ProcessModle maps and converts into set of Multiprocess maps
+
+        //Extracts set of ProcessModel maps and converts into set of Multiprocess maps called to expand
         // UG Map.Entry  collection of Key,Value pairs
         Set<Map.Entry<String, MultiProcessModel>> toExpand = compiledResult.getProcessMap().entrySet()
             .stream()
@@ -171,34 +183,32 @@ public class ModelView implements Observer, FontListener {
             })
             .collect(Collectors.toSet());
 
-//  printing (automata) and (petrinet)
+//  printing (automata) and (petrinet) names and iterates through toExpand to extract node and edge data into mapping and compiledresult ?
         mappings.clear();
         for (Map.Entry<String, MultiProcessModel> mpm : toExpand) {
-            System.out.println("mpmKey "+ mpm.getKey());
-            System.out.println("mpmValue "+ mpm.getKey());
+            /*System.out.println("mpmKey "+ mpm.getKey());
+            System.out.println("mpmValue "+ mpm.getValue());*/
             if (!mpm.getKey().endsWith(":*")) continue; //Only off processes in Domain * - prevents duplicates
             for (ProcessType pt : ProcessType.values()) {
                 if (mpm.getValue().hasProcess(pt)) {
                     String name = mpm.getKey() + " (" + pt.name().toLowerCase() + ")";
                     mpm.getValue().getProcess(pt).setId(name);
-                    //mappings.put(name, mpm.getValue().getProcessNodesMapping()); Removed
+                    mappings.put(name, mpm.getValue().getProcessNodesMapping());
                     compiledResult.getProcessMap().put(name, mpm.getValue().getProcess(pt));
                 }
             }
         }
 
-        System.out.println("ToExpand:vcbvbdghhsahgjdkgfhjrdffgjhk " );
 
+
+        //Removes the original process map leaving the expanded node and edge data from before
         toExpand.stream().map(Map.Entry::getKey).forEach(compiledResult.getProcessMap()::remove);
 
-        System.out.println("CR2: " + compiledResult.getProcessMap());
 
-    /*System.out.print("\nKeys ");
-    getProcessMap().entrySet().stream().forEach(x->{
-      //System.out.print(x.getKey()+" ");
-    });*/
         String dispType = settings.getDisplayType();
-        //System.out.println("\n >>>>>"+dispType+"<<<<<\n");
+
+        //Stores process models in modelsInList depending on wether current display setting wants it
+
         if (dispType.equals("All")) {
             modelsInList = getProcessMap().entrySet().stream()
                 .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
@@ -220,9 +230,7 @@ public class ModelView implements Observer, FontListener {
         //remove processes marked at skipped and too large models to display
         listOfAutomataUpdater.accept(modelsInList);
 
-        //Calls the function(Consumer) attached to the updateLog
-        //updateLog.accept(compiledResult.getOperationResults(), compiledResult.getEquationResults());
-        //  updateImpLog.accept(compiledResult.getImpliesResults(), compiledResult.getImpliesResults());
+
     }
 
     /* removes all backgrounds */
@@ -233,6 +241,124 @@ public class ModelView implements Observer, FontListener {
         }
         return vv;
     }
+
+    public JPanel updateGraphNew(SwingNode modelDisplayNew) {
+
+        //Reinitialise The Working Canvas area
+        JPanel workingCanvasAreaContainer = new JPanel();
+        workingCanvasAreaContainer.setLayout(new BorderLayout());
+        workingCanvasArea = new MultiGraph("WorkingCanvasArea"); //field
+        Viewer workingCanvasAreaViewer = new Viewer(workingCanvasArea, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
+        workingCanvasAreaViewer.enableAutoLayout();
+        View workingCanvasAreaView = workingCanvasAreaViewer.addDefaultView(false);
+        workingCanvasAreaContainer.add((Component) workingCanvasAreaView, BorderLayout.CENTER);
+
+
+        if (compiledResult == null) {
+            return workingCanvasAreaContainer;
+        }
+
+        //Do Drawing Work On Canvas
+        compiledResult.getProcessMap().keySet().stream()
+            .filter(processModelsToDisplay::contains)
+            .filter(processesChanged::contains)
+            .map(compiledResult.getProcessMap()::get)
+            .filter(Objects::nonNull)
+            .forEach(this::addProcessNew);
+
+        //Return the Now updated canvas to UIC
+        return workingCanvasAreaContainer;
+    }
+
+    private void addProcessNew(ProcessModel p) {
+        switch (p.getProcessType()) {
+            case AUTOMATA:
+                addAutomataNew((Automaton) p);
+                break;
+            /*case PETRINET:
+                addPetrinetNew((Petrinet) p);
+                break;*/
+        }
+    }
+
+    private void addAutomataNew(Automaton automaton) {
+
+        /*//make a new "parent" object for the children to be parents of
+        if (processModelsOnScreen.containsKey(automaton.getId())) {
+            System.out.println("onscreenalready");
+            // If the automaton is already displayed, but modified.
+            // Remove all vertexes that are part of it
+            for (GraphNode n : processModelsOnScreen.get(automaton.getId())) {
+                graph.removeVertex(n);
+            }
+            processModelsOnScreen.removeAll(automaton.getId());
+        }*/
+
+        Map<String, GraphNode> nodeMap = new HashMap<>();
+
+        //add all the nodes to the graph
+
+        System.out.println(automaton.getRootList().size());
+
+        /*Creates graph nodes objects from automaton object with evaulated termination type and stores them in nodeMap
+        Unsure how rootList works, although rootlist size is determined by automaton being instantiated with "construct-
+        root bool*/
+
+        automaton.getNodes().forEach(n -> {
+
+            NodeStates nodeTermination = NodeStates.NOMINAL;
+
+
+
+
+            GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination, nodeTermination,
+                NodeType.AUTOMATA_NODE, "" + n.getLabelNumber(), n);
+            nodeMap.put(n.getId(), node);
+
+            //Adds grapth node to display
+            Node cn = workingCanvasArea.addNode(n.getId());
+
+
+        });
+
+        //Connects the node via edges on screen
+        automaton.getEdges().forEach(e -> {
+            GraphNode to = nodeMap.get(e.getTo().getId());
+            GraphNode from = nodeMap.get(e.getFrom().getId());
+            String label = e.getLabel();
+            String bool;
+            String ass;
+            if (e.getGuard() != null) {
+                bool = e.getGuard().getGuardStr();
+                ass = e.getGuard().getAssStr();
+            } else {
+                bool = "";
+                ass = "";
+            }
+            if (settings.isShowOwners()) {
+                label +=  e.getEdgeOwners();
+            }
+            if (settings.isShowOptional()) {
+                if (e.getMarkedOwners()!= null && e.getMarkedOwners().size() > 0 &&
+                    !e.getMarkedOwners().equals(e.getEdgeOwners()))  bool += (" mk"+e.getMarkedOwners());
+
+            }
+
+            workingCanvasArea.addEdge("test" + Math.random(), from.getNodeId(), to.getNodeId());
+
+            //graph.addEdge(new DirectedEdge(bool, label + "", ass, UUID.randomUUID().toString()), from, to);
+        });
+
+        //Node cn = workingCanvasArea.addNode("extra");
+
+        this.processModelsOnScreen.replaceValues(automaton.getId(), nodeMap.values());
+
+
+        System.out.println("NC: " + workingCanvasArea.getNodeCount());
+        System.out.println("done printing nodes");
+    }
+
+
     /**
      * A method to update the graph that is displayed
      *
@@ -240,21 +366,25 @@ public class ModelView implements Observer, FontListener {
      */
 
     public VisualizationViewer<GraphNode, DirectedEdge> updateGraph(SwingNode s) {
-
+        //Called from UIC: initialise, addselected, addall, cleargraph
+        //Nothing to display
         if (compiledResult == null) {
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
         }
 
+
         layoutInitalizer.setDimensions(new Dimension((int) s.getBoundsInParent().getWidth(),
             (int) s.getBoundsInParent().getHeight()));
 
-
+        //From compiled result filter for processModelstoDisplay and processeschanged
+        //Then maps these keys for their values and for values that arnt null are sent to addProcess method
         compiledResult.getProcessMap().keySet().stream()
             .filter(processModelsToDisplay::contains)
             .filter(processesChanged::contains)
             .map(compiledResult.getProcessMap()::get)
             .filter(Objects::nonNull)
             .forEach(this::addProcess);
+
 
         canvasML.updateProcessModelList(processModelsOnScreen);
 
@@ -315,10 +445,11 @@ public class ModelView implements Observer, FontListener {
      * @param automaton the automata object
      */
     private void addAutomata(Automaton automaton) {
-        //System.out.println("ModelView addAutomata");
-        //System.out.println(automaton.toString());
+        /*System.out.println("ModelView addAutomata");
+        System.out.println(automaton.toString());*/
         //make a new "parent" object for the children to be parents of
         if (processModelsOnScreen.containsKey(automaton.getId())) {
+            System.out.println("onscreenalready");
             // If the automaton is already displayed, but modified.
             // Remove all vertexes that are part of it
             for (GraphNode n : processModelsOnScreen.get(automaton.getId())) {
@@ -330,6 +461,13 @@ public class ModelView implements Observer, FontListener {
         Map<String, GraphNode> nodeMap = new HashMap<>();
 
         //add all the nodes to the graph
+
+        System.out.println(automaton.getRootList().size());
+
+        /*Creates graph nodes objects from automaton object with evaulated termination type and stores them in nodeMap
+        Unsure how rootList works, although rootlist size is determined by automaton being instantiated with "construct-
+        root bool*/
+
         automaton.getNodes().forEach(n -> {
 
             NodeStates nodeTermination = NodeStates.NOMINAL;
@@ -384,10 +522,12 @@ public class ModelView implements Observer, FontListener {
             GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination, nodeTermination,
                 NodeType.AUTOMATA_NODE, "" + n.getLabelNumber(), n);
             nodeMap.put(n.getId(), node);
-         //System.out.println("add "+node.getNodeId()+" "+ node.getNodeColor()+" "+node.getOriginalColor());
+
+            //Adds grapth node to display
             graph.addVertex(node);
         });
 
+        //Connects the node via edges on screen
         automaton.getEdges().forEach(e -> {
             GraphNode to = nodeMap.get(e.getTo().getId());
             GraphNode from = nodeMap.get(e.getFrom().getId());
@@ -414,8 +554,6 @@ public class ModelView implements Observer, FontListener {
         });
 
         this.processModelsOnScreen.replaceValues(automaton.getId(), nodeMap.values());
-
-//System.out.println("ModelView \n "+ automaton.myString());
     }
 
 
@@ -425,6 +563,8 @@ public class ModelView implements Observer, FontListener {
      * @param petri
      */
     private void addPetrinet(Petrinet petri) {
+
+        //Method seems similiar in approach to "addAutomata"
 
         //make a new "parent" object for the children to be parents of
         if (processModelsOnScreen.containsKey(petri.getId())) {
@@ -598,6 +738,8 @@ public class ModelView implements Observer, FontListener {
      * @param modelLabel The name of the model process to be displayed / added to display.
      */
     public void addDisplayedModel(String modelLabel) {
+        //Called when model added to display, Previous methods implicitly invoked due to observering, and ie update
+        //Graph will use processchanged/modelstodisplay in filtering through compilation object
         assert compiledResult.getProcessMap().containsKey(modelLabel);
         assert modelsInList.contains(modelLabel);
 
@@ -797,6 +939,7 @@ public class ModelView implements Observer, FontListener {
 
         sourceCodePro = source;
     }
+
 
 
 }
