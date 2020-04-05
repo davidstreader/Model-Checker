@@ -75,13 +75,14 @@ public class ModelView implements Observer, FontListener {
     private Set<String> processModelsToDisplay;
     private SortedSet<String> modelsInList; // Processes that are in the modelsList combox
     private Multimap<String, GraphNode> processModelsOnScreen; //process on the screen
+    private List<String> processesChanged = new ArrayList<>();
     // Play places token on current Marking
     // from PetriNetPlace find Graph visualisation
     private Map<String, GraphNode> placeId2GraphNode = new TreeMap<>();
     private CompilationObject compiledResult;
-    private List<String> processesChanged = new ArrayList<>();
+
     //map from Id to TokenMapping
-    private Map<String, MappingNdMarking> mappings = new HashMap<>();
+    private Map<String, MappingNdMarking> mappings = new HashMap<>(); //wont be needed
     private MultiGraph workingCanvasArea; //For GraphStream
 
 
@@ -345,12 +346,13 @@ public class ModelView implements Observer, FontListener {
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
         }
 
-
+        //Not needed:
         layoutInitalizer.setDimensions(new Dimension((int) s.getBoundsInParent().getWidth(),
             (int) s.getBoundsInParent().getHeight()));
 
         //From compiled result filter for processModelstoDisplay and processeschanged
         //Then maps these keys for their values and for values that arnt null are sent to addProcess method
+        //Copied into new working fine
         compiledResult.getProcessMap().keySet().stream()
             .filter(processModelsToDisplay::contains)
             .filter(processesChanged::contains)
@@ -358,15 +360,16 @@ public class ModelView implements Observer, FontListener {
             .filter(Objects::nonNull)
             .forEach(this::addProcess);
 
-
+        //Not needed yet
         canvasML.updateProcessModelList(processModelsOnScreen);
 
+        //Not Needed
         if (windowSize == null || !windowSize.equals(s.getBoundsInParent())) {
             windowSize = s.getBoundsInParent();
             layout.setSize(new Dimension((int) windowSize.getWidth(), (int) windowSize.getHeight()));
         }
 
-
+        //Def not needed
         // if the font was imported successfully, set the font
         // (the standard font does not display greek symbols)
         // (i.e. tau and delta events)
@@ -379,15 +382,17 @@ public class ModelView implements Observer, FontListener {
         //set the colour of the nodes
         vv.getRenderContext().setVertexFillPaintTransformer(n -> n.getNodeColor().getColorNodes());
 
-
+        //Not needed:
         //autoscale the graph to fit in the display port
         vv.setPreferredSize(new Dimension((int) windowSize.getWidth(), (int) windowSize.getHeight()));
 
+        //Not needed:
         if (boarder != null) { // must remove old background
             vv.removePreRenderPaintable(boarder);
         }
         /* looks like one paintable added for all graphs But vv has a list of preRender paintables
          *  So could add a one for each automata and then delete one at a time
+         * not needed:
          *  */
         boarder = new AutomataBorderPaintable(vv, this.processModelsOnScreen, compiledResult);
         //This draws the boxes around the automata in the compiledResult
