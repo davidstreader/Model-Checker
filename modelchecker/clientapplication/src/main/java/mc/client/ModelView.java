@@ -13,7 +13,6 @@ import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.VisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
-//import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
@@ -37,7 +36,6 @@ import mc.client.graph.*;
 import mc.client.ui.*;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
-//import mc.compiler.ImpliesResult;
 import mc.compiler.OperationResult;
 import mc.processmodels.MappingNdMarking;
 import mc.processmodels.MultiProcessModel;
@@ -48,18 +46,10 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import org.graphstream.graph.implementations.MultiGraph;
-import org.graphstream.graph.implementations.SingleGraph;
-import org.graphstream.stream.ProxyPipe;
-import org.graphstream.stream.Source;
-import org.graphstream.ui.graphicGraph.GraphicGraph;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
-
 import javax.swing.*;
-
 import org.graphstream.graph.*;
-import org.graphstream.graph.implementations.*;
-
 
 /**
  * Created by bealjaco on 29/11/17.
@@ -68,6 +58,10 @@ import org.graphstream.graph.implementations.*;
  * hateful jung connected here no documentation
  * MUST remove jung! After 2 years still can not find if I can (and how to) change
  * some of the bacis graph features
+ *
+ * Refractoring work commenced by Lachlan on 1/04/20 for his 489 supervised by David
+ * Main intension therin is to replace Jung with new GraphStream framework plus implement new UX features
+ *
  */
 public class ModelView implements Observer, FontListener {
 
@@ -75,37 +69,31 @@ public class ModelView implements Observer, FontListener {
     private Layout<GraphNode, DirectedEdge> layout;
     private SeededRandomizedLayout layoutInitalizer;
     private VisualizationViewer<GraphNode, DirectedEdge> vv;
-
     private Bounds windowSize;
-
     private CanvasMouseListener canvasML;
     private Keylisten keyl;
-   // private CanvasMouseMotionListener cml;
     private Set<String> processModelsToDisplay;
     private SortedSet<String> modelsInList; // Processes that are in the modelsList combox
     private Multimap<String, GraphNode> processModelsOnScreen; //process on the screen
     // Play places token on current Marking
-    //private CurrentMarkingsSeen currentMarkingsSeen = new CurrentMarkingsSeen();
     // from PetriNetPlace find Graph visualisation
     private Map<String, GraphNode> placeId2GraphNode = new TreeMap<>();
-
     private CompilationObject compiledResult;
     private List<String> processesChanged = new ArrayList<>();
-
     //map from Id to TokenMapping
     private Map<String, MappingNdMarking> mappings = new HashMap<>();
+    private MultiGraph workingCanvasArea; //For GraphStream
 
-    private MultiGraph workingCanvasArea;
 
-
-    public void cleanData(){
-       if (!(mappings == null)) mappings.clear();
+    public void cleanData() {
+        if (!(mappings == null)) mappings.clear();
         if (!(placeId2GraphNode == null)) placeId2GraphNode.clear();
         if (!(processModelsOnScreen == null)) processModelsOnScreen.clear();
         if (!(modelsInList == null)) modelsInList.clear();
         if (!(processModelsToDisplay == null)) processModelsToDisplay.clear();
 
     }
+
     private VisualizationServer.Paintable boarder;
     private static Font sourceCodePro;
     private boolean fontListening = false;
@@ -122,23 +110,20 @@ public class ModelView implements Observer, FontListener {
 
 
     @Override
-    public void changeFontSize() {  // Lister Pattern
-        //System.out.println( "       ModelView changeFont ");
+    public void changeFontSize() {
         float fs = settings.getFont();
         ModelView.sourceCodePro = ModelView.sourceCodePro.deriveFont(fs);
-        //System.out.println("ModelView changeFont called with "+fs);
 
     }
 
     public ProcessModel getProcess(String id) {
         return compiledResult.getProcessMap().get(id);
     }
+
     public void removeProcess(String id) {
-
         compiledResult.getProcessMap().remove(id);
-      //  boarder.paint();
-
     }
+
     /**
      * This method is called whenever the observed object is changed. An
      * application calls an <tt>Observable</tt> object's
@@ -157,7 +142,6 @@ public class ModelView implements Observer, FontListener {
 
         processesChanged.clear();
         compiledResult = (CompilationObject) arg;
-
 
 
         //Extracts set of ProcessModel maps and converts into set of Multiprocess maps called to expand
@@ -198,7 +182,6 @@ public class ModelView implements Observer, FontListener {
                 }
             }
         }
-
 
 
         //Removes the original process map leaving the expanded node and edge data from before
@@ -242,12 +225,18 @@ public class ModelView implements Observer, FontListener {
         return vv;
     }
 
+
+
     public JPanel updateGraphNew(SwingNode modelDisplayNew) {
 
         //Reinitialise The Working Canvas area
         JPanel workingCanvasAreaContainer = new JPanel();
         workingCanvasAreaContainer.setLayout(new BorderLayout());
         workingCanvasArea = new MultiGraph("WorkingCanvasArea"); //field
+        workingCanvasArea.addAttribute("ui.stylesheet", getStyleSheet());
+        workingCanvasArea.addAttribute("ui.quality");
+        workingCanvasArea.addAttribute("ui.antialias");
+
         Viewer workingCanvasAreaViewer = new Viewer(workingCanvasArea, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
         workingCanvasAreaViewer.enableAutoLayout();
         View workingCanvasAreaView = workingCanvasAreaViewer.addDefaultView(false);
@@ -268,6 +257,12 @@ public class ModelView implements Observer, FontListener {
 
         //Return the Now updated canvas to UIC
         return workingCanvasAreaContainer;
+    }
+
+    private String getStyleSheet() {
+        String s = "node { text-size: 20; } edge { text-size: 20;}";
+
+        return s;
     }
 
     private void addProcessNew(ProcessModel p) {
@@ -298,17 +293,15 @@ public class ModelView implements Observer, FontListener {
 
         //add all the nodes to the graph
 
-        System.out.println(automaton.getRootList().size());
-
         /*Creates graph nodes objects from automaton object with evaulated termination type and stores them in nodeMap
         Unsure how rootList works, although rootlist size is determined by automaton being instantiated with "construct-
         root bool*/
 
+
         automaton.getNodes().forEach(n -> {
 
+
             NodeStates nodeTermination = NodeStates.NOMINAL;
-
-
 
 
             GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination, nodeTermination,
@@ -317,6 +310,14 @@ public class ModelView implements Observer, FontListener {
 
             //Adds grapth node to display
             Node cn = workingCanvasArea.addNode(n.getId());
+
+            System.out.println(n.getId());
+
+            if(n.isStartNode()) {
+                cn.addAttribute("ui.label", automaton.getId());
+            } else {
+                cn.addAttribute("ui.label", n.getId());
+            }
 
 
         });
@@ -336,26 +337,30 @@ public class ModelView implements Observer, FontListener {
                 ass = "";
             }
             if (settings.isShowOwners()) {
-                label +=  e.getEdgeOwners();
+                label += e.getEdgeOwners();
             }
             if (settings.isShowOptional()) {
-                if (e.getMarkedOwners()!= null && e.getMarkedOwners().size() > 0 &&
-                    !e.getMarkedOwners().equals(e.getEdgeOwners()))  bool += (" mk"+e.getMarkedOwners());
+                if (e.getMarkedOwners() != null && e.getMarkedOwners().size() > 0 &&
+                    !e.getMarkedOwners().equals(e.getEdgeOwners())) bool += (" mk" + e.getMarkedOwners());
 
             }
 
-            workingCanvasArea.addEdge("test" + Math.random(), from.getNodeId(), to.getNodeId());
+            Edge edge = workingCanvasArea.addEdge("test" + Math.random(), from.getNodeId(), to.getNodeId());
+
+            edge.addAttribute("ui.label", label);
 
             //graph.addEdge(new DirectedEdge(bool, label + "", ass, UUID.randomUUID().toString()), from, to);
         });
 
-        //Node cn = workingCanvasArea.addNode("extra");
+        /*Node cn = workingCanvasArea.addNode("Title");
+        workingCanvasArea.addEdge("test" + Math.random(), "Title", "A.n0");
+        workingCanvasArea.addEdge("test" + Math.random(), "Title", "A.n3");*/
+
 
         this.processModelsOnScreen.replaceValues(automaton.getId(), nodeMap.values());
 
 
-        System.out.println("NC: " + workingCanvasArea.getNodeCount());
-        System.out.println("done printing nodes");
+
     }
 
 
@@ -414,8 +419,8 @@ public class ModelView implements Observer, FontListener {
             vv.removePreRenderPaintable(boarder);
         }
         /* looks like one paintable added for all graphs But vv has a list of preRender paintables
-        *  So could add a one for each automata and then delete one at a time
-        *  */
+         *  So could add a one for each automata and then delete one at a time
+         *  */
         boarder = new AutomataBorderPaintable(vv, this.processModelsOnScreen, compiledResult);
         //This draws the boxes around the automata in the compiledResult
         vv.addPreRenderPaintable(boarder);
@@ -449,7 +454,6 @@ public class ModelView implements Observer, FontListener {
         System.out.println(automaton.toString());*/
         //make a new "parent" object for the children to be parents of
         if (processModelsOnScreen.containsKey(automaton.getId())) {
-            System.out.println("onscreenalready");
             // If the automaton is already displayed, but modified.
             // Remove all vertexes that are part of it
             for (GraphNode n : processModelsOnScreen.get(automaton.getId())) {
@@ -462,7 +466,6 @@ public class ModelView implements Observer, FontListener {
 
         //add all the nodes to the graph
 
-        System.out.println(automaton.getRootList().size());
 
         /*Creates graph nodes objects from automaton object with evaulated termination type and stores them in nodeMap
         Unsure how rootList works, although rootlist size is determined by automaton being instantiated with "construct-
@@ -542,11 +545,11 @@ public class ModelView implements Observer, FontListener {
                 ass = "";
             }
             if (settings.isShowOwners()) {
-                label +=  e.getEdgeOwners();
+                label += e.getEdgeOwners();
             }
             if (settings.isShowOptional()) {
-                if (e.getMarkedOwners()!= null && e.getMarkedOwners().size() > 0 &&
-                    !e.getMarkedOwners().equals(e.getEdgeOwners()))  bool += (" mk"+e.getMarkedOwners());
+                if (e.getMarkedOwners() != null && e.getMarkedOwners().size() > 0 &&
+                    !e.getMarkedOwners().equals(e.getEdgeOwners())) bool += (" mk" + e.getMarkedOwners());
 
             }
 
@@ -648,7 +651,7 @@ public class ModelView implements Observer, FontListener {
         petri.getTransitions().values().stream().filter(x -> !x.isBlocked())
             .forEach(transition -> {
                 String lab = "";
-                if (settings.isShowIds()) lab += transition.getId()+"-";
+                if (settings.isShowIds()) lab += transition.getId() + "-";
                 lab += transition.getLabel() + "";
     /*  if (settings.isShowOwners()) {
         for(String o:transition.getOwners()){lab+=o;}
@@ -664,7 +667,6 @@ public class ModelView implements Observer, FontListener {
             });
 
 
-
         float dash[] = {10.0f};
         for (PetriNetEdge edge : petri.getEdgesNotBlocked().values()) {
             //System.out.println(edge.myString());
@@ -673,14 +675,14 @@ public class ModelView implements Observer, FontListener {
             //           BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
             // EdgeType et = EdgeType.DIRECTED;
             String lab = "";
-            if (settings.isShowIds()) lab += edge.getId()+"-";
+            if (settings.isShowIds()) lab += edge.getId() + "-";
             if (edge.getOptional()) {
 
                 // et = EdgeType.UNDIRECTED;//NICE try but fails
                 lab = "Opt";
                 int i = edge.getOptionNum();
                 if (i > 0) {
-                    lab  = lab+i;
+                    lab = lab + i;
                 }
             }
             if (settings.isShowOwners()) {
@@ -692,7 +694,7 @@ public class ModelView implements Observer, FontListener {
                 }
                 //System.out.println("Owners added");
                 for (String o : (place).getOwners()) {
-                    lab += ("."+o);
+                    lab += ("." + o);
                 }
             }
 
@@ -747,6 +749,7 @@ public class ModelView implements Observer, FontListener {
         processModelsToDisplay.add(modelLabel);
         //  canvasML. refreshtransitionColor();
     }
+
     /* Guesing  dstr */
     public void removeDisplayedModel(String modelLabel) {
         assert compiledResult.getProcessMap().containsKey(modelLabel);
@@ -756,6 +759,7 @@ public class ModelView implements Observer, FontListener {
         processModelsToDisplay.remove(modelLabel);
         //  canvasML. refreshtransitionColor();
     }
+
     public void clearDisplayed() {
         processModelsToDisplay.clear();
         initalise();
@@ -817,7 +821,7 @@ public class ModelView implements Observer, FontListener {
                 graph.removeVertex(vertex);
             }
             processModelsOnScreen.removeAll(automataLabel);  // hope to remove the background
-          // boarder.
+            // boarder.
         }
     }
 
@@ -879,11 +883,10 @@ public class ModelView implements Observer, FontListener {
         vv.setGraphMouse(gm);
 
 
-
         Boolean keyX = false;
         keyl = new Keylisten(keyX);
         vv.addKeyListener(keyl);
-        canvasML = new CanvasMouseListener(processModelsOnScreen, vv, mappings,keyX);
+        canvasML = new CanvasMouseListener(processModelsOnScreen, vv, mappings, keyX);
         // cml = new CanvasMouseMotionListener(vv);
         vv.addMouseListener(canvasML);
 
@@ -906,12 +909,14 @@ public class ModelView implements Observer, FontListener {
         // vv.getRenderContext().getEdgeLabelTransformer().;
         processModelsOnScreen = MultimapBuilder.hashKeys().hashSetValues().build();
         //  settings.addFontListener(this); can NOY be done here ?!?
+
+
     }
 
-/*
-     This seems to work - methods are not static and the constructor is private
-     To call foo() you have to call ModelView.getInstance.foo()
- */
+    /*
+         This seems to work - methods are not static and the constructor is private
+         To call foo() you have to call ModelView.getInstance.foo()
+     */
     @Getter
     private static ModelView instance = new ModelView();
 
@@ -939,7 +944,6 @@ public class ModelView implements Observer, FontListener {
 
         sourceCodePro = source;
     }
-
 
 
 }
