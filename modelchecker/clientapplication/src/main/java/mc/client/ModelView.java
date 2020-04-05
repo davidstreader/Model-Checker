@@ -260,9 +260,14 @@ public class ModelView implements Observer, FontListener {
     }
 
     private String getStyleSheet() {
-        String s = "node { text-size: 20; } edge { text-size: 20;}";
-
-        return s;
+        return "node {" +
+            "text-size: 20;" +
+            " " +
+            "}" +
+            "edge {" +
+            " " +
+            "text-size: 20;" +
+            "}";
     }
 
     private void addProcessNew(ProcessModel p) {
@@ -278,48 +283,23 @@ public class ModelView implements Observer, FontListener {
 
     private void addAutomataNew(Automaton automaton) {
 
-        /*//make a new "parent" object for the children to be parents of
-        if (processModelsOnScreen.containsKey(automaton.getId())) {
-            System.out.println("onscreenalready");
-            // If the automaton is already displayed, but modified.
-            // Remove all vertexes that are part of it
-            for (GraphNode n : processModelsOnScreen.get(automaton.getId())) {
-                graph.removeVertex(n);
-            }
-            processModelsOnScreen.removeAll(automaton.getId());
-        }*/
-
         Map<String, GraphNode> nodeMap = new HashMap<>();
 
-        //add all the nodes to the graph
-
-        /*Creates graph nodes objects from automaton object with evaulated termination type and stores them in nodeMap
-        Unsure how rootList works, although rootlist size is determined by automaton being instantiated with "construct-
-        root bool*/
-
-
+        //Adds grapth node to display
         automaton.getNodes().forEach(n -> {
-
-
             NodeStates nodeTermination = NodeStates.NOMINAL;
-
 
             GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination, nodeTermination,
                 NodeType.AUTOMATA_NODE, "" + n.getLabelNumber(), n);
             nodeMap.put(n.getId(), node);
 
-            //Adds grapth node to display
             Node cn = workingCanvasArea.addNode(n.getId());
-
-            System.out.println(n.getId());
 
             if(n.isStartNode()) {
                 cn.addAttribute("ui.label", automaton.getId());
             } else {
                 cn.addAttribute("ui.label", n.getId());
             }
-
-
         });
 
         //Connects the node via edges on screen
@@ -339,24 +319,12 @@ public class ModelView implements Observer, FontListener {
             if (settings.isShowOwners()) {
                 label += e.getEdgeOwners();
             }
-            if (settings.isShowOptional()) {
-                if (e.getMarkedOwners() != null && e.getMarkedOwners().size() > 0 &&
-                    !e.getMarkedOwners().equals(e.getEdgeOwners())) bool += (" mk" + e.getMarkedOwners());
-
-            }
 
             Edge edge = workingCanvasArea.addEdge("test" + Math.random(), from.getNodeId(), to.getNodeId());
-
             edge.addAttribute("ui.label", label);
-
-            //graph.addEdge(new DirectedEdge(bool, label + "", ass, UUID.randomUUID().toString()), from, to);
         });
 
-        /*Node cn = workingCanvasArea.addNode("Title");
-        workingCanvasArea.addEdge("test" + Math.random(), "Title", "A.n0");
-        workingCanvasArea.addEdge("test" + Math.random(), "Title", "A.n3");*/
-
-
+        //DK if need this yet:
         this.processModelsOnScreen.replaceValues(automaton.getId(), nodeMap.values());
 
 
