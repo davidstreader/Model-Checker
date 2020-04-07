@@ -263,11 +263,17 @@ public class ModelView implements Observer, FontListener {
     private String getStyleSheet() {
         return "node {" +
             "text-size: 20;" +
-            " " +
+            "size: 30px; " +
+            "fill-color: green;" +
             "}" +
             "edge {" +
             " " +
             "text-size: 20;" +
+            "arrow-shape: arrow;" +
+            "}" +
+
+            "graph {" +
+            "fill-color: white;" +
             "}";
     }
 
@@ -296,6 +302,8 @@ public class ModelView implements Observer, FontListener {
 
             Node cn = workingCanvasArea.addNode(n.getId());
 
+
+
             if(n.isStartNode()) {
                 cn.addAttribute("ui.label", automaton.getId());
             } else {
@@ -321,8 +329,9 @@ public class ModelView implements Observer, FontListener {
                 label += e.getEdgeOwners();
             }
 
-            Edge edge = workingCanvasArea.addEdge("test" + Math.random(), from.getNodeId(), to.getNodeId());
+            Edge edge = workingCanvasArea.addEdge("test" + Math.random(), from.getNodeId(), to.getNodeId(), true);
             edge.addAttribute("ui.label", label);
+
         });
 
         //DK if need this yet:
