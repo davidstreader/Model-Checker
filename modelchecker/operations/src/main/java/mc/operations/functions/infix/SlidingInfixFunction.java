@@ -9,13 +9,14 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * The sliding infix function is a "decaying choice" or "sliding choice" operation.
  * <p>
  * This is a choice that may decay into only one possible execution path.
  * <p>
- * This is defined in CSP as: {@code P ▷ Q ≜ (P ⊓ STOP) ☐ Q}
+ *
  *
  * @author Jacob Beal
  * @see InternalChoiceInfixFunction
@@ -80,7 +81,7 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
         null,
         null,
         false);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException | ExecutionException e) {
       throw new CompilationException(getClass(), "Interrupted in compilation!");
     }
 

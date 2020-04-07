@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class UserInterfaceApplication extends Application {
     @Getter
@@ -80,6 +81,7 @@ public class UserInterfaceApplication extends Application {
 
 
     public static void main(String[] args) {
+        System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
         launch(args);
     }
 

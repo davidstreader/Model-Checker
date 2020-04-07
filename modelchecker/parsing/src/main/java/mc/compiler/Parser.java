@@ -19,6 +19,7 @@ import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static mc.util.Utils.instantiateClass;
@@ -71,7 +72,7 @@ public class Parser {
         return new CompilationException(Parser.class, message, location);
     }
 
-    public AbstractSyntaxTree parse(List<Token> tokens, Context context) throws CompilationException, InterruptedException {
+    public AbstractSyntaxTree parse(List<Token> tokens, Context context) throws CompilationException, InterruptedException, ExecutionException {
         reset();
         //System.out.println("Parse input " + tokens);
         this.tokens = tokens;
@@ -151,7 +152,7 @@ public class Parser {
      *
      * @return -- the parsed @code{ActionLabelNode}
      */
-    private ActionLabelNode parseActionLabel() throws CompilationException, InterruptedException {
+    private ActionLabelNode parseActionLabel() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         StringBuilder builder = new StringBuilder();
         //System.out.println("parseActionLabel Start " + peekToken().toString());
@@ -233,7 +234,7 @@ public class Parser {
      *
      * @return -- @code{String} variable that is used by the parsed @code{ActionRange}
      */
-    private String parseActionRange() throws CompilationException, InterruptedException {
+    private String parseActionRange() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         String variable;
         if (hasLabel()) {
@@ -282,7 +283,7 @@ public class Parser {
      *
      * @return -- the parsed @code{RangeNode}
      */
-    private RangeNode parseRange() throws CompilationException, InterruptedException {
+    private RangeNode parseRange() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
 
         // parse the next expression and evaluate it if necessary to get the start value of the range
@@ -338,7 +339,7 @@ public class Parser {
      *
      * @return -- the parsed @code{SetNode}
      */
-    private SetNode parseSet() throws CompilationException, InterruptedException {
+    private SetNode parseSet() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         //System.out.println("parseSet()");
         // ensure the next token is the '{' token
@@ -385,7 +386,7 @@ public class Parser {
 
     // "const"  Constant definitions
 
-    private void parseConstDefinition() throws CompilationException, InterruptedException {
+    private void parseConstDefinition() throws CompilationException, InterruptedException, ExecutionException {
         // ensure that the next token is the 'const' token
         if (!(nextToken() instanceof ConstToken)) {
             Token error = tokens.get(index - 1);
@@ -411,7 +412,7 @@ public class Parser {
         int start = index;
         try {
             intValue = parseSimpleIntExpression();
-        } catch (CompilationException e) {
+        } catch (CompilationException | ExecutionException e) {
             isInt = false;
             index = start;
             realValue = parseSimpleRealExpression();
@@ -432,7 +433,7 @@ public class Parser {
         }
     }
 
-    private void parseRangeDefinition() throws CompilationException, InterruptedException {
+    private void parseRangeDefinition() throws CompilationException, InterruptedException, ExecutionException {
         // ensure the next token is the 'range' token
         if (!(nextToken() instanceof RangeToken)) {
             Token error = tokens.get(index - 1);
@@ -474,7 +475,7 @@ public class Parser {
         constantMap.put(identifier.getIdentifier(), range);
     }
 
-    private void parseSetDefinition() throws CompilationException, InterruptedException {
+    private void parseSetDefinition() throws CompilationException, InterruptedException, ExecutionException {
         // ensure that the next token is the 'set' token
         if (!(nextToken() instanceof SetToken)) {
             Token error = tokens.get(index - 1);
@@ -506,7 +507,7 @@ public class Parser {
     }
 
     //parsing the processes  "processes {"
-    private void parseProcessesDefinition() throws CompilationException, InterruptedException {
+    private void parseProcessesDefinition() throws CompilationException, InterruptedException, ExecutionException {
         nextToken();// Eat the ProcessDefintionToken
 
         Token token = peekToken();
@@ -529,7 +530,7 @@ public class Parser {
      * @throws CompilationException
      * @throws InterruptedException
      */
-    private void parseSingleProcessDefinition() throws CompilationException, InterruptedException {
+    private void parseSingleProcessDefinition() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
 
         //System.out.println("parseSingleProcessDefinition() " + peekToken().toString());
@@ -626,7 +627,7 @@ public class Parser {
         processes.add(processNode);
     }
 
-    private void parseProcessDefinitionBlock() throws CompilationException, InterruptedException {
+    private void parseProcessDefinitionBlock() throws CompilationException, InterruptedException, ExecutionException {
         // ensure that the next token is the '{' token
         if (!(nextToken() instanceof OpenBraceToken)) {
             Token error = tokens.get(index - 1);
@@ -666,7 +667,7 @@ public class Parser {
     }
 
 
-    private LocalProcessNode parseLocalProcessDefinition(Set<String> localIdentifiers) throws CompilationException, InterruptedException {
+    private LocalProcessNode parseLocalProcessDefinition(Set<String> localIdentifiers) throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         IdentifierNode identifier = parseIdentifier();
 
@@ -699,7 +700,7 @@ public class Parser {
     /*
        Only call for Process definition
      */
-    private LocalProcessNode parseLocalProcessDef4All(Set<String> localIdentifiers) throws CompilationException, InterruptedException {
+    private LocalProcessNode parseLocalProcessDef4All(Set<String> localIdentifiers) throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         IdentifierNode identifier = parseIdentifier();
         //System.out.println("parseLocalProcessDef4All identifier " + identifier);
@@ -887,7 +888,7 @@ public class Parser {
      process + relabel + hide
    */
 
-    private ASTNode parseComposite() throws CompilationException, InterruptedException {
+    private ASTNode parseComposite() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         //System.out.println("parsing Composite " + peekToken().toString());
         String label = null;
@@ -934,7 +935,7 @@ public class Parser {
         return process;
     }
 
-    private ASTNode parseChoice() throws CompilationException, InterruptedException {
+    private ASTNode parseChoice() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         //System.out.println("parseChoice peek "+peekToken().toString());
         ASTNode process = parseLocalProcess();
@@ -950,7 +951,7 @@ public class Parser {
 
     //could be  pingo -> C[i+1][0]..
 
-    private ASTNode parseLocalProcess() throws CompilationException, InterruptedException {
+    private ASTNode parseLocalProcess() throws CompilationException, InterruptedException, ExecutionException {
         if (peekToken() instanceof OpenParenToken) {
             nextToken();
             ASTNode process = parseComposite();
@@ -968,7 +969,7 @@ public class Parser {
         return parseBaseLocalProcess();
     }
 
-    private ASTNode parseSequence() throws CompilationException, InterruptedException {
+    private ASTNode parseSequence() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
 
         int rangeStart = actionRanges.size();
@@ -1009,7 +1010,7 @@ public class Parser {
      * @throws CompilationException
      * @throws InterruptedException
      */
-    private ASTNode parseBaseLocalProcess() throws CompilationException, InterruptedException {
+    private ASTNode parseBaseLocalProcess() throws CompilationException, InterruptedException, ExecutionException {
         if (peekToken() instanceof TerminalToken) {
             return parseTerminal();
         } else if (peekToken() instanceof IdentifierToken) {
@@ -1049,7 +1050,7 @@ public class Parser {
         throw constructException("expecting to parse a base local process but received \"" + peekToken().toString() + "\"");
     }
 
-    private ConversionNode parseConversion() throws CompilationException, InterruptedException {
+    private ConversionNode parseConversion() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         String type = nextToken().toString();
         String from = ConversionNode.nameMap.get(type).get(0);
@@ -1058,7 +1059,7 @@ public class Parser {
         return new ConversionNode(from, to, process, constructLocation(start));
     }
 
-    private FunctionNode parseFunction() throws CompilationException, InterruptedException {
+    private FunctionNode parseFunction() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
 
         String type = parseFunctionType();
@@ -1217,7 +1218,7 @@ public class Parser {
         return flags;
     }
 
-    private FunctionNode parseCasting() throws CompilationException, InterruptedException {
+    private FunctionNode parseCasting() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         String cast = parseCastType();
 
@@ -1239,7 +1240,7 @@ public class Parser {
         return new FunctionNode(cast, Collections.singletonList(process), constructLocation(start));
     }
 
-    private IfStatementExpNode parseIfStatement() throws CompilationException, InterruptedException {
+    private IfStatementExpNode parseIfStatement() throws CompilationException, InterruptedException, ExecutionException {
         // ensure that the next token is a 'if' token
         if (!(nextToken() instanceof IfToken)) {
             Token error = tokens.get(index - 1);
@@ -1274,7 +1275,7 @@ public class Parser {
         return new IfStatementExpNode((BoolExpr) expression, trueBranch, constructLocation(start), context);
     }
 
-    private IfStatementExpNode parseWhenStatement() throws CompilationException, InterruptedException {
+    private IfStatementExpNode parseWhenStatement() throws CompilationException, InterruptedException, ExecutionException {
         // ensure that the next token is a 'when' token
 
         if (!(nextToken() instanceof WhenToken)) {
@@ -1305,7 +1306,7 @@ public class Parser {
       This is called only in Process Definition NOT in Equations
       forall [n:1..N] (  )
      */
-    private ForAllStatementNode parseForAllStatement() throws CompilationException, InterruptedException {
+    private ForAllStatementNode parseForAllStatement() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         // ensure that the next token is a 'forall' token
         if (!(nextToken() instanceof ForAllToken)) {
@@ -1390,7 +1391,7 @@ public class Parser {
         return builder.toString();
     }
 
-    private RangesNode parseRanges() throws CompilationException, InterruptedException {
+    private RangesNode parseRanges() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         //System.out.println("parse Range start ");
         if (!(peekToken() instanceof OpenBracketToken)) {
@@ -1492,7 +1493,7 @@ public class Parser {
     /*
        Relabeling ?  what about tau?
      */
-    private RelabelNode parseRelabel() throws CompilationException, InterruptedException {
+    private RelabelNode parseRelabel() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         if (!(nextToken() instanceof DivisionToken)) {
             Token error = tokens.get(index - 1);
@@ -1533,7 +1534,7 @@ public class Parser {
         return new RelabelNode(relabels, constructLocation(start));
     }
 
-    private RelabelElementNode parseRelabelElement() throws CompilationException, InterruptedException {
+    private RelabelElementNode parseRelabelElement() throws CompilationException, InterruptedException, ExecutionException {
 
         //System.out.println("Parsing relabeling ");
         int start = index;
@@ -1575,7 +1576,7 @@ public class Parser {
        FOR  "hiding { a,b} P"  OR "hiding {[i;0..N], ..} P"
        see below for "P\{a,b,...}" OR P\{[i;0..N], ..}"
      */
-    private ASTNode parseHiding() throws CompilationException, InterruptedException {
+    private ASTNode parseHiding() throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("parseHiding()");
         int start = index;
         if (!(nextToken() instanceof HidingToken)) {
@@ -1614,7 +1615,7 @@ public class Parser {
         "P\{a,b,...}" OR P\{[i;0..N], ..}"
        FOR  "hiding { a,b} P"  OR "hiding {[i;0..N], ..} P" see above
      */
-    private HideNode parseHide() throws CompilationException, InterruptedException {
+    private HideNode parseHide() throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("parseHide()");
         int start = index;
         if (!(peekToken() instanceof HideToken) && !(peekToken() instanceof AtToken)) {
@@ -1675,7 +1676,7 @@ public class Parser {
         return new VariableSetNode(variables, constructLocation(start));
     }
 
-    private InterruptNode parseInterrupt() throws CompilationException, InterruptedException {
+    private InterruptNode parseInterrupt() throws CompilationException, InterruptedException, ExecutionException {
         int start = index;
         if (!(nextToken() instanceof InterruptToken)) {
             Token error = tokens.get(index - 1);
@@ -1694,7 +1695,7 @@ public class Parser {
         return new InterruptNode(action, process, constructLocation(start));
     }
 
-    private void parseEquation() throws CompilationException, InterruptedException {
+    private void parseEquation() throws CompilationException, InterruptedException, ExecutionException {
         if (!(nextToken() instanceof EquationToken)) {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"equation\" but received \"" + error.toString() + "\"", error.getLocation());
@@ -1708,7 +1709,7 @@ public class Parser {
         }
     }
 
-    private void parseAlphabet() throws CompilationException, InterruptedException {
+    private void parseAlphabet() throws CompilationException, InterruptedException, ExecutionException {
         if (!(nextToken() instanceof AlphabetToken)) {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"alphabet\" but received \"" + error.toString() + "\"", error.getLocation());
@@ -1721,7 +1722,7 @@ public class Parser {
         }
     }
 
-    private void parseAlphabetBlock(boolean isEq) throws CompilationException, InterruptedException {
+    private void parseAlphabetBlock(boolean isEq) throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("parseAlphabetBlock "+ peekToken().toString());
 
         if (!(nextToken() instanceof OpenBraceToken)) {
@@ -1747,7 +1748,7 @@ public class Parser {
      * @throws CompilationException
      * @throws InterruptedException
      */
-    private void parseOperation() throws CompilationException, InterruptedException {
+    private void parseOperation() throws CompilationException, InterruptedException, ExecutionException {
         if (!(nextToken() instanceof OperationToken)) {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"operation\" but received \"" + error.toString() + "\"", error.getLocation());
@@ -1767,7 +1768,7 @@ public class Parser {
      "Aut(A)" stores the type automaton on Operation node
      isEq diferentiates operations from equations
   */
-    private void parseAndStoreSingleOperation(boolean isEq) throws CompilationException, InterruptedException {
+    private void parseAndStoreSingleOperation(boolean isEq) throws CompilationException, InterruptedException, ExecutionException {
         OperationNode operation = parseSingleOperation(isEq, false);
         //System.out.println("parseAndStoreSingleOperation "+ operation.myString());
         //if (operation == null)System.out.println("op = null");
@@ -1782,7 +1783,7 @@ public class Parser {
     /*
         Parsing  "A ~ B"  or X <qsf Y"  or "A~B ==> A<fB" or "A~B && A<tB ==> A<fB"
      */
-    private OperationNode parseSingleOperation(boolean isEq, boolean forall) throws CompilationException, InterruptedException {
+    private OperationNode parseSingleOperation(boolean isEq, boolean forall) throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("parseSingleOperation "+ peekToken().toString());
 
         int start = index;
@@ -1830,7 +1831,7 @@ public class Parser {
     // isEq diferentiates operations from equations
     // Working for Equations
 
-    private OperationNode parseSOperation(boolean isEq) throws CompilationException, InterruptedException {
+    private OperationNode parseSOperation(boolean isEq) throws CompilationException, InterruptedException, ExecutionException {
 
         //System.out.println("parseSOperation "+isEq);
         int start = index;
@@ -1902,7 +1903,7 @@ public class Parser {
       nextToken increments index
       parseing   "forall{N,M,..}(" op ")" returning op
        */
-    private OperationNode parseForAllVarsAndOp(boolean isEq) throws CompilationException, InterruptedException {
+    private OperationNode parseForAllVarsAndOp(boolean isEq) throws CompilationException, InterruptedException, ExecutionException {
         List<String> vars = new ArrayList<>();
         int start = index;
         //System.out.println("Parseing ForAllVars");
@@ -1946,7 +1947,7 @@ public class Parser {
     }
 
 
-    private void parseOperationBlock(boolean isEq) throws CompilationException, InterruptedException {
+    private void parseOperationBlock(boolean isEq) throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("parseOperationBlock "+ peekToken().toString());
 
         if (!(nextToken() instanceof OpenBraceToken)) {
@@ -2122,7 +2123,7 @@ public class Parser {
         Seperate parsing from evaluating allow double to be returned whe needed
      */
 // const and range
-    private int parseSimpleIntExpression() throws CompilationException, InterruptedException {
+    private int parseSimpleIntExpression() throws CompilationException, InterruptedException, ExecutionException {
         List<String> exprTokens = new ArrayList<>();
         int start = index;
         parseSimpleExpression(exprTokens, true);
@@ -2132,7 +2133,7 @@ public class Parser {
     }
 
 
-    private double parseSimpleRealExpression() throws CompilationException, InterruptedException {
+    private double parseSimpleRealExpression() throws CompilationException, InterruptedException, ExecutionException {
         //System.out.println("parseSimpleRealExpression");
         List<String> exprTokens = new ArrayList<>();
         int start = index;
@@ -2261,7 +2262,7 @@ public class Parser {
         return false;
     }
 
-    private String parseActionRangeOrExpression() throws CompilationException, InterruptedException {
+    private String parseActionRangeOrExpression() throws CompilationException, InterruptedException, ExecutionException {
         int currentIndex = index;
         int currentVarId = variableId;
 

@@ -34,10 +34,7 @@ import java.io.*;
 import java.net.URL;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
@@ -59,9 +56,11 @@ public class UserInterfaceController implements Initializable, FontListener {
   @FXML
   private SwingNode modelDisplay;
   @FXML
-  private SwingNode newDisplay;
+  private SwingNode modelDisplayNew;
   @FXML
   private ComboBox<String> modelsList;
+  @FXML
+  private ComboBox<String> modelsListNew;
   @FXML
   private MenuItem newMenuItem;
   @FXML
@@ -75,11 +74,19 @@ public class UserInterfaceController implements Initializable, FontListener {
     @FXML
     private Button addBtn;
     @FXML
+    private Button addBtnNew;
+    @FXML
     private Button frzBtn;
+    @FXML
+    private Button frzBtnNew;
     @FXML
     private Button unfrzBtn;
     @FXML
+    private Button unfrzBtnNew;
+    @FXML
     private Button removeBtn;
+    @FXML
+    private Button removeBtnNew;
 
     // for keep updating the file that has already been saved.
   private File currentOpenFile = null;
@@ -116,6 +123,14 @@ public class UserInterfaceController implements Initializable, FontListener {
         unfrzBtn.setStyle("-fx-background-color: "+col);
         removeBtn.setStyle("-fx-background-color: "+col);
         modelsList.setStyle("-fx-background-color: "+col);
+
+        //New Tab
+        addBtnNew.setStyle("-fx-background-color: "+col);
+        frzBtnNew.setStyle("-fx-background-color: "+col);
+        unfrzBtnNew.setStyle("-fx-background-color: "+col);
+        removeBtnNew.setStyle("-fx-background-color: "+col);
+        modelsListNew.setStyle("-fx-background-color: "+col);
+
         //Load recent files
       BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("recentfiles.conf")));
       String line;
@@ -136,6 +151,7 @@ public class UserInterfaceController implements Initializable, FontListener {
     ModelView.getInstance().setSettings(settingsController);
     // Have to initialise it or there is a delay between the graph becoming ready and actually displaying things
     SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
+    SwingUtilities.invokeLater(() -> modelDisplayNew.setContent(ModelView.getInstance().updateGraphNew(modelDisplayNew)));
     // SO the Swing node can be used as a canvas  HOW?
 
     //register a callback for whenever the list of automata is changed
@@ -568,7 +584,9 @@ public class UserInterfaceController implements Initializable, FontListener {
  */
   @FXML
   private void handleAddSelectedModel(ActionEvent event) {
+      System.out.println("here1");
     if (modelsList.getSelectionModel().getSelectedItem() != null && modelsList.getSelectionModel().getSelectedItem() instanceof String) {
+
 
       ModelView.getInstance().addDisplayedModel(modelsList.getSelectionModel().getSelectedItem());
       SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
@@ -578,6 +596,27 @@ public class UserInterfaceController implements Initializable, FontListener {
       //  GraphView gv = new GraphView(pm);
       // SwingUtilities.invokeLater(() -> newDisplay.setContent(gv.display(newDisplay)));
     }
+
+  }
+
+  @FXML
+  private void handleAddSelectedModelNew(ActionEvent event) {
+
+      System.out.println("here2");
+      //New Tab
+
+      if (modelsListNew.getSelectionModel().getSelectedItem() != null && modelsListNew.getSelectionModel().getSelectedItem() instanceof String) {
+
+
+
+          ModelView.getInstance().addDisplayedModel(modelsListNew.getSelectionModel().getSelectedItem());
+          SwingUtilities.invokeLater(() -> modelDisplayNew.setContent(ModelView.getInstance().updateGraphNew(modelDisplayNew)));
+
+          //dstr ProcessModel pm = ModelView.getInstance().getProcess(modelsList.getSelectionModel().getSelectedItem());
+
+          //  GraphView gv = new GraphView(pm);
+          // SwingUtilities.invokeLater(() -> newDisplay.setContent(gv.display(newDisplay)));
+      }
   }
 
   @FXML
@@ -703,6 +742,7 @@ public class UserInterfaceController implements Initializable, FontListener {
         compilerOutputDisplay.appendText("Starting build..." + "\n");
 
         modelsList.getItems().clear();
+        modelsListNew.getItems().clear();
 
 /*
      buildThread  runs in seerate thread and creats a  second Thread  to
@@ -774,9 +814,11 @@ public class UserInterfaceController implements Initializable, FontListener {
                   userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
               }
             });
+          } catch (ExecutionException e) {
+              e.printStackTrace();
           }
 
-          Platform.runLater(() -> {
+            Platform.runLater(() -> {
             compileButton.setText("Compile");
           });
 
@@ -805,6 +847,11 @@ public class UserInterfaceController implements Initializable, FontListener {
     modelsList.getItems().clear();
     models.forEach(modelsList.getItems()::add);
     modelsList.getSelectionModel().selectFirst();
+
+    //New Tab
+    modelsListNew.getItems().clear();
+    models.forEach(modelsListNew.getItems()::add);
+    modelsListNew.getSelectionModel().selectFirst();
   }
 
   /*

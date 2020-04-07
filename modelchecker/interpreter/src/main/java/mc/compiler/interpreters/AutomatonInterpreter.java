@@ -19,6 +19,7 @@ import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataLabeller;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static mc.processmodels.ProcessType.AUTOMATA;
 import static mc.util.Utils.instantiateClass;
@@ -59,7 +60,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                                 Set<String> alpha,
                                 Map<String,Expr> globalVarMap,
                                 boolean symb)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
    //System.out.println("START interp ");
     reset();
     this.context = context;
@@ -103,7 +104,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                                 Map<String, ProcessModel> processMap,
                                 Context context,
                                 Set<String> alpha)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("Start Automata interpret "+ identifier);
     reset();
     this.context = context;
@@ -129,7 +130,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
    * @throws InterruptedException
    */
   private void interpretProcess(ASTNode astNode, String identifier)
-        throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     Cloner cloner=new Cloner();
    //System.out.println("interpretProcess in AutInt astNode "+astNode.toString());
     if (astNode instanceof IdentifierNode) {
@@ -190,7 +191,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
    * @throws InterruptedException
    */
   private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode)
-          throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
@@ -247,7 +248,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     System.out.println("Aut<" + AutomatonInterpreter.indent + className+ " info "+info);
   }
 
-  private void interpretProcessRoot(ProcessRootNode astProcessRootNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+  private void interpretProcessRoot(ProcessRootNode astProcessRootNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException, ExecutionException {
     interpretProcess(astProcessRootNode.getProcess(), automaton.getId() + "." + ++subProcessCount);
     Automaton model = ((Automaton) processStack.pop()).copy();
     processLabellingAndRelabelling(model, astProcessRootNode);
@@ -269,7 +270,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   private void interpretSequence(SequenceNode sequence, Automaton automaton,
                                  AutomatonNode currentNode)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
 
     String action = sequence.getEventLabel().getAction();
 //  if (currentNode.getGuard()!=null && sequence.getGuard()!= null && currentNode.getGuard()==sequence.getGuard()){
@@ -307,7 +308,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   }
 
   //STRANGE  Hack
-  private void interpretChoice(ChoiceNode astChoiceNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+  private void interpretChoice(ChoiceNode astChoiceNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException, ExecutionException {
 
   //System.out.println(astChoiceNode.getFirstProcess());
   //System.out.println("XX "+automaton.toString());
@@ -340,7 +341,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
    * @throws CompilationException
    * @throws InterruptedException
    */
-  private void interpretComposite(CompositeNode astCompositeNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+  private void interpretComposite(CompositeNode astCompositeNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException, ExecutionException {
     //System.out.println("interpretComposite \n\n");
     interpretProcess(astCompositeNode.getFirstProcess(), automaton.getId() + ".pc1");
     interpretProcess(astCompositeNode.getSecondProcess(), automaton.getId() + ".pc2");
@@ -373,7 +374,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   }
 
-  private void interpretIdentifier(IdentifierNode identifierNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+  private void interpretIdentifier(IdentifierNode identifierNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException, ExecutionException {
     // check that the reference is to an automaton
     ProcessModel model = processMap.get(identifierNode.getIdentifier()+":"+
                                         identifierNode.getDomain());
@@ -382,7 +383,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     addAutomaton(currentNode, automaton, next);
   }
 
-  private void interpretFunction(FunctionNode astFunctionNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+  private void interpretFunction(FunctionNode astFunctionNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException, ExecutionException {
     List<ProcessModel> models = new ArrayList<>();
     for (ASTNode p : astFunctionNode.getProcesses()) {
       interpretProcess(p, automaton.getId() + ".fn");
@@ -416,7 +417,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   private void interpretConversion(ConversionNode conv, Automaton automaton,
                                    AutomatonNode currentNode)
-      throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
   //System.out.println(" interpretConversion A->P start "+automaton.toString());
     ProcessType to = ProcessType.valueOf(conv.to.toUpperCase());
     ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
@@ -437,7 +438,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     return automaton;
   }
 
-  private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2) throws CompilationException, InterruptedException {
+  private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2) throws CompilationException, InterruptedException, ExecutionException {
 
     List<String> references = new ArrayList<>();
 

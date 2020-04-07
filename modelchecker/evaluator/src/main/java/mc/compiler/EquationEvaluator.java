@@ -217,6 +217,8 @@ public class EquationEvaluator {
             String emes = e.getMessage();
             throw new CompilationException(e.getClazz(), emes + " globalOp " + operation.myString() +
                 "\n free " + freeVar2String(inst.peek()));
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
         // Process the results  DISPLAYED in UserInterfaceController.updateLogText
         String shortImplies;
@@ -268,7 +270,7 @@ public class EquationEvaluator {
                                   Set<String> alpha,
                                   boolean updateVariables                         //Only true initially and for forAll.
     )
-        throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
 
         int i = 0;
         System.out.println("Starting tstarttest " + operation.myString() +
@@ -330,7 +332,7 @@ public class EquationEvaluator {
                                     Set<String> alpha,
                                     boolean updateVariables                         //Only true initially and for forAll.
     )
-        throws CompilationException, InterruptedException {
+        throws CompilationException, InterruptedException, ExecutionException {
 
         ModelStatus status = new ModelStatus();
         Map<String, ProcessModel> outerFreeVariabelMap = inst.peek();
@@ -616,7 +618,7 @@ public class EquationEvaluator {
                 System.out.println("*** eval  " + operation.myString() + "  " + asString(outerFreeVariabelMap) + " "+ asString(localFreeVariableMap));
                 try {
                     r = oE.evalOp(operation, processMap, petrinetInterpreter, z3Context, alpha, status.getTrace());
-                } catch (CompilationException e) {
+                } catch (CompilationException | ExecutionException e) {
                     System.out.println("\n-- EVAL " + operation.myString() + " with " + asString(outerFreeVariabelMap));
                     System.out.println("  Inst " + inst.myString());
                     System.out.println("ProcessMap " + processMap.keySet() +

@@ -427,7 +427,7 @@ public class Expression {
         .expireAfterWrite(1, TimeUnit.SECONDS)
         .build(
             new CacheLoader<And, Boolean>() {
-                public Boolean load(And key) throws InterruptedException, CompilationException {
+                public Boolean load(And key) throws InterruptedException, CompilationException, ExecutionException {
                     BoolExpr expr = key.ctx.mkAnd((BoolExpr)substituteInts(key.expr1,key.variables1,key.ctx),
                                                   (BoolExpr)substituteInts(key.expr2,key.variables2,key.ctx));
                     return solve(expr,key.ctx);
@@ -439,7 +439,7 @@ public class Expression {
       .expireAfterWrite(1, TimeUnit.SECONDS)
       .build(
         new CacheLoader<AndAll, Boolean>() {
-            public Boolean load(AndAll key) throws InterruptedException, CompilationException {
+            public Boolean load(AndAll key) throws InterruptedException, CompilationException, ExecutionException {
                 boolean b =
                   solve((BoolExpr)substituteInts(key.andall.get(0).expr,key.andall.get(0).variables,key.ctx),key.ctx);
                 if (key.andall.size() == 1) {
@@ -616,17 +616,17 @@ public class Expression {
 
     @SneakyThrows
     @SuppressWarnings("unchecked")
-    public static Expr substituteInts(Expr expr, Map<String, Integer> subMap, Context ctx) {
+    public static Expr substituteInts(Expr expr, Map<String, Integer> subMap, Context ctx) throws ExecutionException {
         return substitutions.get(new Substitute(ctx,subMap, expr));
     }
     @SneakyThrows
-    public static Expr substituteReals(Expr expr, Map<String, Double> subMap, Context ctx) {
+    public static Expr substituteReals(Expr expr, Map<String, Double> subMap, Context ctx) throws ExecutionException {
        return substitutionsReals.get(new SubstituteReals(ctx,subMap, expr));
     }
 
     @SneakyThrows
     @SuppressWarnings("unchecked")
-    public static <T extends Expr> T substitute(T expr, Map<String, Expr> subMap, Context ctx) {
+    public static <T extends Expr> T substitute(T expr, Map<String, Expr> subMap, Context ctx) throws InterruptedException {
         if (subMap == null) return expr;
 
         Expr[] consts = new Expr[subMap.size()];
@@ -645,14 +645,14 @@ public class Expression {
         return t;
     }
     @SneakyThrows
-    public static boolean equate(Guard guard1, Guard guard2, Context ctx) {
+    public static boolean equate(Guard guard1, Guard guard2, Context ctx) throws ExecutionException {
         boolean b =
          equated.get(new And(ctx,guard1.getGuard(),guard1.getVariables(),guard2.getGuard(),guard2.getVariables()));
         System.out.println("equate "+guard1+" - "+guard2+" = "+b);
         return b;
     }
     @SneakyThrows
-    public static boolean isSolvable(BoolExpr ex, Map<String, Integer> variables, Context ctx) {
+    public static boolean isSolvable(BoolExpr ex, Map<String, Integer> variables, Context ctx) throws ExecutionException, InterruptedException, CompilationException {
         return solve((BoolExpr) substituteInts(ex,variables, ctx),ctx);
     }
     public static Context mkCtx() throws InterruptedException {

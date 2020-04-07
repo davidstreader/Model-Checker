@@ -23,6 +23,7 @@ import mc.util.LogMessage;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Compiler applies Interpreter  to processes {...} and seperatly
@@ -111,7 +112,7 @@ public class Interpreter {
             if (!process.getDomain().equals("*")) {
                 processMap.put(process.getIdentifier() + ":*", model);  //used in display and unique name
             }
-        } catch (CompilationException e){
+        } catch (CompilationException | ExecutionException e){
             pmf.setIsFull(false);
             sb.append("failed on "+ process.getIdentifier()+"  "+ e.getMessage() );
             e.printStackTrace();
@@ -167,7 +168,7 @@ public class Interpreter {
                                              String identifer,
                                              Map<String, ProcessModel> processMap,
                                              Context context, Set<String> alpha)
-    throws CompilationException, InterruptedException {
+      throws CompilationException, InterruptedException, ExecutionException {
 
     //System.out.println(" ****CALLing interpret X  " + processModelType + " " + astNode.toString() + " " + alpha);
     //TODO Multy Keep to Petri Interpret!

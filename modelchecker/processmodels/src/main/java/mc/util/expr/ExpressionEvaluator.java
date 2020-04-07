@@ -4,6 +4,7 @@ import com.microsoft.z3.*;
 import mc.exceptions.CompilationException;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -18,7 +19,7 @@ public class ExpressionEvaluator {
         return ex instanceof BitVecNum;
     }
 
-    public int evaluateIntExpression(Expr ex, Map<String, Integer> variableMap, Context context) throws CompilationException, InterruptedException {
+    public int evaluateIntExpression(Expr ex, Map<String, Integer> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         ex = Expression.substituteInts(ex, variableMap,context).simplify();
         if (ex.isTrue()) return 1;
         if (ex.isFalse()) return 0;
@@ -26,7 +27,7 @@ public class ExpressionEvaluator {
          throw new CompilationException(getClass(),"There was an undefined variable in the statement: "+ExpressionPrinter.printExpression(ex));
     }
 
-    public double evaluateRealExpression(Expr ex, Map<String, Double> variableMap, Context context)  throws CompilationException, InterruptedException {
+    public double evaluateRealExpression(Expr ex, Map<String, Double> variableMap, Context context) throws CompilationException, InterruptedException, ExecutionException {
         ex = Expression.substituteReals(ex, variableMap,context).simplify();
         System.out.println("Expression eval "+ex.toString());
         System.out.println(variableMap.entrySet().stream().map(x->x.getKey()+"->"+x.getValue()).collect(Collectors.joining()));
