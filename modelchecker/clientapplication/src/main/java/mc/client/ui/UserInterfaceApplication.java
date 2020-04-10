@@ -26,6 +26,7 @@ public class UserInterfaceApplication extends Application {
 
 
     @Setter
+    @Getter
     static private UserInterfaceController controller;
 
     static private Parent root;

@@ -92,6 +92,8 @@ public class ModelView implements Observer, FontListener {
     private Viewer workingCanvasAreaViewer;
     private View workingCanvasAreaView;
     private boolean addingAutoNode;
+    private String newProcessNameValue;
+    private Node latestAutoStart;
 
 
     public void cleanData() {
@@ -365,18 +367,28 @@ public class ModelView implements Observer, FontListener {
         robot.mouseRelease(InputEvent.BUTTON1_MASK);
     }
 
+
+
+
     public void dropNode(int xOnScreen, int yOnScreen){
 
         //todo: Determine node type
         if(addingAutoNode) {
             Point3 gu = workingCanvasAreaView.getCamera().transformPxToGu(xOnScreen, yOnScreen);
             workingCanvasAreaViewer.disableAutoLayout();
-            Node A = workingCanvasArea.addNode(String.valueOf(Math.random()));
-            A.setAttribute("xyz", gu.x, gu.y, 0);
+            latestAutoStart = workingCanvasArea.addNode(String.valueOf(Math.random()));
+            latestAutoStart.addAttribute("ui.label", latestAutoStart.getId());
+            latestAutoStart.setAttribute("xyz", gu.x, gu.y, 0);
             addingAutoNode = false;
         } else {
             System.out.println("doing nothing");
         }
+    }
+
+    public void setLatestNodeName(String newProcessNameValue) {
+        latestAutoStart.addAttribute("ui.label", newProcessNameValue);
+
+
     }
 
 
@@ -964,6 +976,7 @@ public class ModelView implements Observer, FontListener {
 
         sourceCodePro = source;
     }
+
 
 
 }
