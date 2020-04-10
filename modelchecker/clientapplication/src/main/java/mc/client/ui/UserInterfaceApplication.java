@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -23,8 +24,16 @@ public class UserInterfaceApplication extends Application {
     @Setter
     static private Stage primaryStage;
 
+
     @Setter
     static private UserInterfaceController controller;
+
+    static private Parent root;
+
+    public static void resetShapes() {
+
+
+    }
 
     /**
      * The main entry point for all JavaFX applications.
@@ -47,14 +56,21 @@ public class UserInterfaceApplication extends Application {
         setMacDockIcon(new Image(getClass().getResourceAsStream("/clientres/icon.jpg")));
         Font.loadFont(getClass().getResource("/clientres/hasklig.otf").toExternalForm(), 10);
 
-        Parent root = FXMLLoader.load(getClass().getResource("/clientres/UserInterface.fxml"));
+        root = FXMLLoader.load(getClass().getResource("/clientres/UserInterface.fxml"));
 
         primaryStage.setTitle("Process Modeller - New File");
         Scene windowScene = new Scene(root, 1000, 700);
         primaryStage.setScene(windowScene);
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/clientres/icon.jpg")));
+        primaryStage.setResizable(false);
         primaryStage.show();
+
+
+
+
     }
+
+
 
     @Override
     public void stop() {

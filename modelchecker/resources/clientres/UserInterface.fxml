@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.embed.swing.SwingNode?>
+<?import javafx.embed.swing.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
-<?import org.fxmisc.richtext.CodeArea?>
-<?import org.fxmisc.flowless.VirtualizedScrollPane?>
-<?import javafx.scene.canvas.Canvas?>
-<VBox prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mc.client.ui.UserInterfaceController">
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import org.fxmisc.flowless.*?>
+<?import org.fxmisc.richtext.*?>
+
+<VBox maxHeight="700.0" maxWidth="1000.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mc.client.ui.UserInterfaceController">
     <children>
         <MenuBar VBox.vgrow="NEVER">
             <menus>
@@ -69,23 +70,23 @@
                                                     </font>
                                                 </Label>
                                                 <ComboBox fx:id="modelsList" layoutX="30.0" layoutY="10.0" prefWidth="150.0" AnchorPane.leftAnchor="100.0" />
-                                                <Button fx:id="addBtn" layoutX="285.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddSelectedModel" text="Add"   />
+                                                <Button fx:id="addBtn" layoutX="285.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddSelectedModel" text="Add" />
                                                 <Button fx:id="frzBtn" layoutX="330.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreeze" text="Freeze" />
                                                 <Button fx:id="unfrzBtn" layoutX="395.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreeze" text="Unfreeze" />
                                                 <Button fx:id="removeBtn" layoutX="475.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClear" text="Clear" />
-                                                        <Button layoutX="600.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddallModels" text="Add all" />
-                                                        <Button layoutX="665.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreezeAll" text="Freeze all" />
-                                                        <Button layoutX="750.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreezeAll" text="Unfreeze all" />
-                                                        <Button layoutX="860.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearGraph" text="Clear all" />
+                                                <Button layoutX="600.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddallModels" text="Add all" />
+                                                <Button layoutX="665.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreezeAll" text="Freeze all" />
+                                                <Button layoutX="750.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreezeAll" text="Unfreeze all" />
+                                                <Button layoutX="860.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearGraph" text="Clear all" />
 
-                                                    </children>
-
-                                                </AnchorPane>
-                                                <SwingNode fx:id="modelDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0" />
                                             </children>
+
                                         </AnchorPane>
-                                    </content>
-                                </Tab>
+                                        <SwingNode fx:id="modelDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0" />
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
                         <Tab text="Models-New">
                             <content>
                                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
@@ -98,7 +99,7 @@
                                                     </font>
                                                 </Label>
                                                 <ComboBox fx:id="modelsListNew" layoutX="30.0" layoutY="10.0" prefWidth="150.0" AnchorPane.leftAnchor="100.0" />
-                                                <Button fx:id="addBtnNew" layoutX="285.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddSelectedModelNew" text="Add"   />
+                                                <Button fx:id="addBtnNew" layoutX="285.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddSelectedModelNew" text="Add" />
                                                 <Button fx:id="frzBtnNew" layoutX="330.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreeze" text="Freeze" />
                                                 <Button fx:id="unfrzBtnNew" layoutX="395.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreeze" text="Unfreeze" />
                                                 <Button fx:id="removeBtnNew" layoutX="475.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClear" text="Clear" />
@@ -110,22 +111,27 @@
                                             </children>
 
                                         </AnchorPane>
-                                        <SwingNode fx:id="modelDisplayNew" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0" />
+                                        <SwingNode fx:id="modelDisplayNew" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="200.0" AnchorPane.topAnchor="46.0" />
+                                        <Pane fx:id="shapePane" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="800.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
+                                           <!-- <children>
+                                                <Circle fx:id="circle" centerX="100.0" centerY="75.0" fill="BLUE" onMousePressed="#doMousePress" onMouseDragged="#doMouseDrag" radius="50.0" stroke="BLACK" strokeType="INSIDE" />
+                                            </children>-->
+                                        </Pane>
                                     </children>
                                 </AnchorPane>
                             </content>
                         </Tab>
 
-                            </tabs>
-                        </TabPane>
-                        <Button layoutX="890.0" layoutY="2.0" mnemonicParsing="false" onAction="#handleOptions" prefHeight="38.0" prefWidth="89.0" text="Options" AnchorPane.rightAnchor="21.0" />
-                        <Button fx:id="compileButton" layoutX="782.0" layoutY="2.0" mnemonicParsing="false" onAction="#handleCompileRequest" prefHeight="38.0" prefWidth="89.0" text="Compile" AnchorPane.rightAnchor="129.0" />
-                        <Label layoutX="3.0" layoutY="2.0" prefHeight="38.0" prefWidth="583.0" text="SWEN324-19-v2 Process Modelling " AnchorPane.leftAnchor="3.0">
-                            <font>
-                                <Font size="24.0" />
-                            </font>
-                        </Label>
-                    </children>
-                </AnchorPane>
+                    </tabs>
+                </TabPane>
+                <Button layoutX="890.0" layoutY="2.0" mnemonicParsing="false" onAction="#handleOptions" prefHeight="38.0" prefWidth="89.0" text="Options" AnchorPane.rightAnchor="21.0" />
+                <Button fx:id="compileButton" layoutX="782.0" layoutY="2.0" mnemonicParsing="false" onAction="#handleCompileRequest" prefHeight="38.0" prefWidth="89.0" text="Compile" AnchorPane.rightAnchor="129.0" />
+                <Label layoutX="3.0" layoutY="2.0" prefHeight="38.0" prefWidth="583.0" text="SWEN324-19-v2 Process Modelling " AnchorPane.leftAnchor="3.0">
+                    <font>
+                        <Font size="24.0" />
+                    </font>
+                </Label>
             </children>
-        </VBox>
+        </AnchorPane>
+    </children>
+</VBox>

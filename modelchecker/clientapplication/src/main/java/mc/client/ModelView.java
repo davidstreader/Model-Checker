@@ -19,6 +19,7 @@ import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
@@ -46,10 +47,14 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import org.graphstream.graph.implementations.MultiGraph;
+import org.graphstream.ui.geom.Point3;
+import org.graphstream.ui.graphicGraph.GraphicGraph;
+import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
 import javax.swing.*;
 import org.graphstream.graph.*;
+import org.graphstream.ui.view.util.MouseManager;
 
 /**
  * Created by bealjaco on 29/11/17.
@@ -84,6 +89,9 @@ public class ModelView implements Observer, FontListener {
     //map from Id to TokenMapping
     private Map<String, MappingNdMarking> mappings = new HashMap<>(); //wont be needed
     private MultiGraph workingCanvasArea; //For GraphStream
+    private Viewer workingCanvasAreaViewer;
+    private View workingCanvasAreaView;
+    private boolean addingAutoNode;
 
 
     public void cleanData() {
@@ -238,9 +246,12 @@ public class ModelView implements Observer, FontListener {
         workingCanvasArea.addAttribute("ui.quality");
         workingCanvasArea.addAttribute("ui.antialias");
 
-        Viewer workingCanvasAreaViewer = new Viewer(workingCanvasArea, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
+        workingCanvasAreaViewer = new Viewer(workingCanvasArea, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
         workingCanvasAreaViewer.enableAutoLayout();
-        View workingCanvasAreaView = workingCanvasAreaViewer.addDefaultView(false);
+        workingCanvasAreaView = workingCanvasAreaViewer.addDefaultView(false);
+        workingCanvasAreaView.addMouseListener(new ProcessMouseManager());
+        workingCanvasAreaView.getCamera().setViewPercent(2);
+        workingCanvasAreaView.getCamera().setAutoFitView(true);
         workingCanvasAreaContainer.add((Component) workingCanvasAreaView, BorderLayout.CENTER);
 
 
@@ -339,6 +350,34 @@ public class ModelView implements Observer, FontListener {
 
 
 
+    }
+
+    public void setVisualAutomataNode() {
+        addingAutoNode = true;
+        //Not proud of this hack to force graph mouse listener to respond to mouse release from shape mouse listener:
+        Robot robot = null;
+        try {
+            robot = new Robot();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+        robot.mousePress(InputEvent.BUTTON1_MASK);
+        robot.mouseRelease(InputEvent.BUTTON1_MASK);
+    }
+
+    public void dropNode(int xOnScreen, int yOnScreen){
+
+        //todo: Determine node type
+        if(addingAutoNode) {
+            workingCanvasArea.addAttribute("AddingNode", true);
+            Point3 gu = workingCanvasAreaView.getCamera().transformPxToGu(xOnScreen, yOnScreen);
+            workingCanvasAreaViewer.disableAutoLayout();
+            Node A = workingCanvasArea.addNode(String.valueOf(Math.random()));
+            A.setAttribute("xyz", gu.x, gu.y, 0);
+            addingAutoNode = false;
+        } else {
+            System.out.println("doing nothing");
+        }
     }
 
 
