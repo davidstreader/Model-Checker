@@ -369,7 +369,6 @@ public class ModelView implements Observer, FontListener {
 
         //todo: Determine node type
         if(addingAutoNode) {
-            workingCanvasArea.addAttribute("AddingNode", true);
             Point3 gu = workingCanvasAreaView.getCamera().transformPxToGu(xOnScreen, yOnScreen);
             workingCanvasAreaViewer.disableAutoLayout();
             Node A = workingCanvasArea.addNode(String.valueOf(Math.random()));
