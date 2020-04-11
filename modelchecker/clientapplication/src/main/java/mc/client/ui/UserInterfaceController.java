@@ -411,13 +411,13 @@ public class UserInterfaceController implements Initializable, FontListener {
             newAutomataNodeEnd = nextAutomataNode;
         }
 
-        addAutomataToGraph(mouseEvent.getSceneX(), mouseEvent.getSceneY(), c.getId());
+        addAutomataToGraph(c.getId());
     }
 
 
-    private void addAutomataToGraph(double x, double y, String nodeType) {
+    private void addAutomataToGraph(String nodeType) {
 
-        ModelView.getInstance().setVisualAutomataNode();
+        ModelView.getInstance().setVisualAutomataNode(nodeType);
 
         if(nodeType.equals("AutoStart")){
             initiateNewProcessPopup();

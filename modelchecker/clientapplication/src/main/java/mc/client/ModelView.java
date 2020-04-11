@@ -48,12 +48,17 @@ import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.ui.geom.Point3;
+import org.graphstream.ui.graphicGraph.GraphicElement;
 import org.graphstream.ui.graphicGraph.GraphicGraph;
+import org.graphstream.ui.layout.Layouts;
 import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
+
 import javax.swing.*;
+
 import org.graphstream.graph.*;
+import org.graphstream.ui.layout.*;
 import org.graphstream.ui.view.util.MouseManager;
 
 /**
@@ -63,10 +68,9 @@ import org.graphstream.ui.view.util.MouseManager;
  * hateful jung connected here no documentation
  * MUST remove jung! After 2 years still can not find if I can (and how to) change
  * some of the bacis graph features
- *
+ * <p>
  * Refractoring work commenced by Lachlan on 1/04/20 for his 489 supervised by David
  * Main intension therin is to replace Jung with new GraphStream framework plus implement new UX features
- *
  */
 public class ModelView implements Observer, FontListener {
 
@@ -91,9 +95,17 @@ public class ModelView implements Observer, FontListener {
     private MultiGraph workingCanvasArea; //For GraphStream
     private Viewer workingCanvasAreaViewer;
     private View workingCanvasAreaView;
-    private boolean addingAutoNode;
+    private boolean addingAutoNodeStart;
+    private boolean addingAutoNodeNeutral;
+    private boolean addingAutoNodeEnd;
     private String newProcessNameValue;
-    private Node latestAutoStart;
+    private Node latestNode;
+    private Node firstNodeClicked;
+    private Node seccondNodeClicked;
+    private org.graphstream.ui.layout.Layout workingLayout; //Do proper import when removing jung
+    private int nodeCount = 0;
+    private ProcessMouseManager PMM;
+    private boolean nodeRecentlyPlaced;
 
 
     public void cleanData() {
@@ -237,8 +249,8 @@ public class ModelView implements Observer, FontListener {
     }
 
 
-
     public JPanel updateGraphNew(SwingNode modelDisplayNew) {
+        System.out.println("updategraph");
 
         //Reinitialise The Working Canvas area
         JPanel workingCanvasAreaContainer = new JPanel();
@@ -249,9 +261,12 @@ public class ModelView implements Observer, FontListener {
         workingCanvasArea.addAttribute("ui.antialias");
 
         workingCanvasAreaViewer = new Viewer(workingCanvasArea, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
-        workingCanvasAreaViewer.enableAutoLayout();
+
+        workingLayout = Layouts.newLayoutAlgorithm();
+        workingCanvasAreaViewer.enableAutoLayout(workingLayout);
         workingCanvasAreaView = workingCanvasAreaViewer.addDefaultView(false);
-        workingCanvasAreaView.addMouseListener(new ProcessMouseManager());
+        PMM = new ProcessMouseManager();
+        workingCanvasAreaView.addMouseListener(PMM);
         workingCanvasAreaView.getCamera().setViewPercent(2);
         workingCanvasAreaView.getCamera().setAutoFitView(true);
         workingCanvasAreaContainer.add((Component) workingCanvasAreaView, BorderLayout.CENTER);
@@ -279,15 +294,24 @@ public class ModelView implements Observer, FontListener {
             "size: 30px; " +
             "fill-color: green;" +
             "}" +
+            "node.AutoStart {" +
+            "fill-color: green;" +
+            "}" +
+            "node.AutoNeutral {" +
+            "fill-color: gray;" +
+            "}" +
+            "node.AutoEnd {" +
+            "fill-color: red;" +
+            "}" +
             "edge {" +
             " " +
             "text-size: 20;" +
             "arrow-shape: arrow;" +
             "}" +
-
             "graph {" +
             "fill-color: white;" +
             "}";
+
     }
 
     private void addProcessNew(ProcessModel p) {
@@ -314,10 +338,10 @@ public class ModelView implements Observer, FontListener {
             nodeMap.put(n.getId(), node);
 
             Node cn = workingCanvasArea.addNode(n.getId());
+            workingLayout.freezeNode(cn.getId(), false);
 
 
-
-            if(n.isStartNode()) {
+            if (n.isStartNode()) {
                 cn.addAttribute("ui.label", automaton.getId());
             } else {
                 cn.addAttribute("ui.label", n.getId());
@@ -351,11 +375,17 @@ public class ModelView implements Observer, FontListener {
         this.processModelsOnScreen.replaceValues(automaton.getId(), nodeMap.values());
 
 
-
     }
 
-    public void setVisualAutomataNode() {
-        addingAutoNode = true;
+    public void setVisualAutomataNode(String nodeType) {
+        if (nodeType.equals("AutoStart")) {
+            addingAutoNodeStart = true;
+        } else if (nodeType.equals("AutoNeutral")) {
+            addingAutoNodeNeutral = true;
+        } else {
+            addingAutoNodeEnd = true;
+        }
+
         //Not proud of this hack to force graph mouse listener to respond to mouse release from shape mouse listener:
         Robot robot = null;
         try {
@@ -368,26 +398,90 @@ public class ModelView implements Observer, FontListener {
     }
 
 
+    public void dropNode(int xOnScreen, int yOnScreen) {
+
+        if (!addingAutoNodeStart && !addingAutoNodeNeutral && !addingAutoNodeEnd) {
+            return;
+        }
 
 
-    public void dropNode(int xOnScreen, int yOnScreen){
+        Point3 gu = workingCanvasAreaView.getCamera().transformPxToGu(xOnScreen, yOnScreen);
+        workingCanvasAreaViewer.disableAutoLayout();
+        latestNode = workingCanvasArea.addNode(String.valueOf(Math.random()));
+        latestNode.setAttribute("xyz", gu.x, gu.y, 0);
+        workingLayout.freezeNode(latestNode.getId(), true);
 
-        //todo: Determine node type
-        if(addingAutoNode) {
-            Point3 gu = workingCanvasAreaView.getCamera().transformPxToGu(xOnScreen, yOnScreen);
-            workingCanvasAreaViewer.disableAutoLayout();
-            latestAutoStart = workingCanvasArea.addNode(String.valueOf(Math.random()));
-            latestAutoStart.addAttribute("ui.label", latestAutoStart.getId());
-            latestAutoStart.setAttribute("xyz", gu.x, gu.y, 0);
-            addingAutoNode = false;
+
+        if (addingAutoNodeStart) {
+            latestNode.addAttribute("ui.class", "AutoStart");
+            addingAutoNodeStart = false;
+        } else if (addingAutoNodeNeutral) {
+            latestNode.addAttribute("ui.class", "AutoNeutral");
+            addingAutoNodeNeutral = false;
+        } else if (addingAutoNodeEnd) {
+            latestNode.addAttribute("ui.class", "AutoEnd");
+            addingAutoNodeEnd = false;
         } else {
             System.out.println("doing nothing");
         }
+
+        System.out.println("node placed");
+
+        nodeRecentlyPlaced = true;
+
+
     }
 
     public void setLatestNodeName(String newProcessNameValue) {
-        latestAutoStart.addAttribute("ui.label", newProcessNameValue);
+        latestNode.addAttribute("ui.label", newProcessNameValue);
+    }
 
+
+    public void determineIfNodeClicked(int x, int y) {
+
+        //To handle the extra redundant "click" from the bot prevents unwanted node linking kinda shit implementation though
+        if(nodeRecentlyPlaced){
+            nodeRecentlyPlaced = false;
+            return;
+        }
+
+        GraphicElement ge = workingCanvasAreaView.findNodeOrSpriteAt(x, y);
+
+        if (ge != null) {
+            if(firstNodeClicked == null){
+                firstNodeClicked = (Node) ge;
+            } else {
+                seccondNodeClicked = (Node) ge;
+            }
+
+        } else {
+            System.out.println("Node not Clicked");
+        }
+
+        if (firstNodeClicked != null && seccondNodeClicked != null) {
+            doDrawEdge();
+            firstNodeClicked = null;
+            seccondNodeClicked = null;
+        }
+
+    }
+
+    public void determineIfNodeReleasedOn(int x, int y){
+
+        GraphicElement ge = workingCanvasAreaView.findNodeOrSpriteAt(x, y);
+
+        if (ge != null) {
+            seccondNodeClicked = (Node) ge;
+        } else {
+            System.out.println("Node not released");
+        }
+
+
+    }
+
+    private void doDrawEdge() {
+        Edge edge = workingCanvasArea.addEdge("test" + Math.random(), firstNodeClicked.getId(), seccondNodeClicked.getId(), true);
+        //edge.addAttribute("ui.label", label);
 
     }
 
@@ -976,7 +1070,6 @@ public class ModelView implements Observer, FontListener {
 
         sourceCodePro = source;
     }
-
 
 
 }
