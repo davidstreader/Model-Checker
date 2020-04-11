@@ -28,6 +28,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javafx.application.Platform;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
@@ -107,6 +108,8 @@ public class ModelView implements Observer, FontListener {
     private ProcessMouseManager PMM;
     private boolean nodeRecentlyPlaced;
 
+    private UserInterfaceController uic;
+
 
     public void cleanData() {
         if (!(mappings == null)) mappings.clear();
@@ -145,6 +148,12 @@ public class ModelView implements Observer, FontListener {
 
     public void removeProcess(String id) {
         compiledResult.getProcessMap().remove(id);
+    }
+
+    public void setReferenceToUIC(UserInterfaceController userInterfaceController) {
+        uic = userInterfaceController;
+
+
     }
 
     /**
@@ -450,8 +459,10 @@ public class ModelView implements Observer, FontListener {
         if (ge != null) {
             if(firstNodeClicked == null){
                 firstNodeClicked = (Node) ge;
+                System.out.println("Selecting First Node: " + firstNodeClicked.getId());
             } else {
                 seccondNodeClicked = (Node) ge;
+                System.out.println("Selecting Seccond Node: " + seccondNodeClicked.getId());
             }
 
         } else {
@@ -462,26 +473,23 @@ public class ModelView implements Observer, FontListener {
             doDrawEdge();
             firstNodeClicked = null;
             seccondNodeClicked = null;
+
         }
-
-    }
-
-    public void determineIfNodeReleasedOn(int x, int y){
-
-        GraphicElement ge = workingCanvasAreaView.findNodeOrSpriteAt(x, y);
-
-        if (ge != null) {
-            seccondNodeClicked = (Node) ge;
-        } else {
-            System.out.println("Node not released");
-        }
-
 
     }
 
     private void doDrawEdge() {
         Edge edge = workingCanvasArea.addEdge("test" + Math.random(), firstNodeClicked.getId(), seccondNodeClicked.getId(), true);
-        //edge.addAttribute("ui.label", label);
+        //String labelValue;
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                String labelValue = uic.nameEdge();
+                edge.addAttribute("ui.label", labelValue);
+            }
+        });
+
+
 
     }
 
@@ -1070,6 +1078,7 @@ public class ModelView implements Observer, FontListener {
 
         sourceCodePro = source;
     }
+
 
 
 }

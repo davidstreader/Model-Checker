@@ -64,6 +64,7 @@ public class UserInterfaceController implements Initializable, FontListener {
 
     private SettingsController settingsController;
     private NewProcessController newProcessController;
+    private LabelEdgeController labelEdgeController;
 
 
     @FXML
@@ -124,8 +125,8 @@ public class UserInterfaceController implements Initializable, FontListener {
     private ArrayDeque<String> recentFilePaths = new ArrayDeque<>();
     private ArrayList<Circle> automataShapes = new ArrayList<Circle>();
 
-    @Getter
-    private static UserInterfaceController instance = new UserInterfaceController();
+    //@Getter
+    //private static UserInterfaceController instance = this;
 
     @Override
     public void changeFontSize() {  // Lister Pattern
@@ -178,6 +179,8 @@ public class UserInterfaceController implements Initializable, FontListener {
         settingsController = new SettingsController();
         settingsController.initialize();
         settingsController.addFontListener(this);
+
+        ModelView.getInstance().setReferenceToUIC(this);
 
         ModelView.getInstance().setSettings(settingsController);
         // Have to initialise it or there is a delay between the graph becoming ready and actually displaying things
@@ -327,6 +330,7 @@ public class UserInterfaceController implements Initializable, FontListener {
         settingsController.initialize();
 
         newProcessController = new NewProcessController();
+        labelEdgeController = new LabelEdgeController();
         //newProcessController.initialize();
 
 
@@ -426,7 +430,6 @@ public class UserInterfaceController implements Initializable, FontListener {
 
     private void initiateNewProcessPopup() {
 
-
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientres/NewAutoPopup.fxml"));
         loader.setController(newProcessController); //links to  SettingsController.java
         try {
@@ -455,6 +458,43 @@ public class UserInterfaceController implements Initializable, FontListener {
             optionsLayoutLoadFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
             optionsLayoutLoadFailed.show();
         }
+    }
+
+    public String nameEdge() {
+
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientres/LabelEdgePopup.fxml"));
+        loader.setController(labelEdgeController); //links to  SettingsController.java
+        String toReturn = "";
+        try {
+            Stage newProcessStage = new Stage();
+            newProcessStage.setTitle("Label Edge");
+
+            Scene windowScene = new Scene(loader.load(), 402, 326);
+            newProcessStage.setScene(windowScene);
+
+            //settingsController.setWindow(newProcessStage.getScene().getWindow());
+            newProcessStage.initOwner(UserInterfaceApplication.getPrimaryStage());
+            //settingsStage.initModality(Modality.APPLICATION_MODAL);
+            newProcessStage.initModality(Modality.NONE);
+            newProcessStage.setResizable(false);
+            newProcessStage.showAndWait();
+            toReturn = labelEdgeController.getLabelNameValue();
+
+        } catch (IOException e) {
+            Alert optionsLayoutLoadFailed = new Alert(Alert.AlertType.ERROR);
+            optionsLayoutLoadFailed.setTitle("Error encountered when loading new proccess dialogue");
+            optionsLayoutLoadFailed.setContentText("Error: " + e.getMessage());
+
+            optionsLayoutLoadFailed.initModality(Modality.APPLICATION_MODAL);
+            optionsLayoutLoadFailed.initOwner(modelDisplay.getScene().getWindow());
+
+            optionsLayoutLoadFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+            optionsLayoutLoadFailed.show();
+        }
+
+        return toReturn;
+
 
     }
 
@@ -1090,6 +1130,7 @@ public class UserInterfaceController implements Initializable, FontListener {
     public ArrayDeque<String> getRecentFilePaths() {
         return this.recentFilePaths;
     }
+
 
 
 }

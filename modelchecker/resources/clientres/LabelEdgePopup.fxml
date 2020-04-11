@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="150.0" prefWidth="170.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" >
+   <children>
+      <Label text="Input Name For This Edge:" />
+      <TextField fx:id="EdgeNameTextField" prefHeight="72.0" prefWidth="402.0" onKeyPressed="#handleKeyPressed" />
+      <Button fx:id="AcceptName" mnemonicParsing="false" text="Button" onAction="#doAcceptName">
+         <VBox.margin>
+            <Insets left="55.0" top="20.0" />
+         </VBox.margin>
+      </Button>
+   </children>
+</VBox>
