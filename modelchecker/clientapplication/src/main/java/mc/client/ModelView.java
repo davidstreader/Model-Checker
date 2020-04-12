@@ -24,6 +24,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -50,17 +51,13 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.ui.geom.Point3;
 import org.graphstream.ui.graphicGraph.GraphicElement;
-import org.graphstream.ui.graphicGraph.GraphicGraph;
 import org.graphstream.ui.layout.Layouts;
-import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
 
 import javax.swing.*;
 
 import org.graphstream.graph.*;
-import org.graphstream.ui.layout.*;
-import org.graphstream.ui.view.util.MouseManager;
 
 /**
  * Created by bealjaco on 29/11/17.
@@ -296,7 +293,7 @@ public class ModelView implements Observer, FontListener {
         for (Node cn : createdNodes) {
             //System.out.println(cn.getId());
 
-            if(workingCanvasArea.getNode(cn.getId()) != null){
+            if (workingCanvasArea.getNode(cn.getId()) != null) {
                 continue;
             }
 
@@ -316,7 +313,7 @@ public class ModelView implements Observer, FontListener {
 
         for (Edge ce : createdEdges) {
 
-            if(workingCanvasArea.getEdge(ce.getId()) != null){
+            if (workingCanvasArea.getEdge(ce.getId()) != null) {
                 continue;
             }
 
@@ -348,7 +345,23 @@ public class ModelView implements Observer, FontListener {
             "}" +
             "graph {" +
             "fill-color: white;" +
-            "}";
+            "}" +
+            "node.PetriPlace {" +
+            "fill-color: gray;" +
+            "}" +
+            "node.PetriPlaceStart {" +
+            "fill-color: green;" +
+            "}" +
+            "node.PetriPlaceEnd {" +
+            "fill-color: red;" +
+            "}" +
+            "node.PetriTransition {" +
+            "shape: box; " +
+            "fill-color: gray;" +
+            "}"
+
+
+            ;
 
     }
 
@@ -357,17 +370,18 @@ public class ModelView implements Observer, FontListener {
             case AUTOMATA:
                 addAutomataNew((Automaton) p);
                 break;
-            /*case PETRINET:
+            case PETRINET:
                 addPetrinetNew((Petrinet) p);
-                break;*/
+                break;
         }
     }
+
 
     private void addAutomataNew(Automaton automaton) {
 
         //System.out.println(automaton.getId());
 
-        if(workingCanvasArea.getNode(automaton.getId()) != null){
+        if (workingCanvasArea.getNode(automaton.getId()) != null) {
             return;
         }
 
@@ -380,7 +394,7 @@ public class ModelView implements Observer, FontListener {
         automaton.getNodes().forEach(n -> {
             NodeStates nodeTermination = NodeStates.NOMINAL;
 
-            if(n.isStartNode()){
+            if (n.isStartNode()) {
                 GraphNode node = new GraphNode(automaton.getId(), automaton.getId(), nodeTermination, nodeTermination,
                     NodeType.AUTOMATA_NODE, "" + n.getLabelNumber(), n);
                 nodeMap.put(n.getId(), node);
@@ -392,7 +406,7 @@ public class ModelView implements Observer, FontListener {
 
             Node cn;
 
-            if(n.isStartNode()) {
+            if (n.isStartNode()) {
                 cn = workingCanvasArea.addNode(automaton.getId());
             } else {
                 cn = workingCanvasArea.addNode(n.getId());
@@ -401,11 +415,9 @@ public class ModelView implements Observer, FontListener {
             if (n.isStartNode()) {
                 cn.addAttribute("ui.label", automaton.getId());
                 cn.addAttribute("ui.class", "AutoStart");
-            }
-            else if(!n.isStartNode() && !n.isSTOP()){
+            } else if (!n.isStartNode() && !n.isSTOP()) {
                 cn.addAttribute("ui.class", "AutoNeutral");
-            }
-            else {
+            } else {
                 cn.addAttribute("ui.class", "AutoEnd");
             }
 
@@ -546,8 +558,132 @@ public class ModelView implements Observer, FontListener {
         });
 
         createdEdges.add(edge);
+    }
+
+    private void addPetrinetNew(Petrinet petri) {
+
+        if (workingCanvasArea.getNode(petri.getId()) != null) {
+            return;
+        }
+
+        Set<PetriNetPlace> petriStarts = petri.getAllRoots();
+        int petriStartsSize = petriStarts.size();
+        AtomicInteger petriStartSizeTracker = new AtomicInteger();
+        petriStartSizeTracker.getAndIncrement();
+        Map<PetriNetPlace, Integer> startToIntValue = new HashMap<>();
 
 
+        Map<String, GraphNode> nodeMap = new HashMap<>();
+
+        Multiset<PetriNetPlace> rts = HashMultiset.create(); // .create(rts);
+        petri.getPlaces().values().forEach(place -> {
+            NodeStates nodeTermination = NodeStates.NOMINAL;
+            if (place.isTerminal()) {
+                nodeTermination = NodeStates.valueOf(place.getTerminal().toUpperCase());
+            }
+
+            String lab = "";
+            if (settings.isShowIds()) lab = place.getId();
+            // changing the label on the nodes forces the Petri Net to be relayed out.
+            GraphNode node = new GraphNode(petri.getId(), place.getId(),
+                nodeTermination, nodeTermination, NodeType.PETRINET_PLACE, lab, place);
+            placeId2GraphNode.put(place.getId(), node);
+
+            Node n;
+
+            if(place.isStart()) {
+                n = workingCanvasArea.addNode(petri.getId() + (petriStartsSize + 1 - petriStartSizeTracker.get()));
+                startToIntValue.put(place, (petriStartsSize + 1 - petriStartSizeTracker.get()));
+                petriStartSizeTracker.getAndIncrement();
+            } else {
+                n = workingCanvasArea.addNode(place.getId());
+            }
+
+            if(place.isStart()){
+                n.addAttribute("ui.label", petri.getId() + startToIntValue.get(place));
+                n.addAttribute("ui.class", "PetriPlaceStart");
+            } else if(!place.isStart() && !place.isSTOP()){
+                n.addAttribute("ui.class", "PetriPlace");
+            } else {
+                n.addAttribute("ui.class", "PetriPlaceEnd");
+            }
+
+
+            nodeMap.put(place.getId(), node);
+        });
+
+
+        petri.getTransitions().values().stream().filter(x -> !x.isBlocked())
+            .forEach(transition -> {
+                String lab = "";
+                if (settings.isShowIds()) lab += transition.getId() + "-";
+                lab += transition.getLabel() + "";
+
+                GraphNode node = new GraphNode(petri.getId(), transition.getId(),
+                    NodeStates.NOMINAL, NodeStates.NOMINAL, NodeType.PETRINET_TRANSITION, lab, transition);
+                nodeMap.put(transition.getId(), node);
+                Node n = workingCanvasArea.addNode(transition.getId());
+                n.addAttribute("ui.class", "PetriTransition");
+                n.addAttribute("ui.label", lab);
+            });
+
+        for (PetriNetEdge edge : petri.getEdgesNotBlocked().values()) {
+
+            String lab = "";
+            if (settings.isShowIds()) lab += edge.getId() + "-";
+            if (edge.getOptional()) {
+
+                lab = "Opt";
+                int i = edge.getOptionNum();
+                if (i > 0) {
+                    lab = lab + i;
+                }
+            }
+            if (settings.isShowOwners()) {
+                PetriNetPlace place;
+                if (edge.getTo() instanceof PetriNetPlace) {
+                    place = (PetriNetPlace) edge.getTo();
+                } else {
+                    place = (PetriNetPlace) edge.getFrom();
+                }
+                for (String o : (place).getOwners()) {
+                    lab += ("." + o);
+                }
+            }
+
+            String b;
+            String a;
+            if (edge.getGuard() != null) {
+                b = edge.getGuard().getGuardStr();
+                a = edge.getGuard().getAssStr();
+            } else {
+                b = "";
+                a = "";
+            }
+
+            DirectedEdge nodeEdge = new DirectedEdge(b, lab, a, UUID.randomUUID().toString());
+
+            if(edge.getFrom().getType().equals("PetriNetPlace")){
+                PetriNetPlace pnp = (PetriNetPlace) edge.getFrom();
+                if(pnp.isStart()){
+                    int startValue = startToIntValue.get(pnp);
+                    Edge e = workingCanvasArea.addEdge("test" + Math.random(), petri.getId() + startValue, edge.getTo().getId(), true);
+                } else {
+                    Edge e = workingCanvasArea.addEdge("test" + Math.random(), edge.getFrom().getId(), edge.getTo().getId(), true);
+                }
+            } else {
+                PetriNetPlace pnp = (PetriNetPlace) edge.getTo();
+                if(pnp.isStart()){
+                    int startValue = startToIntValue.get(pnp);
+                    Edge e = workingCanvasArea.addEdge("test" + Math.random(), edge.getFrom().getId(), petri.getId() + startValue, true);
+                } else {
+                    Edge e = workingCanvasArea.addEdge("test" + Math.random(), edge.getFrom().getId(), edge.getTo().getId(), true);
+                }
+            }
+
+        }
+
+        this.processModelsOnScreen.replaceValues(petri.getId(), nodeMap.values());
     }
 
 
@@ -560,6 +696,7 @@ public class ModelView implements Observer, FontListener {
     public VisualizationViewer<GraphNode, DirectedEdge> updateGraph(SwingNode s) {
         //Called from UIC: initialise, addselected, addall, cleargraph
         //Nothing to display
+        System.out.println("updategraphold");
         if (compiledResult == null) {
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
         }
