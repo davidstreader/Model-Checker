@@ -52,12 +52,16 @@ public class UserInterfaceApplication extends Application {
      *                     primary stages and will not be embedded in the browser.
      */
     @Override
-    public void start(Stage primaryStage_) throws Exception {
+    public void start(Stage primaryStage_)  {
         primaryStage = primaryStage_;
         setMacDockIcon(new Image(getClass().getResourceAsStream("/clientres/icon.jpg")));
         Font.loadFont(getClass().getResource("/clientres/hasklig.otf").toExternalForm(), 10);
 
-        root = FXMLLoader.load(getClass().getResource("/clientres/UserInterface.fxml"));
+        try {
+            root = FXMLLoader.load(getClass().getResource("/clientres/UserInterface.fxml"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         primaryStage.setTitle("Process Modeller - New File");
         Scene windowScene = new Scene(root, 1000, 700);

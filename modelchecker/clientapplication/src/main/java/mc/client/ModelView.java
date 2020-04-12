@@ -109,6 +109,10 @@ public class ModelView implements Observer, FontListener {
     private ArrayList<Node> createdNodes = new ArrayList<>();
     private JPanel workingCanvasAreaContainer;
     private ArrayList<Edge> createdEdges = new ArrayList<>();
+    private boolean addingPetriPlaceStart;
+    private boolean addingPetriPlaceNeutral;
+    private boolean addingPetriPlaceEnd;
+    private boolean addingPetriTransition;
 
 
     public void cleanData() {
@@ -455,14 +459,25 @@ public class ModelView implements Observer, FontListener {
 
     }
 
-    public void setVisualAutomataNode(String nodeType) {
+    public void setNewVisualNodeType(String nodeType) {
+        // todo switch
+
         if (nodeType.equals("AutoStart")) {
             addingAutoNodeStart = true;
         } else if (nodeType.equals("AutoNeutral")) {
             addingAutoNodeNeutral = true;
-        } else {
+        } else if (nodeType.equals("AutoEnd")) {
             addingAutoNodeEnd = true;
+        } else if (nodeType.equals("PetriPlaceStart")) {
+            addingPetriPlaceStart = true;
+        } else if (nodeType.equals("PetriPlaceNeutral")) {
+            addingPetriPlaceNeutral = true;
+        } else if (nodeType.equals("PetriPlaceEnd")) {
+            addingPetriPlaceEnd = true;
+        } else {
+            addingPetriTransition = true;
         }
+
 
         //Not proud of this hack to force graph mouse listener to respond to mouse release from shape mouse listener:
         Robot robot = null;
@@ -477,8 +492,10 @@ public class ModelView implements Observer, FontListener {
 
 
     public void dropNode(int xOnScreen, int yOnScreen) {
+        System.out.println("drop");
 
-        if (!addingAutoNodeStart && !addingAutoNodeNeutral && !addingAutoNodeEnd) {
+        if (!addingAutoNodeStart && !addingAutoNodeNeutral && !addingAutoNodeEnd
+        && !addingPetriPlaceStart && !addingPetriPlaceNeutral && !addingPetriPlaceEnd && !addingPetriTransition) {
             return;
         }
 
@@ -490,6 +507,7 @@ public class ModelView implements Observer, FontListener {
         //workingLayout.freezeNode(latestNode.getId(), true);
 
 
+
         if (addingAutoNodeStart) {
             latestNode.addAttribute("ui.class", "AutoStart");
             addingAutoNodeStart = false;
@@ -499,6 +517,18 @@ public class ModelView implements Observer, FontListener {
         } else if (addingAutoNodeEnd) {
             latestNode.addAttribute("ui.class", "AutoEnd");
             addingAutoNodeEnd = false;
+        } else if (addingPetriPlaceStart) {
+            latestNode.addAttribute("ui.class", "PetriPlaceStart");
+            addingPetriPlaceStart = false;
+        } else if (addingPetriPlaceNeutral) {
+            latestNode.addAttribute("ui.class", "PetriPlace");
+            addingPetriPlaceNeutral = false;
+        } else if (addingPetriPlaceEnd) {
+            latestNode.addAttribute("ui.class", "PetriPlaceEnd");
+            addingPetriPlaceEnd = false;
+        } else if (addingPetriTransition) {
+            latestNode.addAttribute("ui.class", "PetriTransition");
+            addingPetriTransition = false;
         } else {
             System.out.println("doing nothing");
         }
@@ -560,6 +590,7 @@ public class ModelView implements Observer, FontListener {
         createdEdges.add(edge);
     }
 
+
     private void addPetrinetNew(Petrinet petri) {
 
         if (workingCanvasArea.getNode(petri.getId()) != null) {
@@ -591,7 +622,7 @@ public class ModelView implements Observer, FontListener {
 
             Node n;
 
-            if(place.isStart()) {
+            if (place.isStart()) {
                 n = workingCanvasArea.addNode(petri.getId() + (petriStartsSize + 1 - petriStartSizeTracker.get()));
                 startToIntValue.put(place, (petriStartsSize + 1 - petriStartSizeTracker.get()));
                 petriStartSizeTracker.getAndIncrement();
@@ -599,10 +630,10 @@ public class ModelView implements Observer, FontListener {
                 n = workingCanvasArea.addNode(place.getId());
             }
 
-            if(place.isStart()){
+            if (place.isStart()) {
                 n.addAttribute("ui.label", petri.getId() + startToIntValue.get(place));
                 n.addAttribute("ui.class", "PetriPlaceStart");
-            } else if(!place.isStart() && !place.isSTOP()){
+            } else if (!place.isStart() && !place.isSTOP()) {
                 n.addAttribute("ui.class", "PetriPlace");
             } else {
                 n.addAttribute("ui.class", "PetriPlaceEnd");
@@ -663,9 +694,9 @@ public class ModelView implements Observer, FontListener {
 
             DirectedEdge nodeEdge = new DirectedEdge(b, lab, a, UUID.randomUUID().toString());
 
-            if(edge.getFrom().getType().equals("PetriNetPlace")){
+            if (edge.getFrom().getType().equals("PetriNetPlace")) {
                 PetriNetPlace pnp = (PetriNetPlace) edge.getFrom();
-                if(pnp.isStart()){
+                if (pnp.isStart()) {
                     int startValue = startToIntValue.get(pnp);
                     Edge e = workingCanvasArea.addEdge("test" + Math.random(), petri.getId() + startValue, edge.getTo().getId(), true);
                 } else {
@@ -673,7 +704,7 @@ public class ModelView implements Observer, FontListener {
                 }
             } else {
                 PetriNetPlace pnp = (PetriNetPlace) edge.getTo();
-                if(pnp.isStart()){
+                if (pnp.isStart()) {
                     int startValue = startToIntValue.get(pnp);
                     Edge e = workingCanvasArea.addEdge("test" + Math.random(), edge.getFrom().getId(), petri.getId() + startValue, true);
                 } else {

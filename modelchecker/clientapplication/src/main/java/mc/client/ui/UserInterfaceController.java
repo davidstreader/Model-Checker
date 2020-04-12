@@ -20,7 +20,11 @@ import javafx.scene.input.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.Circle;
+import javafx.scene.shape.Box;
+import javafx.scene.shape.*;
+//import javafx.scene.shape.Shape;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -63,7 +67,7 @@ public class UserInterfaceController implements Initializable, FontListener {
     private TrieNode<String> completionDictionary;
 
     private SettingsController settingsController;
-    private NewProcessController newProcessController;
+    private NewProcessController nameNewGraphElementController;
     private LabelEdgeController labelEdgeController;
 
 
@@ -106,13 +110,25 @@ public class UserInterfaceController implements Initializable, FontListener {
     @FXML
     private Button removeBtnNew;
     @FXML
-    private Circle newAutomataNodeStart;
+    private Shape newAutomataNodeStart;
     @FXML
-    private Circle newAutomataNodeNeutral;
+    private Shape newAutomataNodeNeutral;
     @FXML
-    private Circle newAutomataNodeEnd;
+    private Shape newAutomataNodeEnd;
     @FXML
-    private Circle nextAutomataNode;
+    private Shape nextAutomataNode;
+    @FXML
+    private Shape newPetriPlaceStart;
+    @FXML
+    private Shape newPetriPlaceNeutral;
+    @FXML
+    private Shape newPetriPlaceEnd;
+    @FXML
+    private Shape nextPetriPlaceNode;
+    @FXML
+    private Shape newPetriTransition;
+    @FXML
+    private Shape nextPetriTransition;
     @FXML
     private Pane shapePane;
 
@@ -123,7 +139,8 @@ public class UserInterfaceController implements Initializable, FontListener {
     private Thread buildThread = new Thread();
 
     private ArrayDeque<String> recentFilePaths = new ArrayDeque<>();
-    private ArrayList<Circle> automataShapes = new ArrayList<Circle>();
+    private ArrayList<Shape> processShapesAuto = new ArrayList<Shape>();
+    private ArrayList<Shape> processShapesPetri = new ArrayList<Shape>();
 
     //@Getter
     //private static UserInterfaceController instance = this;
@@ -338,23 +355,24 @@ public class UserInterfaceController implements Initializable, FontListener {
         settingsController = new SettingsController();
         settingsController.initialize();
 
-        newProcessController = new NewProcessController();
+        nameNewGraphElementController = new NewProcessController();
         labelEdgeController = new LabelEdgeController();
         //newProcessController.initialize();
 
 
-        AddProcessShapesInitial();
+        AddProcessShapesAutoInitial();
+        AddProcessShapesPetriInitial();
     }
 
 
-    private void AddProcessShapesInitial() {
+    private void AddProcessShapesAutoInitial() {
         newAutomataNodeStart = new Circle(60, 75, 20);
         newAutomataNodeNeutral = new Circle(110, 75, 20);
         newAutomataNodeEnd = new Circle(160, 75, 20);
 
-        automataShapes.add(newAutomataNodeStart);
-        automataShapes.add(newAutomataNodeNeutral);
-        automataShapes.add(newAutomataNodeEnd);
+        processShapesAuto.add(newAutomataNodeStart);
+        processShapesAuto.add(newAutomataNodeNeutral);
+        processShapesAuto.add(newAutomataNodeEnd);
 
         newAutomataNodeStart.setFill(Color.GREEN);
         newAutomataNodeNeutral.setFill(Color.GRAY);
@@ -364,16 +382,17 @@ public class UserInterfaceController implements Initializable, FontListener {
         newAutomataNodeNeutral.setId("AutoNeutral");
         newAutomataNodeEnd.setId("AutoEnd");
 
-        for(Circle c: automataShapes){
-            c.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::doMouseDrag);
-            c.addEventHandler(MouseEvent.MOUSE_PRESSED, this::doMousePress);
-            c.addEventHandler(MouseEvent.MOUSE_RELEASED, this::doMouseRelease);
+        for (Shape s : processShapesAuto) {
+            Circle c = (Circle) s;
+            c.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::doMouseDragAuto);
+            c.addEventHandler(MouseEvent.MOUSE_PRESSED, this::doMousePressAuto);
+            c.addEventHandler(MouseEvent.MOUSE_RELEASED, this::doMouseReleaseAuto);
             shapePane.getChildren().add(c);
         }
 
     }
 
-    public void doMouseDrag(MouseEvent mouseEvent) {
+    public void doMouseDragAuto(MouseEvent mouseEvent) {
         Circle c = (Circle) mouseEvent.getSource();
         double xOffset = mouseEvent.getX() - c.getCenterX();
         double yOffset = mouseEvent.getY() - c.getCenterY();
@@ -381,7 +400,7 @@ public class UserInterfaceController implements Initializable, FontListener {
         c.setCenterY(c.getCenterY() + yOffset);
     }
 
-    public void doMousePress(MouseEvent mouseEvent) {
+    public void doMousePressAuto(MouseEvent mouseEvent) {
 
         //todo add switch
 
@@ -389,12 +408,12 @@ public class UserInterfaceController implements Initializable, FontListener {
 
         System.out.println(c);
 
-        if(c.getId().equals("AutoStart")){
+        if (c.getId().equals("AutoStart")) {
             nextAutomataNode = new Circle(60, 75, 20);
             nextAutomataNode.setFill(Color.GREEN);
             nextAutomataNode.setId("AutoStart");
 
-        } else if(c.getId().equals("AutoNeutral")){
+        } else if (c.getId().equals("AutoNeutral")) {
             nextAutomataNode = new Circle(110, 75, 20);
             nextAutomataNode.setFill(Color.GRAY);
             nextAutomataNode.setId("AutoNeutral");
@@ -404,19 +423,19 @@ public class UserInterfaceController implements Initializable, FontListener {
             nextAutomataNode.setId("AutoEnd");
         }
 
-        nextAutomataNode.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::doMouseDrag);
-        nextAutomataNode.addEventHandler(MouseEvent.MOUSE_PRESSED, this::doMousePress);
-        nextAutomataNode.addEventHandler(MouseEvent.MOUSE_RELEASED, this::doMouseRelease);
+        nextAutomataNode.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::doMouseDragAuto);
+        nextAutomataNode.addEventHandler(MouseEvent.MOUSE_PRESSED, this::doMousePressAuto);
+        nextAutomataNode.addEventHandler(MouseEvent.MOUSE_RELEASED, this::doMouseReleaseAuto);
         shapePane.getChildren().add(nextAutomataNode);
     }
 
 
-    public void doMouseRelease(MouseEvent mouseEvent) {
+    public void doMouseReleaseAuto(MouseEvent mouseEvent) {
         Circle c = (Circle) mouseEvent.getSource();
-        if(c.getId().equals("AutoStart")){
+        if (c.getId().equals("AutoStart")) {
             shapePane.getChildren().remove(newAutomataNodeStart);
             newAutomataNodeStart = nextAutomataNode;
-        } else if(c.getId().equals("AutoNeutral")){
+        } else if (c.getId().equals("AutoNeutral")) {
             shapePane.getChildren().remove(newAutomataNodeNeutral);
             newAutomataNodeNeutral = nextAutomataNode;
         } else {
@@ -430,17 +449,155 @@ public class UserInterfaceController implements Initializable, FontListener {
 
     private void addAutomataToGraph(String nodeType) {
 
-        ModelView.getInstance().setVisualAutomataNode(nodeType);
+        ModelView.getInstance().setNewVisualNodeType(nodeType);
 
-        if(nodeType.equals("AutoStart")){
-            initiateNewProcessPopup();
+        if (nodeType.equals("AutoStart")) {
+            initiateNameNewGraphElementPopup();
         }
     }
 
-    private void initiateNewProcessPopup() {
+    private void AddProcessShapesPetriInitial() {
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientres/NewAutoPopup.fxml"));
-        loader.setController(newProcessController); //links to  SettingsController.java
+
+        newPetriPlaceStart = new Circle(60, 220, 20);
+        newPetriPlaceNeutral = new Circle(110, 220, 20);
+        newPetriPlaceEnd = new Circle(160, 220, 20);
+        newPetriTransition = new Rectangle(90, 260, 40, 40);
+
+        processShapesPetri.add(newPetriPlaceStart);
+        processShapesPetri.add(newPetriPlaceNeutral);
+        processShapesPetri.add(newPetriPlaceEnd);
+        //processShapesPetri.add(newPetriTransition);
+
+        newPetriPlaceStart.setFill(Color.GREEN);
+        newPetriPlaceNeutral.setFill(Color.GRAY);
+        newPetriPlaceEnd.setFill(Color.RED);
+        newPetriTransition.setFill(Color.GRAY);
+
+        newPetriPlaceStart.setId("PetriPlaceStart");
+        newPetriPlaceNeutral.setId("PetriPlaceNeutral");
+        newPetriPlaceEnd.setId("PetriPlaceEnd");
+        newPetriTransition.setId("PetriTransition");
+
+        for (Shape s : processShapesPetri) {
+
+            Circle c = (Circle) s;
+            c.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::doMouseDragPetriPlace);
+            c.addEventHandler(MouseEvent.MOUSE_PRESSED, this::doMousePressPetriPlace);
+            c.addEventHandler(MouseEvent.MOUSE_RELEASED, this::doMouseReleasePetriPlace);
+            shapePane.getChildren().add(c);
+        }
+
+        newPetriTransition.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::doMouseDragPetriTransition);
+        newPetriTransition.addEventHandler(MouseEvent.MOUSE_PRESSED, this::doMousePressPetriTransition);
+        newPetriTransition.addEventHandler(MouseEvent.MOUSE_RELEASED, this::doMouseReleasePetriTransition);
+
+        shapePane.getChildren().add(newPetriTransition);
+
+
+    }
+
+    private void doMouseDragPetriPlace(MouseEvent mouseEvent) {
+        Circle c = (Circle) mouseEvent.getSource();
+        double xOffset = mouseEvent.getX() - c.getCenterX();
+        double yOffset = mouseEvent.getY() - c.getCenterY();
+        c.setCenterX(c.getCenterX() + xOffset);
+        c.setCenterY(c.getCenterY() + yOffset);
+    }
+
+    private void doMousePressPetriPlace(MouseEvent mouseEvent) {
+        //todo add switch
+
+        Circle c = (Circle) mouseEvent.getSource();
+
+        System.out.println(c);
+
+        if (c.getId().equals("PetriPlaceStart")) {
+            nextPetriPlaceNode = new Circle(60, 220, 20);
+            nextPetriPlaceNode.setFill(Color.GREEN);
+            nextPetriPlaceNode.setId("PetriPlaceStart");
+
+        } else if (c.getId().equals("PetriPlaceNeutral")) {
+            nextPetriPlaceNode = new Circle(110, 220, 20);
+            nextPetriPlaceNode.setFill(Color.GRAY);
+            nextPetriPlaceNode.setId("PetriPlaceNeutral");
+        } else {
+            nextPetriPlaceNode = new Circle(160, 220, 20);
+            nextPetriPlaceNode.setFill(Color.RED);
+            nextPetriPlaceNode.setId("PetriPlaceEnd");
+        }
+
+        nextPetriPlaceNode.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::doMouseDragPetriPlace);
+        nextPetriPlaceNode.addEventHandler(MouseEvent.MOUSE_PRESSED, this::doMousePressPetriPlace);
+        nextPetriPlaceNode.addEventHandler(MouseEvent.MOUSE_RELEASED, this::doMouseReleasePetriPlace);
+        shapePane.getChildren().add(nextPetriPlaceNode);
+
+    }
+
+    public void doMouseReleasePetriPlace(MouseEvent mouseEvent) {
+        Circle c = (Circle) mouseEvent.getSource();
+        if (c.getId().equals("PetriPlaceStart")) {
+            shapePane.getChildren().remove(newPetriPlaceStart);
+            newPetriPlaceStart = nextPetriPlaceNode;
+        } else if (c.getId().equals("PetriPlaceNeutral")) {
+            shapePane.getChildren().remove(newPetriPlaceNeutral);
+            newPetriPlaceNeutral = nextPetriPlaceNode;
+        } else {
+            shapePane.getChildren().remove(newPetriPlaceEnd);
+            newPetriPlaceEnd = nextPetriPlaceNode;
+        }
+
+        addPetriPlaceToGraph(c.getId());
+
+    }
+
+
+    public void doMouseDragPetriTransition(MouseEvent mouseEvent) {
+        Rectangle r = (Rectangle) mouseEvent.getSource();
+        double xOffset = mouseEvent.getX() - r.getX();
+        double yOffset = mouseEvent.getY() - r.getY();
+        r.setX(r.getX() + xOffset);
+        r.setY(r.getY() + yOffset);
+    }
+
+    public void doMousePressPetriTransition(MouseEvent mouseEvent) {
+        //todo add switch
+        nextPetriTransition = new Rectangle(90, 260, 40, 40);
+        nextPetriTransition.setFill(Color.GRAY);
+        nextPetriTransition.setId("PetriTransition");
+
+
+        nextPetriTransition.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::doMouseDragPetriTransition);
+        nextPetriTransition.addEventHandler(MouseEvent.MOUSE_PRESSED, this::doMousePressPetriTransition);
+        nextPetriTransition.addEventHandler(MouseEvent.MOUSE_RELEASED, this::doMouseReleasePetriTransition);
+        shapePane.getChildren().add(nextPetriTransition);
+
+    }
+
+    public void doMouseReleasePetriTransition(MouseEvent mouseEvent) {
+        shapePane.getChildren().remove(newPetriTransition);
+        newPetriTransition = nextPetriTransition;
+        addPetriTransitionToGraph();
+    }
+
+    private void addPetriPlaceToGraph(String petriPlaceType) {
+        ModelView.getInstance().setNewVisualNodeType(petriPlaceType);
+
+        if (petriPlaceType.equals("PetriPlaceStart")) {
+            initiateNameNewGraphElementPopup();
+        }
+
+    }
+
+    private void addPetriTransitionToGraph() {
+        ModelView.getInstance().setNewVisualNodeType("petriTransition");
+        initiateNameNewGraphElementPopup();
+    }
+
+    private void initiateNameNewGraphElementPopup() {
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientres/NameNewGraphElement.fxml"));
+        loader.setController(nameNewGraphElementController); //links to  SettingsController.java
         try {
             Stage newProcessStage = new Stage();
             newProcessStage.setTitle("New Process");
@@ -454,7 +611,7 @@ public class UserInterfaceController implements Initializable, FontListener {
             newProcessStage.initModality(Modality.NONE);
             newProcessStage.setResizable(false);
             newProcessStage.showAndWait();
-            ModelView.getInstance().setLatestNodeName(newProcessController.getNewProcessNameValue());
+            ModelView.getInstance().setLatestNodeName(nameNewGraphElementController.getNewProcessNameValue());
 
         } catch (IOException e) {
             Alert optionsLayoutLoadFailed = new Alert(Alert.AlertType.ERROR);
@@ -1137,7 +1294,6 @@ public class UserInterfaceController implements Initializable, FontListener {
     public ArrayDeque<String> getRecentFilePaths() {
         return this.recentFilePaths;
     }
-
 
 
 }
