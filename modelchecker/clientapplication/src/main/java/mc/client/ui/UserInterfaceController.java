@@ -326,6 +326,15 @@ public class UserInterfaceController implements Initializable, FontListener {
 
             });
 
+        String userCode = "processes{\n" +
+            "\n" +
+            "A = a -> b -> STOP.\n" +
+            "\n" +
+            "\n" +
+            "}";
+
+        userCodeInput.appendText(userCode);
+
         settingsController = new SettingsController();
         settingsController.initialize();
 
@@ -807,8 +816,6 @@ public class UserInterfaceController implements Initializable, FontListener {
 
     @FXML
     private void handleAddSelectedModelNew(ActionEvent event) {
-
-        System.out.println("here2");
         //New Tab
 
         if (modelsListNew.getSelectionModel().getSelectedItem() != null && modelsListNew.getSelectionModel().getSelectedItem() instanceof String) {
@@ -936,12 +943,12 @@ public class UserInterfaceController implements Initializable, FontListener {
     @FXML
     private void handleCompileRequest(ActionEvent event) {
         String userCode = userCodeInput.getText();
-        userCode += "processes{\n" +
+        /*userCode += "processes{\n" +
             "\n" +
             "A = a -> b -> STOP.\n" +
             "\n" +
             "\n" +
-            "}";
+            "}";*/
 
 
         if (!userCode.isEmpty()) {

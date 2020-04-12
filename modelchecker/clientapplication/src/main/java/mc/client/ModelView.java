@@ -109,6 +109,9 @@ public class ModelView implements Observer, FontListener {
     private boolean nodeRecentlyPlaced;
 
     private UserInterfaceController uic;
+    private ArrayList<Node> createdNodes = new ArrayList<>();
+    private JPanel workingCanvasAreaContainer;
+    private ArrayList<Edge> createdEdges = new ArrayList<>();
 
 
     public void cleanData() {
@@ -261,29 +264,17 @@ public class ModelView implements Observer, FontListener {
     public JPanel updateGraphNew(SwingNode modelDisplayNew) {
         System.out.println("updategraph");
 
-        //Reinitialise The Working Canvas area
-        JPanel workingCanvasAreaContainer = new JPanel();
-        workingCanvasAreaContainer.setLayout(new BorderLayout());
-        workingCanvasArea = new MultiGraph("WorkingCanvasArea"); //field
+        if (compiledResult == null) {
+            return workingCanvasAreaContainer;
+        }
+
+        //workingCanvasArea.clear();
         workingCanvasArea.addAttribute("ui.stylesheet", getStyleSheet());
         workingCanvasArea.addAttribute("ui.quality");
         workingCanvasArea.addAttribute("ui.antialias");
 
-        workingCanvasAreaViewer = new Viewer(workingCanvasArea, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
+        //workingCanvasAreaViewer.enableAutoLayout(workingLayout);
 
-        workingLayout = Layouts.newLayoutAlgorithm();
-        workingCanvasAreaViewer.enableAutoLayout(workingLayout);
-        workingCanvasAreaView = workingCanvasAreaViewer.addDefaultView(false);
-        PMM = new ProcessMouseManager();
-        workingCanvasAreaView.addMouseListener(PMM);
-        workingCanvasAreaView.getCamera().setViewPercent(2);
-        workingCanvasAreaView.getCamera().setAutoFitView(true);
-        workingCanvasAreaContainer.add((Component) workingCanvasAreaView, BorderLayout.CENTER);
-
-
-        if (compiledResult == null) {
-            return workingCanvasAreaContainer;
-        }
 
         //Do Drawing Work On Canvas
         compiledResult.getProcessMap().keySet().stream()
@@ -293,8 +284,46 @@ public class ModelView implements Observer, FontListener {
             .filter(Objects::nonNull)
             .forEach(this::addProcessNew);
 
+        drawCreatedProcesses();
+
+        processesChanged.clear();
+
         //Return the Now updated canvas to UIC
         return workingCanvasAreaContainer;
+    }
+
+    private void drawCreatedProcesses() {
+        for (Node cn : createdNodes) {
+            //System.out.println(cn.getId());
+
+            if(workingCanvasArea.getNode(cn.getId()) != null){
+                continue;
+            }
+
+            Node n = workingCanvasArea.addNode(cn.getId());
+            String cnAttributeAutoType = cn.getAttribute("ui.class");
+            n.addAttribute("ui.class", cnAttributeAutoType); // dk ytf cant do this directly
+
+            String cnAttributeLabel = cn.getAttribute("ui.label");
+
+            if (cnAttributeLabel != null) { //Is start so label it
+                n.addAttribute("ui.label", cnAttributeLabel); // dk ytf cant do this directly
+            }
+
+            //System.out.println("edgecount: " + cn.getEdgeSet().size());
+
+        }
+
+        for (Edge ce : createdEdges) {
+
+            if(workingCanvasArea.getEdge(ce.getId()) != null){
+                continue;
+            }
+
+            Edge e = workingCanvasArea.addEdge("test" + Math.random(), (Node) ce.getNode0(), (Node) ce.getNode1(), true);
+            String cnEAttributeLabel = ce.getAttribute("ui.label");
+            e.addAttribute("ui.label", cnEAttributeLabel);
+        }
     }
 
     private String getStyleSheet() {
@@ -336,30 +365,57 @@ public class ModelView implements Observer, FontListener {
 
     private void addAutomataNew(Automaton automaton) {
 
+        //System.out.println(automaton.getId());
+
+        if(workingCanvasArea.getNode(automaton.getId()) != null){
+            return;
+        }
+
+
         Map<String, GraphNode> nodeMap = new HashMap<>();
+
+        //System.out.println(automaton);
 
         //Adds grapth node to display
         automaton.getNodes().forEach(n -> {
             NodeStates nodeTermination = NodeStates.NOMINAL;
 
-            GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination, nodeTermination,
-                NodeType.AUTOMATA_NODE, "" + n.getLabelNumber(), n);
-            nodeMap.put(n.getId(), node);
+            if(n.isStartNode()){
+                GraphNode node = new GraphNode(automaton.getId(), automaton.getId(), nodeTermination, nodeTermination,
+                    NodeType.AUTOMATA_NODE, "" + n.getLabelNumber(), n);
+                nodeMap.put(n.getId(), node);
+            } else {
+                GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination, nodeTermination,
+                    NodeType.AUTOMATA_NODE, "" + n.getLabelNumber(), n);
+                nodeMap.put(n.getId(), node);
+            }
 
-            Node cn = workingCanvasArea.addNode(n.getId());
-            workingLayout.freezeNode(cn.getId(), false);
+            Node cn;
 
+            if(n.isStartNode()) {
+                cn = workingCanvasArea.addNode(automaton.getId());
+            } else {
+                cn = workingCanvasArea.addNode(n.getId());
+            }
 
             if (n.isStartNode()) {
                 cn.addAttribute("ui.label", automaton.getId());
-            } else {
-                cn.addAttribute("ui.label", n.getId());
+                cn.addAttribute("ui.class", "AutoStart");
             }
+            else if(!n.isStartNode() && !n.isSTOP()){
+                cn.addAttribute("ui.class", "AutoNeutral");
+            }
+            else {
+                cn.addAttribute("ui.class", "AutoEnd");
+            }
+
+
         });
 
         //Connects the node via edges on screen
         automaton.getEdges().forEach(e -> {
             GraphNode to = nodeMap.get(e.getTo().getId());
+
             GraphNode from = nodeMap.get(e.getFrom().getId());
             String label = e.getLabel();
             String bool;
@@ -374,6 +430,7 @@ public class ModelView implements Observer, FontListener {
             if (settings.isShowOwners()) {
                 label += e.getEdgeOwners();
             }
+
 
             Edge edge = workingCanvasArea.addEdge("test" + Math.random(), from.getNodeId(), to.getNodeId(), true);
             edge.addAttribute("ui.label", label);
@@ -415,10 +472,10 @@ public class ModelView implements Observer, FontListener {
 
 
         Point3 gu = workingCanvasAreaView.getCamera().transformPxToGu(xOnScreen, yOnScreen);
-        workingCanvasAreaViewer.disableAutoLayout();
+        //workingCanvasAreaViewer.disableAutoLayout();
         latestNode = workingCanvasArea.addNode(String.valueOf(Math.random()));
         latestNode.setAttribute("xyz", gu.x, gu.y, 0);
-        workingLayout.freezeNode(latestNode.getId(), true);
+        //workingLayout.freezeNode(latestNode.getId(), true);
 
 
         if (addingAutoNodeStart) {
@@ -436,6 +493,8 @@ public class ModelView implements Observer, FontListener {
 
         System.out.println("node placed");
 
+        createdNodes.add(latestNode);
+
         nodeRecentlyPlaced = true;
 
 
@@ -449,7 +508,7 @@ public class ModelView implements Observer, FontListener {
     public void determineIfNodeClicked(int x, int y) {
 
         //To handle the extra redundant "click" from the bot prevents unwanted node linking kinda shit implementation though
-        if(nodeRecentlyPlaced){
+        if (nodeRecentlyPlaced) {
             nodeRecentlyPlaced = false;
             return;
         }
@@ -457,7 +516,7 @@ public class ModelView implements Observer, FontListener {
         GraphicElement ge = workingCanvasAreaView.findNodeOrSpriteAt(x, y);
 
         if (ge != null) {
-            if(firstNodeClicked == null){
+            if (firstNodeClicked == null) {
                 firstNodeClicked = (Node) ge;
                 System.out.println("Selecting First Node: " + firstNodeClicked.getId());
             } else {
@@ -481,14 +540,12 @@ public class ModelView implements Observer, FontListener {
     private void doDrawEdge() {
         Edge edge = workingCanvasArea.addEdge("test" + Math.random(), firstNodeClicked.getId(), seccondNodeClicked.getId(), true);
         //String labelValue;
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                String labelValue = uic.nameEdge();
-                edge.addAttribute("ui.label", labelValue);
-            }
+        Platform.runLater(() -> {
+            String labelValue = uic.nameEdge();
+            edge.addAttribute("ui.label", labelValue);
         });
 
+        createdEdges.add(edge);
 
 
     }
@@ -514,6 +571,20 @@ public class ModelView implements Observer, FontListener {
         //From compiled result filter for processModelstoDisplay and processeschanged
         //Then maps these keys for their values and for values that arnt null are sent to addProcess method
         //Copied into new working fine
+
+        System.out.println("Old");
+        System.out.println("Start pmd ");
+        for (String q : processModelsToDisplay) {
+            System.out.println(q);
+        }
+        System.out.println("end pmd ");
+        System.out.println("Start pc ");
+
+        for (String q : processesChanged) {
+            System.out.println(q);
+        }
+        System.out.println("end pc ");
+
         compiledResult.getProcessMap().keySet().stream()
             .filter(processModelsToDisplay::contains)
             .filter(processesChanged::contains)
@@ -584,6 +655,9 @@ public class ModelView implements Observer, FontListener {
      * @param automaton the automata object
      */
     private void addAutomata(Automaton automaton) {
+
+
+
         /*System.out.println("ModelView addAutomata");
         System.out.println(automaton.toString());*/
         //make a new "parent" object for the children to be parents of
@@ -880,7 +954,10 @@ public class ModelView implements Observer, FontListener {
         assert modelsInList.contains(modelLabel);
 
         processesChanged.add(modelLabel);
+
+        //if(!processModelsToDisplay.contains(modelLabel)) {
         processModelsToDisplay.add(modelLabel);
+        //}
         //  canvasML. refreshtransitionColor();
     }
 
@@ -1044,6 +1121,27 @@ public class ModelView implements Observer, FontListener {
         processModelsOnScreen = MultimapBuilder.hashKeys().hashSetValues().build();
         //  settings.addFontListener(this); can NOY be done here ?!?
 
+        //Graphstream:
+
+        //Reinitialise The Working Canvas area
+        workingCanvasAreaContainer = new JPanel();
+        workingCanvasAreaContainer.setLayout(new BorderLayout());
+        workingCanvasArea = new MultiGraph("WorkingCanvasArea"); //field
+        workingCanvasArea.addAttribute("ui.stylesheet", getStyleSheet());
+        workingCanvasArea.addAttribute("ui.quality");
+        workingCanvasArea.addAttribute("ui.antialias");
+
+        workingCanvasAreaViewer = new Viewer(workingCanvasArea, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
+
+        workingLayout = Layouts.newLayoutAlgorithm();
+        workingCanvasAreaViewer.enableAutoLayout(workingLayout);
+        workingCanvasAreaView = workingCanvasAreaViewer.addDefaultView(false);
+        PMM = new ProcessMouseManager();
+        workingCanvasAreaView.addMouseListener(PMM);
+        workingCanvasAreaView.getCamera().setViewPercent(2);
+        workingCanvasAreaView.getCamera().setAutoFitView(true);
+        workingCanvasAreaContainer.add((Component) workingCanvasAreaView, BorderLayout.CENTER);
+
 
     }
 
@@ -1078,7 +1176,6 @@ public class ModelView implements Observer, FontListener {
 
         sourceCodePro = source;
     }
-
 
 
 }

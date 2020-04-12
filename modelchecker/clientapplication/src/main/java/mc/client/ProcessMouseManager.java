@@ -39,7 +39,6 @@ public class ProcessMouseManager implements MouseManager {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        System.out.println("Mouse clicked");
         ModelView.getInstance().determineIfNodeClicked(e.getX(), e.getY());
     }
 
@@ -57,7 +56,6 @@ public class ProcessMouseManager implements MouseManager {
     public void mouseEntered(MouseEvent e) {
         //MouseEnter event triggered from robot usage in ModelView not ideal but functional
         //i.e graph detects mouse enter after robot forces a click at the last position of the added shape
-        System.out.println("Mouse enter");
        ModelView.getInstance().dropNode(e.getX(), e.getY());
     }
 
